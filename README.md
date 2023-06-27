@@ -83,8 +83,6 @@ conda deactivate
 
 # Synthetic Dataset Preparation
 
-**TODO: Option for batch scripts for this entire section**
-
 Activate the `tomopy` environment:
 ```
 module load python
@@ -155,16 +153,10 @@ Activate the CT_NVAE environment:
 conda activate CT_NVAE
 ```
 
-Navigate to the `CT_NVAE` directory and create the following directories:
-```
-cd $CT_NVAE_PATH
-mkdir data
-mkdir checkpts
-```
-
-Navigate to the working directory:
+Navigate to the working directory and create the `checkpts` directory`:
 ```
 cd {WORKING_DIR}
+mkdir checkpts
 ```
 
 If on NERSC, start an interactive session or see [below](#running-batch-jobs-on-NERSC) for how to run longer batch jobs:
@@ -176,6 +168,7 @@ Export the following variables:
 ```
 export EXPR_ID=test_0000
 export DATA_DIR=data
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=checkpts
 export MASTER_ADDR=localhost
 ```

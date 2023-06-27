@@ -173,28 +173,28 @@ def get_loaders_eval(dataset, args):
         num_classes = 0
 
         # train_transform, valid_transform = _data_transforms_foam(args)
+        dataset_dir = os.environ['DATASET_DIR']
+        train_reconstruction = np.load(dataset_dir + '/dataset_foam/train_reconstructions.npy')
+        valid_reconstruction = np.load(dataset_dir + '/dataset_foam/valid_reconstructions.npy')
 
-        train_reconstruction = np.load('/home/microway/Documents/NVAE/dataset_foam/train_reconstructions.npy')
-        valid_reconstruction = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_reconstructions.npy')
+        train_sparse_sinogram = np.load(dataset_dir + '/dataset_foam/train_sparse_sinograms.npy')
+        valid_sparse_sinogram = np.load(dataset_dir + '/dataset_foam/valid_sparse_sinograms.npy')
 
-        train_sparse_sinogram = np.load('/home/microway/Documents/NVAE/dataset_foam/train_sparse_sinograms.npy')
-        valid_sparse_sinogram = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_sparse_sinograms.npy')
-
-        train_mask = np.load('/home/microway/Documents/NVAE/dataset_foam/train_masks.npy')
-        valid_mask = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_masks.npy')
+        train_mask = np.load(dataset_dir + '/dataset_foam/train_masks.npy')
+        valid_mask = np.load(dataset_dir + '/dataset_foam/valid_masks.npy')
 
 
-        train_x_size = np.load('/home/microway/Documents/NVAE/dataset_foam/train_x_size.npy')
-        valid_x_size = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_x_size.npy')
+        train_x_size = np.load(dataset_dir + '/dataset_foam/train_x_size.npy')
+        valid_x_size = np.load(dataset_dir + '/dataset_foam/valid_x_size.npy')
 
-        train_y_size = np.load('/home/microway/Documents/NVAE/dataset_foam/train_y_size.npy')
-        valid_y_size = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_y_size.npy')
+        train_y_size = np.load(dataset_dir + '/dataset_foam/train_y_size.npy')
+        valid_y_size = np.load(dataset_dir + '/dataset_foam/valid_y_size.npy')
 
-        train_num_proj_pix = np.load('/home/microway/Documents/NVAE/dataset_foam/train_num_proj_pix.npy')
-        valid_num_proj_pix = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_num_proj_pix.npy')
+        train_num_proj_pix = np.load(dataset_dir +  '/dataset_foam/train_num_proj_pix.npy')
+        valid_num_proj_pix = np.load(dataset_dir + '/dataset_foam/valid_num_proj_pix.npy')
 
-        train_theta = np.load('/home/microway/Documents/NVAE/dataset_foam/train_theta.npy')
-        valid_theta = np.load('/home/microway/Documents/NVAE/dataset_foam/valid_theta.npy')
+        train_theta = np.load(dataset_dir + '/dataset_foam/train_theta.npy')
+        valid_theta = np.load(dataset_dir + '/dataset_foam/valid_theta.npy')
 
         train_data = Foam(train_reconstruction, train_sparse_sinogram, train_mask, train_theta,
                           train_x_size, train_y_size, train_num_proj_pix,

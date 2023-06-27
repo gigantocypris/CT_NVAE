@@ -308,7 +308,8 @@ def num_output(dataset):
     elif dataset == 'ffhq':
         return 3 * 256 * 256
     elif dataset == 'foam':
-        size = int(np.load('/home/microway/Documents/NVAE/dataset_foam/train_num_proj_pix.npy'))
+        dataset_dir = os.environ['DATASET_DIR']
+        size = int(np.load(dataset_dir + '/dataset_foam/train_num_proj_pix.npy'))
         return size * size
     else:
         raise NotImplementedError
@@ -325,7 +326,8 @@ def get_input_size(dataset):
     elif dataset == 'ffhq':
         return 256
     elif dataset == 'foam':
-        size = int(np.load('/home/microway/Documents/NVAE/dataset_foam/train_num_proj_pix.npy'))
+        dataset_dir = os.environ['DATASET_DIR']
+        size = int(np.load(dataset_dir + '/dataset_foam/train_num_proj_pix.npy'))
         return size
     else:
         raise NotImplementedError

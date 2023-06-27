@@ -18,20 +18,27 @@ If using NERSC, use the following command to load Python:
 module load python
 ```
 
-Update conda:
+Create conda environment with TomoPy called `tomopy` and activate: 
 ```
-conda update -n base -c conda-forge conda
+conda create --name tomopy --channel conda-forge tomopy=1.14.1 python=3.9
+conda activate tomopy
 ```
 
-Create conda environment with TomoPy called `CT_NVAE`: 
+Install PyTorch with only CPU support in the `tomopy` environment:
 ```
-conda create --name CT_NVAE --channel conda-forge tomopy=1.14.1 python=3.9
+python -m pip install xdesign
+python -m pip install kornia
+python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+conda deactivate
+```
+
+The `tomopy` environment will be used for pre-processing the data. We will create another environment for training the CT_NVAE because the requirements for PyTorch GPU conflict with the requirements for TomoPy.
+
+
+Create conda environment called `CT_NVAE`: 
+```
+conda create --name CT_NVAE python=3.9
 conda activate CT_NVAE
-```
-
-If using NERSC, start an interactive session where `{NERSC_GPU_ALLOCATION}` is your GPU allocation (e.g. m3562_g):
-```
-salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=4 --cpus-per-task=32
 ```
 
 Install PyTorch in the `CT_NVAE` environment:
@@ -45,7 +52,10 @@ python
 import torch 
 print(torch.cuda.is_available())
 print(torch.cuda.device_count())
+quit()
 ```
+
+Output should be `True` and `1` if on a NERSC login node.
 
 Install the other conda dependencies:
 ```
@@ -56,6 +66,8 @@ Upgrade pip:
 ```
 python -m pip install --upgrade pip
 ```
+
+Navigate to the CT_NVAE directory.
 
 Install the pip dependencies:
 ```
@@ -71,9 +83,12 @@ conda deactivate
 
 # Synthetic Dataset Preparation
 
-Activate the `CT_NVAE` environment:
+**TODO: Option for batch scripts for this entire section**
+
+Activate the `tomopy` environment:
 ```
-conda activate CT_NVAE
+module load python
+conda activate tomopy
 ```
 
 Create a working directory `{WORKING_DIR}` (e.g. `$SCRATCH/output_CT_NVAE` on NERSC):
@@ -91,7 +106,12 @@ Navigate to the working directory
 cd {WORKING_DIR}
 ```
 
-Run the following to create a synthetic foam dataset of `{T}` training examples and `{V}` validation examples, saved in the subfolder `dataset_foam` of the current directory:
+For large dataset creation on NERSC, start an interactive session, where `{NERSC_GPU_ALLOCATION}` is your GPU allocation (e.g. m3562_g):
+```
+salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+```
+
+Run the following to create a synthetic foam dataset of `{T}` training examples and `{V}` validation examples, saved to the current working directory:
 ```
 python $CT_NVAE_PATH/computed_tomography/create_foam_images.py -t {T} -v {V}
 ```
@@ -101,19 +121,19 @@ To visualize a training example:
 python
 import numpy as np
 import matplotlib.pyplot as plt
-foam_imgs = np.load('foam_training.npy')
+foam_imgs = np.load('foam_train.npy')
 plt.figure()
 plt.imshow(foam_imgs[0,:,:]); plt.show()
+plt.savefig('foam_training_example.png')
 plt.show()
+quit()
 ```
 
-To generate sinograms (project images) from the foam images, create sparse sinograms, and reconstruct from the sparse sinograms:
+To generate sinograms (project images) from the foam images, create sparse sinograms, and reconstruct from the sparse sinograms, saved in the subfolder `dataset_foam` of the current directory:
 ```
-export KMP_DUPLICATE_LIB_OK=TRUE
-python $NVAE_PATH/computed_tomography/images_to_dataset.py -n {N} -d {DATASET_TYPE}
+python $CT_NVAE_PATH/computed_tomography/images_to_dataset.py -n {N} -d {DATASET_TYPE}
 ```
-The `{DATASET_TYPE}` is either `train` or `valid`, and `{N}` is the number of images to process, starting from the first image of the dataset.
-
+The `{DATASET_TYPE}` is either `train` or `valid`, and `{N}` is the number of images to process, starting from the first image of the dataset. Complete the above for both `train` and `valid`.
 
 **TODO: Convert to unit test with PyTest**
 **TODO: Compare (timing and accuracy) with TorchRadon implemented by Hojune and Gary**
@@ -149,7 +169,7 @@ cd {WORKING_DIR}
 
 If on NERSC, start an interactive session or see [below](#running-batch-jobs-on-NERSC) for how to run longer batch jobs:
 ```
-salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=4 --cpus-per-task=32
+salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
 
 Export the following variables:
@@ -192,6 +212,8 @@ sbatch scripts/train_single_node.sh
 **TODO: Figure out multinode training on NERSC**
 
 ## TODO
+
+Dataset creation: make into slurm script that can be submitted with sbatch and parallelize with srun.
 
 version numbers for all packages in the install directions
 

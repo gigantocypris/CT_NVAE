@@ -2,6 +2,7 @@
 Compare tomopy and forward_physics.py
 """
 
+import tomopy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -28,11 +29,13 @@ if __name__ == '__main__':
     fig.suptitle('Sinogram Comparison')
     ax1.imshow(proj_0[0,:,:])
     ax2.imshow(proj_1[0,:,:])
+    plt.savefig('sinogram_comparison.png')
     plt.show()
 
     plt.figure()
     plt.title('Difference Map')
     plt.imshow(proj_0[0,:,:]-proj_1.numpy()[0,:,:])
+    plt.savefig('sinogram_difference.png')
     plt.show()
 
     print('Max Absolute Difference: ' + str(np.max(np.abs(proj_0-proj_1.numpy()))))

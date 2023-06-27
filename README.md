@@ -4,7 +4,7 @@ Physics-informed nouveau variational autoencoder for reconstruction in sparse co
 
 ## Background
 
-This code integrates the physics-informed variational autoencoder with the nouveau variational autoencoder (arXiv:2007.03898v3).
+This code integrates the [physics-informed variational autoencoder](https://arxiv.org/abs/2211.00002) with the [nouveau variational autoencoder](https://arxiv.org/abs/2007.03898).
 
 ## Installation
 
@@ -16,6 +16,11 @@ git clone https://github.com/gigantocypris/CT_NVAE.git
 If using NERSC, use the following command to load Python:
 ```
 module load python
+```
+
+Update conda:
+```
+conda update -n base -c conda-forge conda
 ```
 
 Create conda environment with TomoPy called `CT_NVAE`: 
@@ -32,6 +37,14 @@ salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntask
 Install PyTorch in the `CT_NVAE` environment:
 ```
 conda install pytorch==2.0 torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
+```
+
+Test PyTorch install:
+```
+python
+import torch 
+print(torch.cuda.is_available())
+print(torch.cuda.device_count())
 ```
 
 Install the other conda dependencies:

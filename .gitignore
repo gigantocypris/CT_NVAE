@@ -160,3 +160,8 @@ cython_debug/
 #.idea/
 
 .DS_Store
+dataset_foam
+dataset_foam/*
+checkpts/*
+*.npy
+*.png

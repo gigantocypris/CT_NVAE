@@ -173,7 +173,7 @@ tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 
 To run a batch job on NERSC:
 ```
-sbatch scripts\train_single_node.sh
+sbatch scripts/train_single_node.sh
 ```
 
 **TODO: Figure out multinode training on NERSC**

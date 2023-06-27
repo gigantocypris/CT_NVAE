@@ -133,9 +133,6 @@ python $CT_NVAE_PATH/computed_tomography/images_to_dataset.py -n {N} -d {DATASET
 ```
 The `{DATASET_TYPE}` is either `train` or `valid`, and `{N}` is the number of images to process, starting from the first image of the dataset. Complete the above for both `train` and `valid`.
 
-**TODO: Convert to unit test with PyTest**
-**TODO: Compare (timing and accuracy) with TorchRadon implemented by Hojune and Gary**
-**TODO: Compare (timing and accuracy) with torch rotation and vmap**
 Test Radon transform in PyTorch and compare with the Radon transform in TomoPy:
 ```
 python $CT_NVAE_PATH/computed_tomography/test_forward_physics.py 
@@ -167,7 +164,6 @@ salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntask
 Export the following variables:
 ```
 export EXPR_ID=test_0000
-export DATA_DIR=data
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=checkpts
 export MASTER_ADDR=localhost
@@ -193,42 +189,12 @@ Launch Tensorboard to view results:
 tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 ```
 
-**TODO: How to view Tensorboard while training**
-
 ## Running Batch Jobs on NERSC
 
 To run a batch job on NERSC:
 ```
-sbatch scripts/train_single_node.sh
+sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 ```
-
-**TODO: Figure out multinode training on NERSC**
-
-## TODO
-
-Dataset creation: make into slurm script that can be submitted with sbatch and parallelize with srun.
-
-version numbers for all packages in the install directions
-
-Warning:
-/global/homes/X/XX/.conda/envs/NVAE_2/lib/python3.7/site-packages/torch/distributed/distributed_c10d.py:2388: UserWarning: torch.distributed._all_gather_base is a private function and will be deprecated. Please use torch.distributed.all_gather_into_tensor instead.
-
-Licensing: figure out what license to use for modified NVIDIA files
-
-Add real dataset
-
-Try different datasets
-
-Try different model distributions (currently using the RelaxedBernoulli distribution)
-
-Train and validate with different datasets
-
-Allow for training with the full object reconstructions and compare sample complexity
-
-Add a ring artifact and see if the neural network can remove
-
-Try real dataset, use no-reference metrics to evaluate
-
 ## Resources:
 
 P-VAE papers

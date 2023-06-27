@@ -6,14 +6,13 @@
 #SBATCH -A m2859_g       # allocation
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:36:00
+#SBATCH -t 00:05:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH -o %j.out
 #SBATCH -e %j.err
 
 export EXPR_ID=test_0000_slurm
-export DATA_DIR=data
 export CHECKPOINT_DIR=checkpts
 
 echo "jobstart $(date)";pwd

@@ -1,0 +1,9 @@
+jobstart Wed 28 Jun 2023 02:32:20 PM PDT
+/global/homes/g/gchen4/CT_NVAE
+Experiment dir : checkpts/eval-test_0000_slurm
+Node rank 0, local proc 0, global proc 0
+Node rank 0, local proc 1, global proc 1
+Node rank 0, local proc 2, global proc 2
+Node rank 0, local proc 3, global proc 3
+jobend Wed 28 Jun 2023 02:32:37 PM PDT
+/global/homes/g/gchen4/CT_NVAE

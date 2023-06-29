@@ -3,7 +3,7 @@
 #SBATCH -N 1            # Number of nodes
 #SBATCH -J CT_NVAE      # job name
 #SBATCH -L SCRATCH       # job requires SCRATCH files
-#SBATCH -A m2859_g       # allocation
+#SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
 #SBATCH -t 00:05:00

@@ -281,10 +281,16 @@ def average_params(params, is_distributed):
 
 def average_tensor(t, is_distributed):
     if is_distributed:
-        size = float(dist.get_world_size())
-        dist.all_reduce(t.data, op=dist.ReduceOp.SUM)
-        t.data /= size
-
+        #updated the data type
+        size = torch.tensor(dist.get_world_size()).float()
+        t = torch.tensor(t).float()
+        if not size.is_cuda:
+            size = size.cuda()
+        if not t.is_cuda:
+            t = t.cuda()
+        t = t.to_dense()
+        dist.all_reduce(t, op=dist.ReduceOp.SUM)
+        t /= size
 
 def one_hot(indices, depth, dim):
     indices = indices.unsqueeze(dim)

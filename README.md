@@ -12,7 +12,10 @@ Navigate to the directory where you want the code to reside and clone the reposi
 ```
 git clone https://github.com/gigantocypris/CT_NVAE.git
 ```
-
+If the repository is private, use the SSH link instead
+```
+git clone git@github.com:gigantocypris/CT_NVAE.git
+```
 If using NERSC, use the following command to load Python:
 ```
 module load python
@@ -45,6 +48,10 @@ Install PyTorch in the `CT_NVAE` environment:
 ```
 conda install pytorch==2.0 torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 ```
+NERSC seems to only support conda install pytorch 1.9 and 1.13; install the most updated PyTorch 2.0.1 with command below instead
+```
+module load pytorch/2.0.1
+```
 
 Test PyTorch install:
 ```
@@ -74,7 +81,7 @@ Install the pip dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Installation is complete!
+Installation is complete! Deactivate and activate the conda environment to use the newly installed dependencies
 
 To exit the conda environment:
 ```
@@ -93,8 +100,12 @@ Create a working directory `{WORKING_DIR}` (e.g. `$SCRATCH/output_CT_NVAE` on NE
 ```
 mkdir {WORKING_DIR}
 ```
-
+Create an environment variable `WORKING_DIR`
+```
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+```
 Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory:
+`{CT_NVAE_PATH}` could be found by cd to CT_NVAE directory and type `pwd` command
 ```
 export CT_NVAE_PATH={CT_NVAE_PATH}
 ```
@@ -103,13 +114,22 @@ Navigate to the working directory
 ```
 cd {WORKING_DIR}
 ```
+or if you assigned an environment variable `WORKING_DIR` earlier
+```
+cd $WORKING_DIR
+```
 
 For large dataset creation on NERSC, start an interactive session, where `{NERSC_GPU_ALLOCATION}` is your GPU allocation (e.g. m3562_g):
 ```
 salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
+use this if you're indeed in m3562_g
+```
+salloc -N 1 --time=60 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+```
 
 Run the following to create a synthetic foam dataset of `{T}` training examples and `{V}` validation examples, saved to the current working directory:
+replace `{T}` and `{V}` with integers
 ```
 python $CT_NVAE_PATH/computed_tomography/create_foam_images.py -t {T} -v {V}
 ```
@@ -171,9 +191,15 @@ export MASTER_ADDR=localhost
 
 If on NERSC, `MASTER_ADDR` should be set as follows:
 ```
+export EXPR_ID=test_0000
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
+export CHECKPOINT_DIR=checkpts
 export MASTER_ADDR=$(hostname)
 ```
-
+Create an environmental variable `{CT_NVAE_PATH}` if you haven't yet or you started a new session
+```
+export CT_NVAE_PATH={CT_NVAE_PATH}
+```
 Train with the foam dataset, on a single GPU to test that the code is working:
 ```
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam --batch_size 8 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax
@@ -197,6 +223,6 @@ sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 ```
 ## Resources:
 
-P-VAE papers
+[P-VAE papers](https://arxiv.org/abs/2211.00002)
 
-NVAE paper
+[NVAE paper](https://arxiv.org/abs/2007.03898)

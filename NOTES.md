@@ -22,3 +22,9 @@ DONE
 sbatch -A $NERSC_GPU_ALLOCATION -t 00:02:00 $CT_NVAE_PATH/scripts/images_to_dataset_slurm.sh $NUM_VAL valid $CT_NVAE_PATH
 Submitted batch job 10800191
 DONE
+
+Stitch the dataset:
+cd $SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 4 --dataset_type train
+python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 4 --dataset_type valid

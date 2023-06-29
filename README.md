@@ -182,10 +182,14 @@ export WORKING_DIR={WORKING_DIR}
 ```
 Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory:
 <<<<<<< HEAD
+<<<<<<< HEAD
 `{CT_NVAE_PATH}` could be found by cd to CT_NVAE directory and type `pwd` command
 =======
 `{CT_NVAE_PATH}` could be found by cd to CT_NVAE and type pwd command
 >>>>>>> 9874688 (updated README, utils.py, and batch job script train_single_node.sh)
+=======
+`{CT_NVAE_PATH}` could be found by cd to CT_NVAE directory and type `pwd` command
+>>>>>>> 1e6cc47 (Removed *.err and *.out, updated .gitignore, and slight changes in README.md)
 ```
 export CT_NVAE_PATH={CT_NVAE_PATH}
 ```
@@ -353,10 +357,14 @@ scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscr
 ## Resources:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 [P-VAE papers](https://arxiv.org/abs/2211.00002)
 =======
 [P-VAE papers](https://arxiv.org/abs/2203.11363)
 >>>>>>> 9874688 (updated README, utils.py, and batch job script train_single_node.sh)
+=======
+[P-VAE papers](https://arxiv.org/abs/2211.00002)
+>>>>>>> 1e6cc47 (Removed *.err and *.out, updated .gitignore, and slight changes in README.md)
 
 [NVAE paper](https://arxiv.org/abs/2007.03898)
 

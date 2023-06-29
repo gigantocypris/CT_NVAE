@@ -165,3 +165,7 @@ dataset_foam/*
 checkpts/*
 *.npy
 *.png
+
+# Ignore error and output files
+*.err
+*.out

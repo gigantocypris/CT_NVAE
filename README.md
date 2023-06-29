@@ -105,7 +105,7 @@ Create an environment variable `WORKING_DIR`
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 ```
 Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory:
-`{CT_NVAE_PATH}` could be found by cd to CT_NVAE and type pwd command
+`{CT_NVAE_PATH}` could be found by cd to CT_NVAE directory and type `pwd` command
 ```
 export CT_NVAE_PATH={CT_NVAE_PATH}
 ```
@@ -223,6 +223,6 @@ sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 ```
 ## Resources:
 
-[P-VAE papers](https://arxiv.org/abs/2203.11363)
+[P-VAE papers](https://arxiv.org/abs/2211.00002)
 
 [NVAE paper](https://arxiv.org/abs/2007.03898)

@@ -5,6 +5,7 @@ Creates synthetic dataset of foam objects
 import argparse
 import numpy as np
 import xdesign as xd 
+from mpi4py import MPI
 
 def create_dataset(num_train, 
                    SIZE_UPPER, SIZE_LOWER, N_PIXEL, GAP,
@@ -40,14 +41,22 @@ if __name__ == '__main__':
 
     ### END OF INPUTS ###
 
+    comm = MPI.COMM_WORLD
+
+    # check rank
+    rank = comm.rank
+    print('Hello from rank: ' + str(rank))
+
     np.random.seed(0)
 
+    train_name = 'foam_train_' + str(rank) + '.npy'
     create_dataset(num_train, 
                     SIZE_UPPER, SIZE_LOWER, N_PIXEL, GAP,
-                    save_name='foam_train.npy')
+                    save_name=train_name)
 
+    valid_name = 'foam_valid_' + str(rank) + '.npy'
     create_dataset(num_valid, 
                     SIZE_UPPER, SIZE_LOWER, N_PIXEL, GAP,
-                    save_name='foam_valid.npy')
+                    save_name=valid_name)
 
     

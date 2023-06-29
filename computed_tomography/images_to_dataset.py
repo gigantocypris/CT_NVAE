@@ -6,11 +6,12 @@ import argparse
 import numpy as np
 from utils import create_sinogram, get_images, create_folder, create_sparse_dataset
 import time
+from mpi4py import MPI
 
-def main():
+def main(rank):
     parser = argparse.ArgumentParser(description='Get command line args')
     parser.add_argument('-n',dest='num_truncate', type=int, help='number of points', default=64)
-    parser.add_argument('-d',dest='dataset_type', type=str, help='dataset type')
+    parser.add_argument('-d',dest='dataset_type', type=str, help='dataset type, either train or valid')
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
     args = parser.parse_args()
 
@@ -30,7 +31,7 @@ def main():
     # pull images that are normalized from 0 to 1
     # 0th dimension should be the batch dimension
     # 1st and 2nd dimensions should be spatial x and y coords, respectively
-    x_train_imgs = get_images(img_type = img_type, dataset_type=args.dataset_type)
+    x_train_imgs = get_images(rank, img_type = img_type, dataset_type=args.dataset_type)
     x_train_imgs = x_train_imgs[0:truncate_dataset]
     
     # Create sinograms all at once
@@ -52,12 +53,12 @@ def main():
     
     x_train_sinograms[x_train_sinograms<0]=0
     
-    np.save(save_path + '/' + args.dataset_type + '_sinograms.npy', x_train_sinograms)
-    np.save(save_path + '/' + args.dataset_type + '_theta.npy', theta)
-    np.save(save_path + '/' + args.dataset_type + '_num_proj_pix.npy', num_proj_pix)
+    np.save(save_path + '/' + args.dataset_type + '_sinograms_' + str(rank) + '.npy', x_train_sinograms)
+    np.save(save_path + '/' + args.dataset_type + '_theta_' + str(rank) + '.npy', theta)
+    np.save(save_path + '/' + args.dataset_type + '_num_proj_pix_' + str(rank) + '.npy', num_proj_pix)
 
-    np.save(save_path + '/' + args.dataset_type + '_x_size.npy', x_train_imgs.shape[1]) # size of original image
-    np.save(save_path + '/' + args.dataset_type + '_y_size.npy', x_train_imgs.shape[2]) # size of original image
+    np.save(save_path + '/' + args.dataset_type + '_x_size_' + str(rank) + '.npy', x_train_imgs.shape[1]) # size of original image
+    np.save(save_path + '/' + args.dataset_type + '_y_size_' + str(rank) + '.npy', x_train_imgs.shape[2]) # size of original image
     
     print("Shape of sinograms: ", x_train_sinograms.shape)
     print("Shape of original training images: ", x_train_imgs.shape)
@@ -70,12 +71,18 @@ def main():
                           random = random, # If True, randomly pick angles
                          )
 
-    np.save(save_path + '/' + args.dataset_type + '_masks.npy', all_mask_inds)
-    np.save(save_path + '/' + args.dataset_type + '_reconstructions.npy', all_reconstructed_objects)
-    np.save(save_path + '/' + args.dataset_type + '_sparse_sinograms.npy', all_sparse_sinograms)
+    np.save(save_path + '/' + args.dataset_type + '_masks_' + str(rank) + '.npy', all_mask_inds)
+    np.save(save_path + '/' + args.dataset_type + '_reconstructions_' + str(rank) + '.npy', all_reconstructed_objects)
+    np.save(save_path + '/' + args.dataset_type + '_sparse_sinograms_' + str(rank) + '.npy', all_sparse_sinograms)
 
 if __name__ == '__main__':
+    comm = MPI.COMM_WORLD
+
+    # check rank
+    rank = comm.rank
+    print('Hello from rank: ' + str(rank))
+
     start_time = time.time()
-    main()
+    main(rank)
     end_time = time.time()
     print('Total time was ' + str((end_time-start_time)/60) + ' minutes.')

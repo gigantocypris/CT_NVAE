@@ -15,9 +15,11 @@
 module load python
 conda activate tomopy
 
+export EXPR_ID=$1
+
 export BATCH_SIZE=8
 export EPOCHS=100
-export NUM_LATENT_SCALES=$1
+export NUM_LATENT_SCALES=$2
 export NUM_GROUPS_PER_SCALE=10
 export NUM_POSTPROCESS_CELLS=2
 export NUM_PREPROCESS_CELLS=2
@@ -32,7 +34,7 @@ export NUM_CHANNELS_DEC=4
 export NUM_NF=0
 export PNM=1e1
 
-export EXPR_ID=test_0000_slurm
+
 export CHECKPOINT_DIR=checkpts
 
 echo "jobstart $(date)";pwd

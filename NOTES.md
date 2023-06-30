@@ -28,3 +28,6 @@ cd $SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 4 --dataset_type train
 python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 4 --dataset_type valid
+
+# Running the loop
+. $CT_NVAE_PATH/scripts/loop_jobs.sh

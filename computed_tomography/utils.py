@@ -9,9 +9,12 @@ def create_folder(save_path=None,**kwargs):
         if not os.path.isdir(save_path):
             raise
 
-def create_sinogram(img_stack, theta, pad=True):
+def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False):
     # multiprocessing.freeze_support()
     proj = tomopy.project(img_stack, theta, center=None, emission=True, pad=pad, sinogram_order=False)
+    if add_ring_artifact:
+        ring_artifact = np.random.randn(proj.shape[0],proj.shape[1])*0.1
+        proj = proj*ring_artifact
     proj = np.transpose(proj, (1, 0, 2))
     return proj
 
@@ -24,6 +27,7 @@ def create_sparse_dataset(x_train_sinograms,
                           poisson_noise_multiplier = 1e3, # poisson noise multiplier, higher value means higher SNR
                           num_sparse_angles = 10, # number of angles to image per sample (dose remains the same)
                           random = False, # If True, randomly pick angles
+                          remove_ring_artifact = False, # If True, remove ring artifact with tomopy correction algorithm
                          ):
  
     x_train_sinograms[x_train_sinograms<0]=0
@@ -55,7 +59,10 @@ def create_sparse_dataset(x_train_sinograms,
         sparse_sinogram[sparse_sinogram<0]=0
         
         # transform sinogram with tomopy
-        reconstruction = tomopy.recon(np.expand_dims(sparse_sinogram, axis=1), theta[sparse_angles], center=None, sinogram_order=False, algorithm='gridrec')
+        reconstruction = tomopy.recon(np.expand_dims(sparse_sinogram, axis=1), theta[sparse_angles], center=None, sinogram_order=False, 
+                                      algorithm='gridrec', filter_name='hann')
+        if remove_ring_artifact:
+            reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
 
         all_mask_inds.append(sparse_angles)
         all_reconstructed_objects.append(reconstruction)

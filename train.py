@@ -23,6 +23,7 @@ import datasets
 from fid.fid_score import compute_statistics_of_generator, load_statistics, calculate_frechet_distance
 from fid.inception import InceptionV3
 
+import matplotlib.pyplot as plt
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -221,7 +222,11 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
 
                 x_img = x[:n*n]
                 x_tiled = utils.tile_image(x_img, n)
+
                 writer.add_image('input image', x_tiled, global_step)
+                plt.figure()
+                plt.imshow(x_tiled[0].detach().cpu().numpy())
+                plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
 
                 output_img = output.mean if isinstance(output, torch.distributions.bernoulli.Bernoulli) else output.sample()
                 output_img = output_img[:n*n]
@@ -233,16 +238,22 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 x_sino = x_sino[:,None,:,:]
                 x_sino_tiled = utils.tile_image(x_sino, n)  
                 in_out_tiled = torch.cat((x_sino_tiled, output_tiled), dim=2)
+
                 writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
+                plt.figure()
+                plt.imshow(in_out_tiled[0].detach().cpu().numpy())
+                plt.savefig(args.save + '/sinogram_reconstruction_' + str(global_step)+'.png')
 
                 phantom_sample = phantom
                 phantom_sample = phantom_sample[:n*n]
                 phantom_sample = torch.transpose(phantom_sample,2,3)
                 phantom_sample = torch.transpose(phantom_sample,1,2)
                 phantom_tiled = utils.tile_image(phantom_sample, n)
-                print('XXX')
-                print(torch.sum(phantom_tiled))
+
                 writer.add_image('phantom_reconstruction', phantom_tiled, global_step)
+                plt.figure()
+                plt.imshow(phantom_tiled[0].detach().cpu().numpy())
+                plt.savefig(args.save + '/phantom_reconstruction_' + str(global_step)+'.png')
 
             # norm
             writer.add_scalar('train/norm_loss', norm_loss, global_step)

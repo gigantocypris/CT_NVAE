@@ -283,7 +283,8 @@ def average_tensor(t, is_distributed):
     if is_distributed:
         #updated the data type
         size = torch.tensor(dist.get_world_size()).float()
-        t = torch.tensor(t).float()
+        # t = torch.tensor(t).float()
+        t = t.clone().detach().float()
         if not size.is_cuda:
             size = size.cuda()
         if not t.is_cuda:

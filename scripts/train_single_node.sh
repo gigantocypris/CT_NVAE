@@ -6,7 +6,7 @@
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:15:00
+#SBATCH -t 00:5:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH -o %j.out
@@ -16,7 +16,7 @@
 
 
 module load python
-conda activate tomopy
+conda activate CT_NVAE
 
 export EXPR_ID=$1
 
@@ -37,8 +37,10 @@ export NUM_CHANNELS_DEC=4
 export NUM_NF=0
 export PNM=1e1
 
-
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=/pscratch/sd/g/gchen4/output_CT_NVAE/checkpts
+export MASTER_ADDR=$(hostname)
+export CT_NVAE_PATH=/global/homes/g/gchen4/CT_NVAE
 
 echo "jobstart $(date)";pwd
 

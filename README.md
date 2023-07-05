@@ -100,9 +100,10 @@ conda deactivate
 ```
 
 # Covid CT Dataset Preparation
-Make sure your dataset is organized as following
+Make sure your dataset is organized as following.
+You can use data/unpack_gz.ipynb to do so.
 - data
-    - pre_processed
+    - raw
         - Covid_CT_1.nii
         - Covid_CT_2.nii
         - Covid_CT_3.nii

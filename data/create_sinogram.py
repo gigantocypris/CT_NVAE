@@ -10,7 +10,7 @@ import tomopy
 # Purpose: Create sinogram from .nib file and save it as .npy file
 
 # Usage: python create_sinogram.py <nib_file_path> <only_sinogram> <pad>
-# Example: python data/create_sinogram.py data/preprocessed/Covid_CT_1.nii False True
+# Example: python data/create_sinogram.py data/raw/Covid_CT_1.nii False True
 # If only_sinogram=True, then it will only create sinogram and save it as .npy file
 # If only_sinogram=False, then it will save plot and .npy file for both sinogram and its original image
 

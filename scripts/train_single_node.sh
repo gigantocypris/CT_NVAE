@@ -6,11 +6,14 @@
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:05:00
+#SBATCH -t 00:15:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH -o %j.out
 #SBATCH -e %j.err
+#SBATCH --mail-type=begin,end,fail
+#SBATCH --mail-user=gchen4@lbl.gov
+
 
 module load python
 conda activate tomopy
@@ -35,7 +38,7 @@ export NUM_NF=0
 export PNM=1e1
 
 
-export CHECKPOINT_DIR=checkpts
+export CHECKPOINT_DIR=/pscratch/sd/g/gchen4/output_CT_NVAE/checkpts
 
 echo "jobstart $(date)";pwd
 

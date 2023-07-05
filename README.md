@@ -100,15 +100,20 @@ conda deactivate
 ```
 
 # Covid CT Dataset Preparation
-Make sure your dataset is organized as following.
-You can use data/unpack_gz.ipynb to do so.
+Make sure your dataset is organized as following. You can use data/unpack_gz.ipynb to unzip large folders with different format, convert them into .npy file, and create sinogram.
 - data
     - raw
         - Covid_CT_1.nii
         - Covid_CT_2.nii
         - Covid_CT_3.nii
     - input_npy
+        - Covid_CT_1.npy
+        - Covid_CT_2.npy
+        - Covid_CT_3.npy
     - sinogram_npy
+        - Covid_CT_1_sinogram.npy
+        - Covid_CT_2_sinogram.npy
+        - Covid_CT_3_sinogram.npy
     - figures
 
 

@@ -99,6 +99,18 @@ To exit the conda environment:
 conda deactivate
 ```
 
+# Covid CT Dataset Preparation
+Make sure all your dataset is under folowwing format
+- data
+    - pre_processed
+        - Covid_CT_1.nii
+        - Covid_CT_2.nii
+        - Covid_CT_3.nii
+    - input_npy
+    - sinogram_npy
+    - figures
+
+
 # Synthetic Dataset Preparation
 
 ## Small Dataset Preparation on an Interactive Node
@@ -309,3 +321,4 @@ sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 [P-VAE papers](https://arxiv.org/abs/2211.00002)
 
 [NVAE paper](https://arxiv.org/abs/2007.03898)
+

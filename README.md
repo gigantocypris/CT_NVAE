@@ -100,7 +100,7 @@ conda deactivate
 ```
 
 # Covid CT Dataset Preparation
-Make sure all your dataset is under folowwing format
+Make sure your dataset is organized as following
 - data
     - pre_processed
         - Covid_CT_1.nii

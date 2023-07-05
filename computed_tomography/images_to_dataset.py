@@ -22,7 +22,7 @@ def main(rank):
     pad = True
     truncate_dataset = args.num_truncate
     num_sparse_angles = 10 # number of angles to image per sample (dose remains the same)
-    random = False # If True, randomly pick angles
+    random = True # If True, randomly pick angles
     #############
     
     save_path = 'dataset_' + img_type

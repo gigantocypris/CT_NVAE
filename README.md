@@ -146,7 +146,7 @@ To visualize a training example:
 python
 import numpy as np
 import matplotlib.pyplot as plt
-foam_imgs = np.load('foam_train.npy')
+foam_imgs = np.load('foam_train_0.npy')
 plt.figure()
 plt.imshow(foam_imgs[0,:,:]); plt.show()
 plt.savefig('foam_training_example.png')

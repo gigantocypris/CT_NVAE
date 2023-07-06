@@ -99,6 +99,35 @@ To exit the conda environment:
 conda deactivate
 ```
 
+# Covid CT Dataset Preparation
+Activate the `tomopy` environment:
+```
+module load python
+conda activate tomopy
+```
+
+We used the TCIA COVID-19 Dataset, which is available at https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19. The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. 
+
+After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the real_data/preprocess.py script provided to accomplish this.
+'''
+python real_data/preprocess.py {SOURCE_DIR} {TARGET_DIR}
+'''
+
+- real_data
+    - raw
+        - Covid_CT_1.nii
+        - Covid_CT_2.nii
+        - Covid_CT_3.nii
+    - input_npy
+        - Covid_CT_1.npy
+        - Covid_CT_2.npy
+        - Covid_CT_3.npy
+    - sinogram_npy
+        - Covid_CT_1_sinogram.npy
+        - Covid_CT_2_sinogram.npy
+        - Covid_CT_3_sinogram.npy
+    - figures
+
 # Synthetic Dataset Preparation
 
 ## Small Dataset Preparation on an Interactive Node
@@ -309,3 +338,4 @@ sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 [P-VAE papers](https://arxiv.org/abs/2211.00002)
 
 [NVAE paper](https://arxiv.org/abs/2007.03898)
+

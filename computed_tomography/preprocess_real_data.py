@@ -4,15 +4,18 @@
 
 # Usage: python preprocess.py <source_dir> <target_dir>
 # Example: python preprocess.py /home/hojune/download/covid /home/hojune/real_data/raw
+# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SCRATCH/CT-Covid-19 $SCRATCH/CT-Covid-19-processed -v
 
 import os
 import gzip
 import shutil
-from create_sinogram import create_sinogram
+from utils_real_data import create_sinogram_nib, visualize
 import numpy as np
 import argparse
 
-def preprocess(source_directory, destination_directory):
+def preprocess(source_directory, destination_directory, visualize_output):
+    theta = np.linspace(0, np.pi, 180, endpoint=False)
+
     # Create the desination_directory if it doesn't exist
     os.makedirs(destination_directory, exist_ok=True)
 
@@ -38,9 +41,7 @@ def preprocess(source_directory, destination_directory):
 
     # Run create_sinogram.py on each .nii file
     print("Now running create_sinogram.py on each .nii file...")
-    theta = np.arange(0, 180, 1)
-    only_sinogram = True
-    pad = True
+
 
     # Get the list of .nii files in the destination directory
     nii_files = [filename for filename in os.listdir(destination_directory) if filename.endswith('.nii')]
@@ -51,7 +52,9 @@ def preprocess(source_directory, destination_directory):
         nib_file_path = os.path.join(destination_directory, filename)
 
         # Call create_sinogram function with the specified parameters
-        create_sinogram(nib_file_path, theta, only_sinogram, pad)
+        data, proj, file_name = create_sinogram_nib(nib_file_path, destination_directory, theta)
+        if visualize_output:
+            visualize(data, proj, file_name, destination_directory)
 
         # Show progress
         progress = (i + 1) / len(nii_files) * 100
@@ -66,9 +69,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Preprocess .gz files and run create_sinogram.py on each .nii file")
     parser.add_argument("source_directory", help="Directory containing .gz files")
     parser.add_argument("destination_directory", help="Directory to store the unzipped .nii files")
-    
+    parser.add_argument('-v', action='store_true', dest='visualize_output',
+                        help='visualize images and sinograms')
     # Parse command-line arguments
     args = parser.parse_args()
     
     # Run preprocess function
-    preprocess(args.source_directory, args.destination_directory)
+    preprocess(args.source_directory, args.destination_directory, args.visualize_output)

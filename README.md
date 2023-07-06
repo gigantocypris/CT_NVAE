@@ -31,6 +31,7 @@ Install PyTorch with only CPU support in the `tomopy` environment:
 ```
 python -m pip install xdesign
 python -m pip install kornia
+python -m pip install nibabel
 python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 

@@ -6,7 +6,7 @@
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:5:00
+#SBATCH -t 00:03:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH -o %j.out
@@ -38,13 +38,20 @@ export NUM_NF=0
 export PNM=1e1
 
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
-export CHECKPOINT_DIR=/pscratch/sd/g/gchen4/output_CT_NVAE/checkpts
+export CHECKPOINT_DIR=$SCRATCH/output_CT_NVAE/checkpts
 export MASTER_ADDR=$(hostname)
 export CT_NVAE_PATH=/global/homes/g/gchen4/CT_NVAE
 
 echo "jobstart $(date)";pwd
-echo python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM
 
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM
-        
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID \
+        --dataset foam --batch_size $BATCH_SIZE --epochs $EPOCHS \
+        --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE \
+        --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS \
+        --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC \
+        --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS \
+        --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM \
+        --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0 \
+        --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM &>> $DATASET_DIR/loop-job-error-log.txt
+
 echo "jobend $(date)";pwd

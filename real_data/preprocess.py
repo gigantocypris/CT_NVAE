@@ -5,11 +5,6 @@
 # Usage: python preprocess.py <source_dir> <target_dir>
 # Example: python preprocess.py /home/hojune/download/covid /home/hojune/real_data/raw
 
-# Make sure to create data folder and figures folder within this directory before running this code
-# Edir this code to change source_dir and target_dir
-# Run this on the directory that contains both source_dir and target_dir
-
-
 import os
 import gzip
 import shutil
@@ -18,6 +13,9 @@ import numpy as np
 import argparse
 
 def preprocess(source_directory, destination_directory):
+    # Create the desination_directory if it doesn't exist
+    os.makedirs(destination_directory, exist_ok=True)
+
     # Get the list of .gz files in the source directory
     gz_files = [filename for filename in os.listdir(source_directory) if filename.endswith('.gz')]
 

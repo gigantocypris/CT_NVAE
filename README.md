@@ -108,28 +108,17 @@ module load python
 conda activate tomopy
 ```
 
-We used the TCIA COVID-19 Dataset, which is available at https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19. The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. 
+We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19). The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. 
 
-After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the `real_data/preprocess.py` script provided to accomplish this.
+After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the `computed_tomography/preprocess_real_data.py` script provided to accomplish this.
 
 '''
-python real_data/preprocess.py {SOURCE_DIR} {TARGET_DIR}
+python $CT_NVAE_PATH/computed_tomography/preprocess_real_data/preprocess.py {SOURCE_DIR} {TARGET_DIR} -v
 '''
 
-- real_data
-    - raw
-        - Covid_CT_1.nii
-        - Covid_CT_2.nii
-        - Covid_CT_3.nii
-    - input_npy
-        - Covid_CT_1.npy
-        - Covid_CT_2.npy
-        - Covid_CT_3.npy
-    - sinogram_npy
-        - Covid_CT_1_sinogram.npy
-        - Covid_CT_2_sinogram.npy
-        - Covid_CT_3_sinogram.npy
-    - figures
+where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Dataset and `{TARGET_DIR}` is the directory where you want to save the preprocessed data. The `-v` flag is optional and will print out `.png` visualizations of all the images and sinograms in the dataset. Only use the `-v` flag for a small dataset.
+
+
 
 scp (with sshproxy) command to upload a folder to NERSC:
 ```

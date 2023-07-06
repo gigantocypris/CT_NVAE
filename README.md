@@ -100,8 +100,20 @@ conda deactivate
 ```
 
 # Covid CT Dataset Preparation
-Make sure your dataset is organized as following. You can use data/unpack_gz.ipynb to unzip large folders with different format, convert them into .npy file, and create sinogram.
-- data
+Activate the `tomopy` environment:
+```
+module load python
+conda activate tomopy
+```
+
+We used the TCIA COVID-19 Dataset, which is available at https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19. The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. 
+
+After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the real_data/preprocess.py script provided to accomplish this.
+'''
+python real_data/preprocess.py {SOURCE_DIR} {TARGET_DIR}
+'''
+
+- real_data
     - raw
         - Covid_CT_1.nii
         - Covid_CT_2.nii
@@ -115,7 +127,6 @@ Make sure your dataset is organized as following. You can use data/unpack_gz.ipy
         - Covid_CT_2_sinogram.npy
         - Covid_CT_3_sinogram.npy
     - figures
-
 
 # Synthetic Dataset Preparation
 

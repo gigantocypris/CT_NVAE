@@ -32,7 +32,7 @@ def preprocess(source_directory, destination_directory):
 
         # Show progress
         progress = (i + 1) / len(gz_files) * 100
-        print(f"Unzipping progress: {progress:.2f}%")
+        print("Unzipping progress: {:.2f}%".format(progress))
     print("All files unzipped. Now they are .nii files.")
 
 
@@ -55,7 +55,7 @@ def preprocess(source_directory, destination_directory):
 
         # Show progress
         progress = (i + 1) / len(nii_files) * 100
-        print(f"Processing progress: {progress:.2f}%")
+        print("Processing progress: {:.2f}%".format(progress))
 
     print("All files preprocessed.")
 

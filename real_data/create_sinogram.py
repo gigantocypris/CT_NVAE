@@ -26,12 +26,12 @@ def create_sinogram(nib_file_path, theta, only_sinogram, pad=True):
     if only_sinogram:
         proj = tomopy.project(data, theta, center=None, emission=True, pad=pad, sinogram_order=False)
         sino = proj.transpose((0, 1, 2))  # Adjust the transpose order
-        sinogram_file_path = f"./LBLResearch/CT_NVAE/data/sinogram_npy/{file_name}_sinogram.npy"
+        sinogram_file_path = "./LBLResearch/CT_NVAE/data/sinogram_npy/{}_sinogram.npy".format(file_name)
         np.save(sinogram_file_path, sino)
 
     else:
         # Load .nib file and save it as .npy file
-        npy_file_path = f"./LBLResearch/CT_NVAE/data/input_npy/{file_name}.npy"
+        npy_file_path = "./LBLResearch/CT_NVAE/data/input_npy/{}.npy".format(file_name)
         np.save(npy_file_path, data)
         # print(f"Successfully converted {nib_file_path} to {npy_file_path}.")
     
@@ -44,10 +44,10 @@ def create_sinogram(nib_file_path, theta, only_sinogram, pad=True):
                 break
             slice_img = data[i, :, :]
             ax.imshow(slice_img, cmap='gray')
-            ax.set_title(f"Slice: {i}")
+            ax.set_title("Slice: {}".format(i))
             ax.axis('off')
         plt.tight_layout()
-        plt.savefig(f"./LBLResearch/CT_NVAE/data/figures/plot of {file_name}.png")
+        plt.savefig("./LBLResearch/CT_NVAE/data/figures/plot of {}.png".format(file_name))
         # plt.show()
 
         # Create sinogram and save it as .npy file
@@ -55,7 +55,7 @@ def create_sinogram(nib_file_path, theta, only_sinogram, pad=True):
         proj = tomopy.project(data, theta, center=None, emission=True, pad=pad, sinogram_order=False)
         sino = proj.transpose((0, 1, 2))  # Adjust the transpose order
         # print("output shape:", sino.shape)  # Output shape: (180, 70, 512)
-        sinogram_file_path = f"./LBLResearch/CT_NVAE/data/sinogram_npy/{file_name}_sinogram.npy"
+        sinogram_file_path = "./LBLResearch/CT_NVAE/data/sinogram_npy/{}_sinogram.npy".format(file_name)
         np.save(sinogram_file_path, sino)
         
         # Plot sinogram images and save the plot as PNG file
@@ -76,11 +76,11 @@ def create_sinogram(nib_file_path, theta, only_sinogram, pad=True):
 
             image = sino[index, :, :]
             ax.imshow(image, cmap='gray')
-            ax.set_title(f"Index: {index}")
+            ax.set_title("Index: {}".format(index))
             ax.axis('off')
 
         plt.tight_layout()
-        plt.savefig(f"./LBLResearch/CT_NVAE/data/figures/sinogram of {file_name}.png")
+        plt.savefig("./LBLResearch/CT_NVAE/data/figures/sinogram of{}.png".format(file_name))
         # plt.show()
 
 

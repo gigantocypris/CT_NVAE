@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import tomopy
 from utils import create_sinogram
 
-def create_sinogram_nib(nib_file_path, target_dir, theta, pad = True, add_ring_artifact=False, save_numpy=False):
+def create_sinogram_nib(nib_file_path, target_dir, theta, pad = True, add_ring_artifact=False, save_numpy=True):
     img = nib.load(nib_file_path)
     data = img.get_fdata()
     data = data.transpose((2, 0, 1))

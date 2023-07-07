@@ -47,6 +47,28 @@ def get_sparse_angles(random, num_angles, num_sparse_angles):
     sparse_angles = np.sort(sparse_angles).astype(np.int32)
     return(sparse_angles)
 
+def process_sinogram(input_sinogram, random, num_sparse_angles, theta, 
+                     poisson_noise_multiplier = 1e3, remove_ring_artifact = False):
+    """
+    process sinogram to make it artificially sparse and reconstruct with tomopy
+    input sinogram is num_angles x num_z x num_proj_pix
+    """
+    num_angles = len(theta)
+    sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles)
+    sparse_sinogram = input_sinogram[sparse_angles,:,:]
+
+    # add approximate Poisson noise with numpy
+    sparse_sinogram = sparse_sinogram + np.sqrt(sparse_sinogram/poisson_noise_multiplier)*np.random.randn(sparse_sinogram.shape[0],sparse_sinogram.shape[1],sparse_sinogram.shape[2])
+    sparse_sinogram[sparse_sinogram<0]=0
+    # transform sinogram with tomopy
+    # sinogram in tomopy.recon must be num_angles x num_z x num_proj_pix
+    reconstruction = tomopy.recon(sparse_sinogram, theta[sparse_angles], center=None, sinogram_order=False, 
+                                    algorithm='gridrec', filter_name='hann')
+    if remove_ring_artifact:
+        reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
+    
+    return sparse_angles, reconstruction, sparse_sinogram
+
 def create_sparse_dataset(x_train_sinograms, 
                           theta,
                           poisson_noise_multiplier = 1e3, # poisson noise multiplier, higher value means higher SNR
@@ -55,6 +77,7 @@ def create_sparse_dataset(x_train_sinograms,
                           remove_ring_artifact = False, # If True, remove ring artifact with tomopy correction algorithm
                          ):
  
+    """Artifically remove angles from the sinogram and reconstruct with tomopy to emulate a training dataset for CT_NVAE"""
     x_train_sinograms[x_train_sinograms<0]=0
     num_examples = len(x_train_sinograms)
     num_angles = x_train_sinograms.shape[1]
@@ -67,25 +90,18 @@ def create_sparse_dataset(x_train_sinograms,
     all_sparse_sinograms = []
     
     for ind in range(num_examples):
-        sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles)
-        sparse_sinogram = x_train_sinograms[ind,sparse_angles,:]
-
-        # add approximate Poisson noise with numpy
-        sparse_sinogram = sparse_sinogram + np.sqrt(sparse_sinogram/poisson_noise_multiplier)*np.random.randn(sparse_sinogram.shape[0],sparse_sinogram.shape[1])
-        sparse_sinogram[sparse_sinogram<0]=0
-        # transform sinogram with tomopy
-        # sinogram in tomopy.recon must be num_angles x num_z x num_proj_pix
-        reconstruction = tomopy.recon(np.expand_dims(sparse_sinogram, axis=1), theta[sparse_angles], center=None, sinogram_order=False, 
-                                      algorithm='gridrec', filter_name='hann')
-        if remove_ring_artifact:
-            reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
+        input_sinogram = x_train_sinograms[ind,:,:]
+        input_sinogram = np.expand_dims(input_sinogram, axis=1)
+        sparse_angles, reconstruction, sparse_sinogram = process_sinogram(input_sinogram, random, 
+                                                                          num_sparse_angles, theta, 
+                                                                          poisson_noise_multiplier = poisson_noise_multiplier, 
+                                                                          remove_ring_artifact = remove_ring_artifact)
 
         all_mask_inds.append(sparse_angles)
         all_reconstructed_objects.append(reconstruction)
-        all_sparse_sinograms.append(sparse_sinogram)
+        all_sparse_sinograms.append(np.squeeze(sparse_sinogram, axis=1))
 
     all_mask_inds = np.stack(all_mask_inds,axis=0)
     all_reconstructed_objects = np.concatenate(all_reconstructed_objects,axis=0)
     all_sparse_sinograms = np.stack(all_sparse_sinograms,axis=0)
-
     return(all_mask_inds, all_reconstructed_objects, all_sparse_sinograms)

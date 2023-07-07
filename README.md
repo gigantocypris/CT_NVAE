@@ -100,31 +100,6 @@ To exit the conda environment:
 conda deactivate
 ```
 
-# Covid CT Dataset Preparation
-
-Activate the `tomopy` environment:
-```
-module load python
-conda activate tomopy
-```
-
-We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19). The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. 
-
-After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the `computed_tomography/preprocess_real_data.py` script provided to accomplish this.
-
-'''
-python $CT_NVAE_PATH/computed_tomography/preprocess_real_data/preprocess.py {SOURCE_DIR} {TARGET_DIR} -v
-'''
-
-where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Dataset and `{TARGET_DIR}` is the directory where you want to save the preprocessed data. The `-v` flag is optional and will print out `.png` visualizations of all the images and sinograms in the dataset. Only use the `-v` flag for a small dataset.
-
-
-
-scp (with sshproxy) command to upload a folder to NERSC:
-```
-scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan
-```
-
 # Synthetic Dataset Preparation
 
 ## Small Dataset Preparation on an Interactive Node
@@ -330,6 +305,47 @@ To run a batch job on NERSC:
 ```
 sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 ```
+
+
+## Covid CT Dataset Preparation
+
+Activate the `tomopy` environment and enter in the working directory:
+```
+module load python
+conda activate tomopy
+cd $WORKING_DIR
+```
+
+We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19). The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. On NERSC, the raw files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/real_data/raw`.
+
+Download `.gz` files from the dataset to a folder `{SOURCE_DIR}` and create an environment variable. Also create an environment variable for the folder `{TARGET_DIR}` where you want to save the preprocessed data.
+
+```
+export SOURCE_DIR={SOURCE_DIR}
+export TARGET_DIR={TARGET_DIR}
+```
+
+After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the `computed_tomography/preprocess_real_data.py` script provided to accomplish this.
+```
+python $CT_NVAE_PATH/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -v
+```
+where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Dataset and `{TARGET_DIR}` is the directory where you want to save the preprocessed data. The `-v` flag is optional and will print out `.png` visualizations of all the images and sinograms in the dataset. Only use the `-v` flag for a small dataset.
+
+TODO: Split the data into train/valid sets and split each set into different ranks.
+
+Create the dataset with the `create_real_dataset.py` script:
+```
+python $CT_NVAE_PATH/computed_tomography/create_real_dataset.py --dir $TARGET_DIR -n 2 -d train
+python $CT_NVAE_PATH/computed_tomography/create_real_dataset.py --dir $TARGET_DIR -n 1 -d valid
+```
+
+### Notes
+
+scp (with sshproxy) command to upload a folder to NERSC:
+```
+scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan
+```
+
 ## Resources:
 
 [P-VAE papers](https://arxiv.org/abs/2211.00002)

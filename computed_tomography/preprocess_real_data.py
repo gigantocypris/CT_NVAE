@@ -19,6 +19,10 @@ def preprocess(source_directory, destination_directory, visualize_output):
     # Create the desination_directory if it doesn't exist
     os.makedirs(destination_directory, exist_ok=True)
 
+    # Save the projection angles
+    theta_file_path = f"{destination_directory}/theta.npy"
+    np.save(theta_file_path, theta)
+
     # Get the list of .gz files in the source directory
     gz_files = [filename for filename in os.listdir(source_directory) if filename.endswith('.gz')]
 

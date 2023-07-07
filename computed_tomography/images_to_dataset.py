@@ -10,7 +10,7 @@ from mpi4py import MPI
 
 def main(rank):
     parser = argparse.ArgumentParser(description='Get command line args')
-    parser.add_argument('-n',dest='num_truncate', type=int, help='number of points', default=64)
+    parser.add_argument('-n',dest='num_truncate', type=int, help='number of 2D examples', default=64)
     parser.add_argument('-d',dest='dataset_type', type=str, help='dataset type, either train or valid')
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
     args = parser.parse_args()
@@ -37,17 +37,6 @@ def main(rank):
     # Create sinograms all at once
     x_train_sinograms = create_sinogram(x_train_imgs, theta, pad=pad) # shape is truncate_dataset x num_angles x num_proj_pix
    
-    """
-    # Create sinograms one at a time
-    x_train_sinograms = []
-    for b in range(x_train_imgs.shape[0]):
-        print(b)
-        img = x_train_imgs[b]
-        img = np.expand_dims(img, axis=0)
-        sinogram = create_sinogram(img, theta, pad=pad)
-        x_train_sinograms.append(np.expand_dims(sinogram, axis=0))
-    x_train_sinograms = np.concatenate(x_train_sinograms, axis=0) # shape is truncate_dataset x num_angles x num_proj_pix
-    """
 
     num_proj_pix = x_train_sinograms.shape[-1]
     
@@ -74,7 +63,7 @@ def main(rank):
     np.save(save_path + '/' + args.dataset_type + '_masks_' + str(rank) + '.npy', all_mask_inds)
     np.save(save_path + '/' + args.dataset_type + '_reconstructions_' + str(rank) + '.npy', all_reconstructed_objects)
     np.save(save_path + '/' + args.dataset_type + '_sparse_sinograms_' + str(rank) + '.npy', all_sparse_sinograms)
-
+    
 if __name__ == '__main__':
     comm = MPI.COMM_WORLD
 

@@ -6,7 +6,7 @@
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:03:00
+#SBATCH -t 00:05:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH -o %j.out
@@ -20,9 +20,9 @@ conda activate CT_NVAE
 
 export EXPR_ID=$1
 
-export BATCH_SIZE=8
+export BATCH_SIZE=$2
 export EPOCHS=100
-export NUM_LATENT_SCALES=$2
+export NUM_LATENT_SCALES=2
 export NUM_GROUPS_PER_SCALE=10
 export NUM_POSTPROCESS_CELLS=2
 export NUM_PREPROCESS_CELLS=2

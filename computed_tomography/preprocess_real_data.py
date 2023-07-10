@@ -1,6 +1,8 @@
 # Created by: Hojune Kim
 # Date: July 5, 2023
 # Purpose: Unpack .gz files and run create_sinogram.py on each .nii file
+# Last update: July 10, 2023 by Gary Chen
+# Updates: 
 
 # Usage: python preprocess.py <source_dir> <target_dir>
 # Example: python preprocess.py /home/hojune/download/covid /home/hojune/real_data/raw
@@ -47,16 +49,18 @@ def preprocess(source_directory, destination_directory, visualize_output):
     print("Now running create_sinogram.py on each .nii file...")
 
 
-    # Get the list of .nii files in the destination directory
-    nii_files = [filename for filename in os.listdir(destination_directory) if filename.endswith('.nii')]
+    # Get the list of .nii files in the source_directory directory
+    nii_files = [filename for filename in os.listdir(source_directory) if filename.endswith('.nii')]
+    print(f'nii_files has shape {len(nii_files)}')
 
-    # Iterate over files in the destination directory with progress
+    # Iterate over files in the source_directory directory with progress
     for i, filename in enumerate(nii_files):
         # Create the full path to the .nii file
-        nib_file_path = os.path.join(destination_directory, filename)
+        nib_file_path = os.path.join(source_directory, filename)
 
         # Call create_sinogram function with the specified parameters
         data, proj, file_name = create_sinogram_nib(nib_file_path, destination_directory, theta)
+        print(f'creating sinograms {i} in nii files')
         if visualize_output:
             visualize(data, proj, file_name, destination_directory)
 

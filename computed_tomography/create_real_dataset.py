@@ -31,11 +31,14 @@ def main(rank):
     all_sparse_sinograms = []
 
     sinogram_files = np.sort(glob.glob(sub_dir + '/*_sinogram.npy'))
+    print(f'sub_dir is {sub_dir}')
+    print(f'sinogram_files has {sinogram_files}')
 
     for i in range(truncate_dataset):
         filepath_sino = sinogram_files[i] # sinogram filepath
+        print(f'filepath_sino is {filepath_sino}')
         filepath_gt = sinogram_files[i][:-13] + '.npy' # ground truth filepath
-        
+        print(f'filepath_gt is {filepath_gt}')
         x_train = np.load(filepath_gt)
         x_train_sinogram = np.load(filepath_sino)
 

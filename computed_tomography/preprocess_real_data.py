@@ -1,12 +1,12 @@
 # Created by: Hojune Kim
 # Date: July 5, 2023
 # Purpose: Unpack .gz files and run create_sinogram.py on each .nii file
-# Last update: July 10, 2023 by Gary Chen
-# Updates: 
+# Last update: July 11, 2023 by Gary Chen
+# Updates: fixed typos in source and destination directory around lines 50-65 and also the terminal command examples
 
 # Usage: python preprocess.py <source_dir> <target_dir>
-# Example: python preprocess.py /home/hojune/download/covid /home/hojune/real_data/raw
-# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SCRATCH/CT-Covid-19 $SCRATCH/CT-Covid-19-processed -v
+# Example: python preprocess.py /global/cfs/cdirs/m3562/users/hkim/real_data/raw /global/cfs/cdirs/m3562/users/hkim/real_data/pre_processed
+# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -v
 
 import os
 import gzip

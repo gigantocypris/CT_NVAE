@@ -150,14 +150,15 @@ def main(args):
 def train(train_queue, model, cnn_optimizer, grad_scalar, 
           global_step, warmup_iters, writer, logging,
           ):
+
     alpha_i = utils.kl_balancer_coeff(num_scales=model.num_latent_scales,
                                       groups_per_scale=model.groups_per_scale, fun='square')
     nelbo = utils.AvgrageMeter()
     model.train()
     for step, x_full in enumerate(train_queue):
 
-        if args.dataset == 'foam':
-            # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
+        if args.dataset == 'foam' or 'covid':
+            # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix, ground_truth)
             x = x_full[0]
             # import matplotlib.pyplot as plt
             # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
@@ -228,6 +229,14 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 plt.imshow(x_tiled[0].detach().cpu().numpy())
                 plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
 
+                ground_truth = x_full[6]
+                ground_truth = ground_truth[:n*n,None]
+                ground_truth_tiled = utils.tile_image(ground_truth, n)
+                writer.add_image('ground truth', ground_truth_tiled, global_step)
+                plt.figure()
+                plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
+                plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
+
                 output_img = output.mean if isinstance(output, torch.distributions.bernoulli.Bernoulli) else output.sample()
                 output_img = output_img[:n*n]
                 output_img = output_img[:,None,:,:]
@@ -254,6 +263,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 plt.figure()
                 plt.imshow(phantom_tiled[0].detach().cpu().numpy())
                 plt.savefig(args.save + '/phantom_reconstruction_' + str(global_step)+'.png')
+                plt.close('all')
 
             # norm
             writer.add_scalar('train/norm_loss', norm_loss, global_step)
@@ -294,7 +304,7 @@ def test(valid_queue, model, num_samples, args, logging):
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
     for step, x_full in enumerate(valid_queue):
-        if args.dataset == 'foam':
+        if args.dataset == 'foam' or 'covid':
             # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
             x = x_full[0]
             # import matplotlib.pyplot as plt
@@ -406,11 +416,14 @@ if __name__ == '__main__':
     parser.add_argument('--save', type=str, default='exp',
                         help='id used for storing intermediate results')
     # data
-    parser.add_argument('--dataset', type=str, default='mnist',
-                        choices=['cifar10', 'mnist', 'omniglot', 'celeba_64', 'celeba_256',
-                                 'imagenet_32', 'ffhq', 'lsun_bedroom_128', 'stacked_mnist',
-                                 'lsun_church_128', 'lsun_church_64', 'foam'],
+    parser.add_argument('--dataset', type=str, default='foam',
                         help='which dataset to use')
+    """
+    Default dataset choices:
+    'cifar10', 'mnist', 'omniglot', 'celeba_64', 'celeba_256',
+    'imagenet_32', 'ffhq', 'lsun_bedroom_128', 'stacked_mnist',
+    'lsun_church_128', 'lsun_church_64'
+    """
     parser.add_argument('--data', type=str, default='/tmp/nasvae/data',
                         help='location of the data corpus')
     # optimization

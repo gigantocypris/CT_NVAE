@@ -161,7 +161,7 @@ To generate sinograms (project images) from the foam images, create sparse sinog
 srun -n 1 python $CT_NVAE_PATH/computed_tomography/images_to_dataset.py -n {N} -d {DATASET_TYPE}
 ```
 
-The `{DATASET_TYPE}` is either `train` or `valid`, and `{N}` is the number of images to process, starting from the first image of the dataset. Complete the above for both `train` and `valid`.
+The `{DATASET_TYPE}` is either `train` or `valid`, and `{N}` is the number of images to process per rank (in this case there is only 1 rank), starting from the first image of the dataset. Complete the above for both `train` and `valid`.
 
 
 ## Large Dataset Preparation
@@ -339,11 +339,83 @@ python $CT_NVAE_PATH/computed_tomography/create_real_dataset.py --dir $TARGET_DI
 python $CT_NVAE_PATH/computed_tomography/create_real_dataset.py --dir $TARGET_DIR -n 1 -d valid
 ```
 
+Stitch the datasets from all ranks together:
+```
+python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 1 --dataset_type train --img_type covid
+python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 1 --dataset_type valid --img_type covid
+```
+
+Activate the `CT_NVAE` environment and enter your working directory:
+```
+```
+conda deactivate
+module load python
+conda activate CT_NVAE
+cd $WORKING_DIR
+```
+
+Train the CT_NVAE on the Covid dataset:
+TODO: directions and batch script
+```
+If on NERSC, start an interactive session:
+```
+salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+```
+
+Export the following variables:
+```
+export EXPR_ID=test_0000_covid
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
+export CHECKPOINT_DIR=checkpts
+```
+
+If on NERSC, `MASTER_ADDR` should be set as follows:
+```
+export MASTER_ADDR=$(hostname)
+```
+
+Otherwise:
+```
+export MASTER_ADDR=localhost
+```
+
+Create an environmental variable `{CT_NVAE_PATH}` if you haven't yet or you started a new session:
+```
+export CT_NVAE_PATH={CT_NVAE_PATH}
+```
+
+DEBUG FROM HERE
+Train with the COVID dataset, on a single GPU to test that the code is working:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset covid --batch_size 8 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
+Test a longer example on 4 GPUs:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset covid --batch_size 8 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
+Launch Tensorboard to view results:
+```
+tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
+```
+
 ### Notes
 
 scp (with sshproxy) command to upload a folder to NERSC:
 ```
 scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan
+```
+
+Commands run:
+```
+export NERSC_GPU_ALLOCATION=m3562_g
+export NERSC_CPU_ALLOCATION=m3562
+
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $SCRATCH/output_CT_NVAE
+python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 2 -d train
+python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 1 -d valid
 ```
 
 ## Resources:

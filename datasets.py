@@ -115,10 +115,11 @@ def load_omniglot(data_dir):
 
 class Foam(Dataset):
     def __init__(self, sparse_recons, sparse_sino, masks, theta, 
-                 x_size, y_size, num_proj_pix,
+                 x_size, y_size, num_proj_pix, ground_truth,
                  ):
         self.sparse_recons = sparse_recons[:,None,:,:]
         self.sparse_sino = sparse_sino
+        self.ground_truth = ground_truth
         self.masks = masks
         self.theta = theta
         self.x_size = x_size
@@ -134,7 +135,8 @@ class Foam(Dataset):
         x_size = torch.from_numpy(self.x_size).float()
         y_size = torch.from_numpy(self.y_size).float()
         num_proj_pix = torch.from_numpy(self.num_proj_pix).float()
-        return (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
+        ground_truth = torch.from_numpy(self.ground_truth[index]).float()
+        return (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix, ground_truth)
 
     def __len__(self):
         return len(self.sparse_recons)
@@ -169,40 +171,6 @@ def get_loaders_eval(dataset, args):
             root=args.data, train=True, download=True, transform=train_transform)
         valid_data = dset.MNIST(
             root=args.data, train=False, download=True, transform=valid_transform)
-    elif dataset == 'foam':
-        num_classes = 0
-
-        # train_transform, valid_transform = _data_transforms_foam(args)
-        dataset_dir = os.environ['DATASET_DIR']
-        train_reconstruction = np.load(dataset_dir + '/dataset_foam/train_reconstructions.npy')
-        valid_reconstruction = np.load(dataset_dir + '/dataset_foam/valid_reconstructions.npy')
-
-        train_sparse_sinogram = np.load(dataset_dir + '/dataset_foam/train_sparse_sinograms.npy')
-        valid_sparse_sinogram = np.load(dataset_dir + '/dataset_foam/valid_sparse_sinograms.npy')
-
-        train_mask = np.load(dataset_dir + '/dataset_foam/train_masks.npy')
-        valid_mask = np.load(dataset_dir + '/dataset_foam/valid_masks.npy')
-
-
-        train_x_size = np.load(dataset_dir + '/dataset_foam/train_x_size.npy')
-        valid_x_size = np.load(dataset_dir + '/dataset_foam/valid_x_size.npy')
-
-        train_y_size = np.load(dataset_dir + '/dataset_foam/train_y_size.npy')
-        valid_y_size = np.load(dataset_dir + '/dataset_foam/valid_y_size.npy')
-
-        train_num_proj_pix = np.load(dataset_dir +  '/dataset_foam/train_num_proj_pix.npy')
-        valid_num_proj_pix = np.load(dataset_dir + '/dataset_foam/valid_num_proj_pix.npy')
-
-        train_theta = np.load(dataset_dir + '/dataset_foam/train_theta.npy')
-        valid_theta = np.load(dataset_dir + '/dataset_foam/valid_theta.npy')
-
-        train_data = Foam(train_reconstruction, train_sparse_sinogram, train_mask, train_theta,
-                          train_x_size, train_y_size, train_num_proj_pix,
-                          )
-        valid_data = Foam(valid_reconstruction, valid_sparse_sinogram, valid_mask, valid_theta,
-                          valid_x_size, valid_y_size, valid_num_proj_pix,
-                          )
-        
     elif dataset == 'stacked_mnist':
         num_classes = 1000
         train_transform, valid_transform = _data_transforms_stacked_mnist(args)
@@ -267,7 +235,42 @@ def get_loaders_eval(dataset, args):
         train_data = LMDBDataset(root=args.data, name='ffhq', train=True, transform=train_transform)
         valid_data = LMDBDataset(root=args.data, name='ffhq', train=False, transform=valid_transform)
     else:
-        raise NotImplementedError
+        num_classes = 0
+
+        # train_transform, valid_transform = _data_transforms_foam(args)
+        dataset_dir = os.environ['DATASET_DIR']
+
+        train_ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/train_ground_truth.npy')
+        valid_ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/valid_ground_truth.npy')
+
+        train_reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/train_reconstructions.npy')
+        valid_reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/valid_reconstructions.npy')
+
+        train_sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/train_sparse_sinograms.npy')
+        valid_sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/valid_sparse_sinograms.npy')
+
+        train_mask = np.load(dataset_dir + '/dataset_' + dataset + '/train_masks.npy')
+        valid_mask = np.load(dataset_dir + '/dataset_' + dataset + '/valid_masks.npy')
+
+
+        train_x_size = np.load(dataset_dir + '/dataset_' + dataset + '/train_x_size.npy')
+        valid_x_size = np.load(dataset_dir + '/dataset_' + dataset + '/valid_x_size.npy')
+
+        train_y_size = np.load(dataset_dir + '/dataset_' + dataset + '/train_y_size.npy')
+        valid_y_size = np.load(dataset_dir + '/dataset_' + dataset + '/valid_y_size.npy')
+
+        train_num_proj_pix = np.load(dataset_dir +  '/dataset_' + dataset + '/train_num_proj_pix.npy')
+        valid_num_proj_pix = np.load(dataset_dir + '/dataset_' + dataset + '/valid_num_proj_pix.npy')
+
+        train_theta = np.load(dataset_dir + '/dataset_' + dataset + '/train_theta.npy')
+        valid_theta = np.load(dataset_dir + '/dataset_' + dataset + '/valid_theta.npy')
+
+        train_data = Foam(train_reconstruction, train_sparse_sinogram, train_mask, train_theta,
+                          train_x_size, train_y_size, train_num_proj_pix, train_ground_truth,
+                          )
+        valid_data = Foam(valid_reconstruction, valid_sparse_sinogram, valid_mask, valid_theta,
+                          valid_x_size, valid_y_size, valid_num_proj_pix, valid_ground_truth,
+                          )
 
     train_sampler, valid_sampler = None, None
     if args.distributed:

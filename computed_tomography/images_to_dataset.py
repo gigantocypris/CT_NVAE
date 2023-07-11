@@ -43,6 +43,7 @@ def main(rank):
     x_train_sinograms[x_train_sinograms<0]=0
     
     np.save(save_path + '/' + args.dataset_type + '_sinograms_' + str(rank) + '.npy', x_train_sinograms)
+    np.save(save_path + '/' + args.dataset_type + '_ground_truth_' + str(rank) + '.npy', x_train_imgs)
     np.save(save_path + '/' + args.dataset_type + '_theta_' + str(rank) + '.npy', theta)
     np.save(save_path + '/' + args.dataset_type + '_num_proj_pix_' + str(rank) + '.npy', num_proj_pix)
 

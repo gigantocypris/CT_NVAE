@@ -245,6 +245,7 @@ def reconstruction_loss(decoder, x, dataset, crop=False):
     if crop:
         recon = recon[:, :, 2:30, 2:30]
     
+    breakpoint()
     if isinstance(decoder, DiscMixLogistic) or dataset in {'foam'}:
         return - torch.sum(recon, dim=[1, 2])    # summation over RGB is done.
     else:
@@ -314,12 +315,10 @@ def num_output(dataset):
         return 3 * size * size
     elif dataset == 'ffhq':
         return 3 * 256 * 256
-    elif dataset == 'foam':
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_foam/train_num_proj_pix.npy'))
-        return size * size
     else:
-        raise NotImplementedError
+        dataset_dir = os.environ['DATASET_DIR']
+        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+        return size * size
 
 
 def get_input_size(dataset):
@@ -332,12 +331,11 @@ def get_input_size(dataset):
         return size
     elif dataset == 'ffhq':
         return 256
-    elif dataset == 'foam':
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_foam/train_num_proj_pix.npy'))
-        return size
     else:
-        raise NotImplementedError
+        dataset_dir = os.environ['DATASET_DIR']
+        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+        return size
+
 
 
 def pre_process(x, num_bits):

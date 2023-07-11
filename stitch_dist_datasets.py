@@ -28,7 +28,8 @@ x_size = []
 y_size = []
 
 for rank in range(num_ranks):
-    ground_truth.append(np.load(img_type + '_' + dataset_type + '_' + str(rank) + '.npy'))
+    # ground_truth.append(np.load(img_type + '_' + dataset_type + '_' + str(rank) + '.npy'))
+    ground_truth.append(np.load(dataset_folder + '/'+ dataset_type + '_ground_truth' + '_' + str(rank) + '.npy'))
     masks.append(np.load(dataset_folder + '/' + dataset_type + '_masks' + '_' + str(rank) + '.npy'))
     sparse_sinograms.append(np.load(dataset_folder + '/'+ dataset_type + '_sparse_sinograms' + '_' + str(rank) + '.npy'))
     reconstructions.append(np.load(dataset_folder + '/'+ dataset_type + '_reconstructions' + '_' + str(rank) + '.npy'))
@@ -54,7 +55,8 @@ assert np.all(theta == theta[0])
 assert np.all(x_size == x_size[0])
 assert np.all(y_size == y_size[0])
 
-np.save(str(img_type)  + '_' + str(dataset_type) + '.npy',ground_truth)
+# np.save(str(img_type)  + '_' + str(dataset_type) + '.npy',ground_truth)
+np.save(dataset_folder + '/' + str(dataset_type) + '_ground_truth.npy',ground_truth)
 np.save(dataset_folder + '/' + str(dataset_type) + '_masks.npy',masks)
 np.save(dataset_folder + '/' + str(dataset_type) + '_sparse_sinograms.npy',sparse_sinograms)
 np.save(dataset_folder + '/' + str(dataset_type) + '_reconstructions.npy',reconstructions)

@@ -13,7 +13,7 @@ if __name__ == '__main__':
     theta = np.linspace(0, np.pi, 180, endpoint=False) # projection angles
 
     # get a phantom
-    img = np.load('foam_train.npy')[0:3]
+    img = np.load('foam_train_0.npy')[0:3]
 
     # get the sinogram with tomopy
     proj_0 = create_sinogram(img, theta, pad=True)

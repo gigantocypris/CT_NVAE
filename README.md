@@ -253,7 +253,7 @@ conda activate CT_NVAE
 
 Navigate to the working directory and create the `checkpts` directory`:
 ```
-cd {WORKING_DIR}
+cd $WORKING_DIR
 mkdir checkpts
 ```
 
@@ -318,7 +318,7 @@ cd $WORKING_DIR
 
 We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19). The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. On NERSC, the raw files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/real_data/raw`.
 
-Download `.gz` files from the dataset to a folder `{SOURCE_DIR}` and create an environment variable. Also create an environment variable for the folder `{TARGET_DIR}` where you want to save the preprocessed data.
+Download `.gz` files from the dataset to a folder `{SOURCE_DIR}` and create an environment variable. Also create an environment variable for the folder `{TARGET_DIR}` where you want to save the preprocessed data. `{TARGET_DIR}` should be in the format `dataset_{DESCRIPTOR}` where `{DESCRIPTOR}` is a string describing the dataset (e.g. `covid` for the COVID dataset). The `TARGET_DIR` should be in the working directory.
 
 ```
 export SOURCE_DIR={SOURCE_DIR}
@@ -345,17 +345,23 @@ python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 1 --dataset_type train 
 python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 1 --dataset_type valid --img_type covid
 ```
 
-Activate the `CT_NVAE` environment and enter your working directory:
+## Train the CT_NVAE on the Covid-19 dataset
+
+If using NERSC, load Python:
 ```
-```
-conda deactivate
 module load python
+```
+
+Activate the `CT_NVAE` environment and enter your working directory:
+
+```
 conda activate CT_NVAE
 cd $WORKING_DIR
 ```
 
-Train the CT_NVAE on the Covid dataset:
-TODO: directions and batch script
+Create the `checkpts` directory`:
+```
+mkdir -p checkpts
 ```
 If on NERSC, start an interactive session:
 ```
@@ -399,24 +405,9 @@ Launch Tensorboard to view results:
 ```
 tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 ```
+## TODO: directions and batch script for running Covid dataset on NERSC
 
-### Notes
-
-scp (with sshproxy) command to upload a folder to NERSC:
-```
-scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan
-```
-
-Commands run:
-```
-export NERSC_GPU_ALLOCATION=m3562_g
-export NERSC_CPU_ALLOCATION=m3562
-
-export CT_NVAE_PATH=$SCRATCH/CT_NVAE
-cd $SCRATCH/output_CT_NVAE
-python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 2 -d train
-python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 1 -d valid
-```
+XXX
 
 ## Resources:
 

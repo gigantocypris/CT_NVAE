@@ -63,7 +63,7 @@ def main(rank):
     num_proj_pix = x_train_sinograms.shape[-1]
     
     np.save(args.dir + '/' + args.dataset_type + '_sinograms_' + str(rank) + '.npy', x_train_sinograms)
-    np.save(args.dir + '/' + args.dataset_type + '_ground_truth_' + str(rank) + '.npy', x_train)
+    np.save(args.dir + '/' + args.dataset_type + '_ground_truth_' + str(rank) + '.npy', x_train_imgs)
     np.save(args.dir + '/' + args.dataset_type + '_theta_' + str(rank) + '.npy', theta)
     np.save(args.dir + '/' + args.dataset_type + '_num_proj_pix_' + str(rank) + '.npy', num_proj_pix)
 

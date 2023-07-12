@@ -31,3 +31,21 @@ python $CT_NVAE_PATH/stitch_dist_datasets.py --num_ranks 4 --dataset_type valid
 
 # Running the loop
 . $CT_NVAE_PATH/scripts/loop_jobs.sh
+
+### Notes on Covid dataset
+
+scp (with sshproxy) command to upload a folder to NERSC:
+```
+scp -r -O /Users/vganapa1/Downloads/CT-Covid-19 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan
+```
+
+Commands run:
+```
+export NERSC_GPU_ALLOCATION=m3562_g
+export NERSC_CPU_ALLOCATION=m3562
+
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $SCRATCH/output_CT_NVAE
+python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 2 -d train
+python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset_covid -n 1 -d valid
+```

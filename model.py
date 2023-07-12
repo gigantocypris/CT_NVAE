@@ -202,7 +202,7 @@ class AutoEncoder(nn.Module):
     def init_stem(self):
         """Initial conversion of number of channels"""
         Cout = self.num_channels_enc
-        Cin = 1 if self.dataset in {'mnist', 'omniglot', 'foam'} else 3
+        Cin = 1 if self.dataset in {'mnist', 'omniglot', 'foam', 'covid'} else 3
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 
@@ -334,10 +334,11 @@ class AutoEncoder(nn.Module):
 
     def init_image_conditional(self, mult):
         C_in = int(self.num_channels_dec * mult)
-        if self.dataset in {'mnist', 'omniglot', 'foam'}:
+        if self.dataset in {'mnist', 'omniglot'}:
             C_out = 1
         elif self.dataset in {'foam'}:
             C_out = 1 # XXX
+        elif self.dataset in {'covid'}:
         else:
             if self.num_mix_output == 1:
                 C_out = 2 * 3
@@ -496,7 +497,7 @@ class AutoEncoder(nn.Module):
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None):
         if self.dataset in {'mnist', 'omniglot'}:
             return Bernoulli(logits=logits)
-        elif self.dataset in {'foam'}:
+        elif self.dataset in {'foam', 'covid'}:
 
             # process the output of the decoder into a distribution
             # sample the distribution to get the phantom

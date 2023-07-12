@@ -303,13 +303,39 @@ tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 
 ## Running Batch Jobs on NERSC
 
-To run a batch job on NERSC:
+To run batch jobs on NERSC:
+
+Set the environmental variable 'MyEmail' to receive batch job updates:
 ```
-sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
+export MyEmail={Email address to receive job status}
+```
+Change the permissions of the loop jobs shell script to make it executable on the terminal:
+```
+chmod +x $CT_NVAE_PATH/scripts/loop_jobs_batches.sh
+```
+Running Batch Jobs; each job runs on an exclusive GPU node with 4 GPUs:
+```
+$CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
 ```
 
-TODO: Add instructions for using Gary's scripts
+The default batch_sizes=8. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
+```
+batch_sizes="4 8 16 32" $CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
+```
+The environmental variable 'batch_sizes' can be changed based on your preference for the duration of 'loop_jobs_batches.sh'
 
+Check job queue status and Job ID with command:
+```
+squeue -u $USER
+```
+All jobs can be canceled with command:
+```
+squeue -u $USER
+```
+Specific jobs can be canceled with command:
+```
+scancel ${JobID1} ${JobID2}
+```
 ## Covid CT Dataset Preparation
 
 Activate the `tomopy` environment and enter in the working directory:

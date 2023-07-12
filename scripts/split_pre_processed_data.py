@@ -1,5 +1,5 @@
 # Created by: Gary Chen
-# Date: July 11, 2023
+# Date: July 12, 2023
 # Purpose: evenly split preprocessed sinogramsm and ground truth to into a valid and a train group; each group contains num_ranks ranks
 # input directories to the preprocessed sinograms and ground truths
 # Process: 1) remove the outlier files and the duplicates and 2) split the cleaned up files into proper folders

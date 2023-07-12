@@ -318,7 +318,7 @@ Running Batch Jobs; each job runs on an exclusive GPU node with 4 GPUs:
 $CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
 ```
 
-The default batch_sizes=8. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
+The default batch_sizes='8'. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
 ```
 batch_sizes="4 8 16 32" $CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
 ```
@@ -330,7 +330,7 @@ squeue -u $USER
 ```
 All jobs can be canceled with command:
 ```
-squeue -u $USER
+scancel -u $USER
 ```
 Specific jobs can be canceled with command:
 ```
@@ -362,7 +362,7 @@ where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Da
 
 Split the data into train/valid sets:
 ```
-python split_pre_processed_data.py --dir $TARGET_DIR --dest $TARGET_DIR --num_ranks 1 --num_train 2 --num_valid 1
+python $CT_NVAE_PATH/scripts/split_pre_processed_data.py --dir $TARGET_DIR --dest $TARGET_DIR --num_ranks 1 --num_train 2 --num_valid 1
 ```
 
 Create the dataset with the `create_real_dataset.py` script:

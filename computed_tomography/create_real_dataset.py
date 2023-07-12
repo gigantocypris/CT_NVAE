@@ -11,7 +11,7 @@ from mpi4py import MPI
 
 def main(rank):
     parser = argparse.ArgumentParser(description='Get command line args')
-    parser.add_argument('--dir', help='base directory containing .npy files of the ground truth and sinograms')
+    parser.add_argument('--dir', help='base directory containing .npy files of the ground truth, sinograms, and theta')
     parser.add_argument('-n',dest='num_truncate', type=int, help='number of 3D examples', default=2)
     parser.add_argument('-d',dest='dataset_type', type=str, help='dataset type, either train or valid')
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
@@ -19,7 +19,7 @@ def main(rank):
 
     ### INPUT ###
     sub_dir = args.dir + '/' + args.dataset_type + '/' + str(rank)
-    theta = np.load(args.dir + '/theta.npy') # projection angles
+    theta = np.load(args.dir + 'theta.npy') # projection angles
     truncate_dataset = args.num_truncate
     num_sparse_angles = 10 # number of angles to image per sample (dose remains the same)
     random = True # If True, randomly pick angles
@@ -31,13 +31,17 @@ def main(rank):
     all_sparse_sinograms = []
 
     sinogram_files = np.sort(glob.glob(sub_dir + '/*_sinogram.npy'))
+    print(f'sub_dir is {sub_dir}')
+    #print(f'sinogram_files has {sinogram_files}')
 
     for i in range(truncate_dataset):
         filepath_sino = sinogram_files[i] # sinogram filepath
+        print(f'filepath_sino is {filepath_sino}')
         filepath_gt = sinogram_files[i][:-13] + '.npy' # ground truth filepath
-        
+        print(f'filepath_gt is {filepath_gt}')
         x_train = np.load(filepath_gt)
         x_train_sinogram = np.load(filepath_sino)
+        print(f'x_train_sinogram has shape {x_train_sinogram.shape}')
 
         # make sparse sinogram and reconstruct
         sparse_angles, reconstruction, sparse_sinogram = process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 

@@ -1,10 +1,12 @@
 # Created by: Hojune Kim
 # Date: July 5, 2023
 # Purpose: Unpack .gz files and run create_sinogram.py on each .nii file
+# Last update: July 11, 2023 by Gary Chen
+# Updates: fixed typos in source and destination directory around lines 50-65 and also the terminal command examples
 
 # Usage: python preprocess.py <source_dir> <target_dir>
-# Example: python preprocess.py /home/hojune/download/covid /home/hojune/real_data/raw
-# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SCRATCH/CT-Covid-19 $SCRATCH/CT-Covid-19-processed -v
+# Example: python preprocess.py /global/cfs/cdirs/m3562/users/hkim/real_data/raw /global/cfs/cdirs/m3562/users/hkim/real_data/pre_processed
+# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -v
 
 import os
 import gzip
@@ -47,16 +49,18 @@ def preprocess(source_directory, destination_directory, visualize_output):
     print("Now running create_sinogram.py on each .nii file...")
 
 
-    # Get the list of .nii files in the destination directory
-    nii_files = [filename for filename in os.listdir(destination_directory) if filename.endswith('.nii')]
+    # Get the list of .nii files in the source_directory directory
+    nii_files = [filename for filename in os.listdir(source_directory) if filename.endswith('.nii')]
+    print(f'nii_files has shape {len(nii_files)}')
 
-    # Iterate over files in the destination directory with progress
+    # Iterate over files in the source_directory directory with progress
     for i, filename in enumerate(nii_files):
         # Create the full path to the .nii file
-        nib_file_path = os.path.join(destination_directory, filename)
+        nib_file_path = os.path.join(source_directory, filename)
 
         # Call create_sinogram function with the specified parameters
         data, proj, file_name = create_sinogram_nib(nib_file_path, destination_directory, theta)
+        print(f'creating sinograms {i} in nii files')
         if visualize_output:
             visualize(data, proj, file_name, destination_directory)
 

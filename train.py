@@ -160,6 +160,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
         if args.dataset == 'foam' or 'covid':
             # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix, ground_truth)
             x = x_full[0]
+
             # import matplotlib.pyplot as plt
             # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
 

@@ -396,7 +396,6 @@ Create an environmental variable `{CT_NVAE_PATH}` if you haven't yet or you star
 export CT_NVAE_PATH={CT_NVAE_PATH}
 ```
 
-DEBUG FROM HERE
 Train with the COVID dataset, on a single GPU to test that the code is working:
 ```
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset covid --batch_size 8 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1

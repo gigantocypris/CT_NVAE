@@ -1,6 +1,6 @@
 # Created by: Gary Chen
 # Date: July 11, 2023
-# Purpose: evenly split preprocessed sinogramsm and ground truth to into a test and a train group; each group contains 4 ranks
+# Purpose: evenly split preprocessed sinogramsm and ground truth to into a valid and a train group; each group contains num_ranks ranks
 # input directories to the preprocessed sinograms and ground truths
 # Process: 1) remove the outlier files and the duplicates and 2) split the cleaned up files into proper folders
 
@@ -12,11 +12,11 @@ import shutil
 
 def main():
     parser = argparse.ArgumentParser(description='Get command line args')
-    parser.add_argument('--dir', help='base directory where ground truth and sinogram npy stay')
-    parser.add_argument('--dest', help='dest directory where split data stay')
-    parser.add_argument('--rank_num', type=int, help='number of ranks', default=4)
+    parser.add_argument('--dir', help='base directory where ground truth and sinogram npy are')
+    parser.add_argument('--dest', help='dest directory where split data are')
+    parser.add_argument('--num_ranks', type=int, help='number of ranks', default=4)
     parser.add_argument('--train', type=float, help='train ratio', default=0.8)
-    parser.add_argument('--test', type=float, help='test ratio', default=0.2)
+    parser.add_argument('--valid', type=float, help='valid ratio', default=0.2)
     args = parser.parse_args()
 
     # Load ground truth, sinograms, and hyperparameters
@@ -62,62 +62,60 @@ def main():
     
     print('Successfully cleanup the pre-processed data')
     
-    rank_num = args.rank_num
-    assert rank_num == 4
+    num_ranks = args.num_ranks
     train = args.train
-    test = args.test
-    assert train == 0.8
-    assert test == 0.2
+    valid = args.valid
 
     # Create all the necessary directories to store the splitted arrays
     train_dir = os.path.join(dest_dir, 'train')
-    test_dir = os.path.join(dest_dir, 'test')
+    valid_dir = os.path.join(dest_dir, 'valid')
     os.makedirs(train_dir, exist_ok=True)
-    os.makedirs(test_dir, exist_ok=True)
-    for i in range(rank_num):
+    os.makedirs(valid_dir, exist_ok=True)
+    for i in range(num_ranks):
         train_rank_dir = os.path.join(train_dir, f'{i}')
-        test_rank_dir = os.path.join(test_dir, f'{i}')
+        valid_rank_dir = os.path.join(valid_dir, f'{i}')
         os.makedirs(train_rank_dir, exist_ok=True)
-        os.makedirs(test_rank_dir, exist_ok=True)
+        os.makedirs(valid_rank_dir, exist_ok=True)
 
-    # Splitting the sinograms and gt into train and test group based on 8:2 ratio
-    # 382 ground truths and 382 sinograms into 4 files (sino_train, sino_test, gt_train, and gt_test)
+    # Splitting the sinograms and gt into train and valid group based on 8:2 ratio
+    # 382 ground truths and 382 sinograms into 4 files (sino_train, sino_valid, gt_train, and gt_valid)
     # train set has 306 ground truths and 306 sinograms
-    # test set has 76 ground truths and 76 sinograms
+    # valid set has 76 ground truths and 76 sinograms
 
     cleaned_file_num = len(sinogram_file_dirs)
     idx = int(cleaned_file_num*train)
-    sino_train, sino_test = np.split(sinogram_file_dirs, [idx])
-    gt_train, gt_test = np.split(ground_truth_file_dirs, [idx])
+    sino_train, sino_valid = np.split(sinogram_file_dirs, [idx])
+    gt_train, gt_valid = np.split(ground_truth_file_dirs, [idx])
 
-    train_group_size = len(sino_train)//rank_num
-    test_group_size = len(sino_test)//rank_num
+    train_group_size = len(sino_train)//num_ranks
+    valid_group_size = len(sino_valid)//num_ranks
 
-    sino_train = sino_train[:train_group_size*rank_num]
-    sino_test = sino_test[:test_group_size*rank_num]
-    gt_train = gt_train[:train_group_size*rank_num]
-    gt_test = gt_test[:test_group_size*rank_num]
+    sino_train = sino_train[:train_group_size*num_ranks]
+    sino_valid = sino_valid[:valid_group_size*num_ranks]
+    gt_train = gt_train[:train_group_size*num_ranks]
+    gt_valid = gt_valid[:valid_group_size*num_ranks]
 
-    sino_train_groups = np.split(sino_train,rank_num)
-    gt__train_groups = np.split(gt_train,rank_num)
-    sino_test_groups = np.split(sino_test,rank_num)
-    gt_test_groups = np.split(gt_test,rank_num)
+    sino_train_groups = np.split(sino_train,num_ranks)
+    gt__train_groups = np.split(gt_train,num_ranks)
+    sino_valid_groups = np.split(sino_valid,num_ranks)
+    gt_valid_groups = np.split(gt_valid,num_ranks)
 
     # Copy and paste the .npy files to from source dir to the appropriate dir
-    for i in range(4):
+    for i in range(num_ranks):
         for src_file in sino_train_groups[i]:
             target_dir = os.path.join(dest_dir, 'train', f'{i}')
             shutil.copy(src_file, target_dir)
         for src_file in gt__train_groups[i]:
             target_dir = os.path.join(dest_dir, 'train', f'{i}')
             shutil.copy(src_file, target_dir)
-        for src_file in sino_test_groups[i]:
-            target_dir = os.path.join(dest_dir, 'test', f'{i}')
+        for src_file in sino_valid_groups[i]:
+            target_dir = os.path.join(dest_dir, 'valid', f'{i}')
             shutil.copy(src_file, target_dir)
-        for src_file in gt_test_groups[i]:
-            target_dir = os.path.join(dest_dir, 'test', f'{i}')
+        for src_file in gt_valid_groups[i]:
+            target_dir = os.path.join(dest_dir, 'valid', f'{i}')
             shutil.copy(src_file, target_dir)
 
     print('Successfully moved all the pre-processed .npy files')
 
-main()
+if __name__ == "__main__":
+    main()

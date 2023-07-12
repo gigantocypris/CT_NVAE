@@ -244,9 +244,8 @@ def reconstruction_loss(decoder, x, dataset, crop=False):
     recon = decoder.log_prob(x)
     if crop:
         recon = recon[:, :, 2:30, 2:30]
-    
-    breakpoint()
-    if isinstance(decoder, DiscMixLogistic) or dataset in {'foam'}:
+        
+    if isinstance(decoder, DiscMixLogistic) or dataset in {'foam', 'covid'}:
         return - torch.sum(recon, dim=[1, 2])    # summation over RGB is done.
     else:
         return - torch.sum(recon, dim=[1, 2, 3])

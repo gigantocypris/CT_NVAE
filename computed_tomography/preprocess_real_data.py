@@ -4,9 +4,8 @@
 # Last update: July 11, 2023 by Gary Chen
 # Updates: fixed typos in source and destination directory around lines 50-65 and also the terminal command examples
 
-# Usage: python preprocess.py <source_dir> <target_dir>
-# Example: python preprocess.py /global/cfs/cdirs/m3562/users/hkim/real_data/raw /global/cfs/cdirs/m3562/users/hkim/real_data/pre_processed
-# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -v
+# Usage: python preprocess.py <source_dir> <target_dir> -n <num_truncate> [-v]
+# Example: python $SCRATCH/CT_NVAE/computed_tomography/preprocess_real_data.py /global/cfs/cdirs/m3562/users/hkim/real_data/raw $TARGET_DIR -n 10
 
 import os
 import gzip
@@ -15,7 +14,7 @@ from utils_real_data import create_sinogram_nib, visualize
 import numpy as np
 import argparse
 
-def preprocess(source_directory, destination_directory, visualize_output):
+def preprocess(source_directory, destination_directory, num_truncate, visualize_output):
     theta = np.linspace(0, np.pi, 180, endpoint=False)
 
     # Create the desination_directory if it doesn't exist
@@ -54,7 +53,7 @@ def preprocess(source_directory, destination_directory, visualize_output):
     print(f'nii_files has shape {len(nii_files)}')
 
     # Iterate over files in the source_directory directory with progress
-    for i, filename in enumerate(nii_files):
+    for i, filename in enumerate(nii_files[:num_truncate]):
         # Create the full path to the .nii file
         nib_file_path = os.path.join(source_directory, filename)
 
@@ -79,8 +78,9 @@ if __name__ == "__main__":
     parser.add_argument("destination_directory", help="Directory to store the unzipped .nii files")
     parser.add_argument('-v', action='store_true', dest='visualize_output',
                         help='visualize images and sinograms')
+    parser.add_argument('-n',dest='num_truncate', type=int, help='total number of nii files to pre-process', default=10)
     # Parse command-line arguments
     args = parser.parse_args()
     
     # Run preprocess function
-    preprocess(args.source_directory, args.destination_directory, args.visualize_output)
+    preprocess(args.source_directory, args.destination_directory, args.num_truncate, args.visualize_output)

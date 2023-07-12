@@ -186,9 +186,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
 
         cnn_optimizer.zero_grad()
         with autocast():
-            breakpoint()
             logits, log_q, log_p, kl_all, kl_diag = model(x)
-            breakpoint()
             temperature = torch.tensor([args.temp_bernoulli])
             temperature = temperature.half().cuda()
 

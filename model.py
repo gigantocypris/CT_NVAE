@@ -339,6 +339,7 @@ class AutoEncoder(nn.Module):
         elif self.dataset in {'foam'}:
             C_out = 1 # XXX
         elif self.dataset in {'covid'}:
+            C_out = 1 # XXX
         else:
             if self.num_mix_output == 1:
                 C_out = 2 * 3

@@ -308,6 +308,7 @@ To run a batch job on NERSC:
 sbatch $CT_NVAE_PATH/scripts/train_single_node.sh
 ```
 
+TODO: Add instructions for using Gary's scripts
 
 ## Covid CT Dataset Preparation
 
@@ -329,11 +330,14 @@ export TARGET_DIR={TARGET_DIR}
 
 After downloading the TCIA COVID-19 Dataset, you need to unzip the .gz files and organize them as follows. You can use the `computed_tomography/preprocess_real_data.py` script provided to accomplish this.
 ```
-python $CT_NVAE_PATH/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -v
+python $CT_NVAE_PATH/computed_tomography/preprocess_real_data.py $SOURCE_DIR $TARGET_DIR -n {NUM_FILES} -v
 ```
-where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Dataset and `{TARGET_DIR}` is the directory where you want to save the preprocessed data. The `-v` flag is optional and will print out `.png` visualizations of all the images and sinograms in the dataset. Only use the `-v` flag for a small dataset.
+where `{SOURCE_DIR}` is the directory containing the downloaded TCIA COVID-19 Dataset and `{TARGET_DIR}` is the directory where you want to save the preprocessed data. The number of files that will be processed is given by the `-n` flag. The `-v` flag is optional and will print out `.png` visualizations of all the images and sinograms in the dataset. Only use the `-v` flag for a small dataset.
 
-TODO: Split the data into train/valid sets and split each set into different ranks.
+Split the data into train/valid sets:
+```
+python split_pre_processed_data.py --dir $TARGET_DIR --dest $TARGET_DIR --num_ranks 1 --num_train 2 --num_valid 1
+```
 
 Create the dataset with the `create_real_dataset.py` script:
 ```

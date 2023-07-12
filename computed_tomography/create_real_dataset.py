@@ -19,7 +19,7 @@ def main(rank):
 
     ### INPUT ###
     sub_dir = args.dir + '/' + args.dataset_type + '/' + str(rank)
-    theta = np.load(args.dir + 'theta.npy') # projection angles
+    theta = np.load(args.dir + '/theta.npy') # projection angles
     truncate_dataset = args.num_truncate
     num_sparse_angles = 10 # number of angles to image per sample (dose remains the same)
     random = True # If True, randomly pick angles

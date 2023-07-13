@@ -495,7 +495,8 @@ class AutoEncoder(nn.Module):
         return logits
 
     def decoder_output(self, logits, temperature=None,
-                       theta_degrees=None, poisson_noise_multiplier=None, pad=None):
+                       theta_degrees=None, poisson_noise_multiplier=None, pad=None,
+                       ):
         if self.dataset in {'mnist', 'omniglot'}:
             return Bernoulli(logits=logits)
         elif self.dataset in {'foam', 'covid'}:
@@ -516,6 +517,13 @@ class AutoEncoder(nn.Module):
 
             sino = project_torch(phantom, theta_degrees, pad=pad)
             sino_dist = normal.Normal(sino, 1e-2 + torch.sqrt(sino/poisson_noise_multiplier))
+
+            sino_no_model_correction = sino_dist.rsample().half()
+            # breakpoint()
+
+            # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
+
+
             return sino_dist, phantom.float()
         
         elif self.dataset in {'stacked_mnist', 'cifar10', 'celeba_64', 'celeba_256', 'imagenet_32', 'imagenet_64', 'ffhq',

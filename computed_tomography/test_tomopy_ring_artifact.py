@@ -12,7 +12,7 @@ from forward_physics import pad_phantom
 
 if __name__ == '__main__':
     # get a phantom
-    img = np.load('foam_train.npy')[0:3]
+    img = np.load('dataset_foam/train_ground_truth.npy')[0:3]
 
     num_angles = 180
     num_sparse_angles = 45 # number of angles to image per sample
@@ -79,3 +79,16 @@ if __name__ == '__main__':
     ax4.axis('off')
 
     plt.savefig('ring_reconstruction.png')
+
+    # get sinogram from reconstruction
+
+    proj_1 = create_sinogram(rec_0, theta_sparse, pad=False, add_ring_artifact=False)
+    proj_1 = np.transpose(proj_1, axes=[1,0,2])
+
+    proj_1_ring = create_sinogram(rec_0_ring, theta_sparse, pad=False, add_ring_artifact=False)
+    proj_1_ring = np.transpose(proj_1_ring, axes=[1,0,2])
+
+    # compare to original sinogram
+    error_no_ring_artifact = np.sum((proj_0-proj_1)**2)
+    error_ring_artifact = np.sum((proj_0_ring-proj_1_ring)**2)
+    print(error_ring_artifact/error_no_ring_artifact)

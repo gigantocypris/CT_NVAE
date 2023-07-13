@@ -32,7 +32,7 @@ def main():
     sinogram_file_dirs = np.array([filename for filename in sinogram_file_dirs if len(filename) == 94])
     ground_truth_file_dirs = np.array([filename for filename in ground_truth_file_dirs if len(filename) == 82])
 
-    # Identify missing files in the sinogram set and the groud truth set
+    # Identify missing files in the sinogram set and the ground truth set
     sinogram_ids = np.array([filename[-17:-13] for filename in sinogram_file_dirs if len(filename) == 94])
     ground_truth_ids = np.array([filename[-8:-4] for filename in ground_truth_file_dirs if len(filename) == 82])
     sino_set = set(sinogram_ids)

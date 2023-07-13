@@ -20,8 +20,8 @@ def clean_up_preprocessed(sinogram_file_dirs, ground_truth_file_dirs):
     assert len(ground_truth_file_dirs) > 50, "Something wrong about loading the ground truth"
 
     # Identify missing files in the sinogram set and the groud truth set
-    sinogram_ids = np.array([filename[-17:-13] for filename in sinogram_file_dirs if len(filename) == 94])
-    ground_truth_ids = np.array([filename[-8:-4] for filename in ground_truth_file_dirs if len(filename) == 82])
+    sinogram_ids = np.array([filename[-17:-13] for filename in sinogram_file_dirs if len(filename) == sino_filename_length])
+    ground_truth_ids = np.array([filename[-8:-4] for filename in ground_truth_file_dirs if len(filename) == gt_filename_length])
     sino_set = set(sinogram_ids)
     gt_set = set(ground_truth_ids)
 

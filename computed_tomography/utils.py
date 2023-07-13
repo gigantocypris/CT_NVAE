@@ -9,7 +9,7 @@ def create_folder(save_path=None,**kwargs):
         if not os.path.isdir(save_path):
             raise
 
-def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False):
+def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False, ring_artifact_strength=0.3):
     """
     Dimensions of img_stack should be num_images x x_size x y_size
     Output dimensions of proj are num_images x num_angles x num_proj_pix
@@ -22,7 +22,7 @@ def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False):
     # add ring artifact
     if add_ring_artifact:
         num_proj_pix = proj.shape[2]
-        ring_artifact = np.random.rand(num_proj_pix)*0.3+0.7
+        ring_artifact = np.random.rand(num_proj_pix)*ring_artifact_strength+(1-ring_artifact_strength)
         ring_artifact = np.expand_dims(np.expand_dims(ring_artifact, axis=0),axis=0)
         proj = proj*ring_artifact
     proj = np.transpose(proj, (1, 0, 2))

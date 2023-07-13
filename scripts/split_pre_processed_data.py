@@ -50,43 +50,34 @@ def clean_up_preprocessed(sinogram_file_dirs, ground_truth_file_dirs):
     print('Successfully cleanup the pre-processed data')
     return sinogram_file_dirs, ground_truth_file_dirs
 
-def create_dirs(dest_dir, num_ranks):
+def create_dirs(dest_dir):
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
     train_dir = os.path.join(dest_dir, 'train')
     valid_dir = os.path.join(dest_dir, 'valid')
+    test_dir = os.path.join(dest_dir, 'test')
     os.makedirs(train_dir, exist_ok=True)
     os.makedirs(valid_dir, exist_ok=True)
-    for i in range(num_ranks):
-        train_rank_dir = os.path.join(train_dir, f'{i}')
-        valid_rank_dir = os.path.join(valid_dir, f'{i}')
-        os.makedirs(train_rank_dir, exist_ok=True)
-        os.makedirs(valid_rank_dir, exist_ok=True)
+    os.makedirs(test_dir, exist_ok=True)
 
-def split_data(sinogram_file_dirs,ground_truth_file_dirs,train,num_ranks):
-    # Splitting the sinograms and gt into train and valid group based on 8:2 ratio
-    # 382 ground truths and 382 sinograms into 4 files (sino_train, sino_valid, gt_train, and gt_valid)
-    # train set has 306 ground truths and 306 sinograms
-    # valid set has 76 ground truths and 76 sinograms
+def split_data(file_dirs,train,valid,test):
+    # Splitting the data into train, valid, and train
+    cleaned_file_num = len(file_dirs)
+    ratio = np.array([train,valid,test])
+    print(f'ratio sum is {np.sum(ratio)}')
+    print(f'ratio sum type is {type(np.sum(ratio))}')
+    assert np.ceil(np.sum(ratio)) == 1
 
-    cleaned_file_num = len(sinogram_file_dirs)
-    idx = int(cleaned_file_num*train)
-    sino_train, sino_valid = np.split(sinogram_file_dirs, [idx])
-    gt_train, gt_valid = np.split(ground_truth_file_dirs, [idx])
+    cum_ratio = np.cumsum(ratio)
+    split_indices = cum_ratio[:-1] * cleaned_file_num
+    split_indices = split_indices.astype(int)
+    train, valid, test = np.split(file_dirs,split_indices)
+    if len(train)+len(valid)+len(test)==cleaned_file_num:
+        print(f'data is successfully split')
+    else:
+        print(f'failure in splitting')
 
-    train_group_size = len(sino_train)//num_ranks
-    valid_group_size = len(sino_valid)//num_ranks
-
-    sino_train = sino_train[:train_group_size*num_ranks]
-    sino_valid = sino_valid[:valid_group_size*num_ranks]
-    gt_train = gt_train[:train_group_size*num_ranks]
-    gt_valid = gt_valid[:valid_group_size*num_ranks]
-
-    sino_train_groups = np.split(sino_train,num_ranks)
-    gt_train_groups = np.split(gt_train,num_ranks)
-    sino_valid_groups = np.split(sino_valid,num_ranks)
-    gt_valid_groups = np.split(gt_valid,num_ranks)
-    return sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups
+    return train, valid, test
 
 def copy_paste_files(num_ranks, sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups, dest_dir):
     for i in range(num_ranks):
@@ -109,18 +100,18 @@ def main():
     parser = argparse.ArgumentParser(description='Get command line args')
     parser.add_argument('--dir', help='base directory where ground truth and sinogram npy are')
     parser.add_argument('--dest', help='dest directory where split data are')
-    parser.add_argument('--num_ranks', type=int, help='number of ranks', default=4)
-    parser.add_argument('--train', type=float, help='train ratio', default=0.8)
+    parser.add_argument('--train', type=float, help='train ratio', default=0.7)
     parser.add_argument('--valid', type=float, help='valid ratio', default=0.2)
+    parser.add_argument('--test', type=float, help='test ratio', default=0.1)
     args = parser.parse_args()
 
     # Load ground truth, sinograms, and hyperparameters
     ground_truth_dir = os.path.join(args.dir, 'input_npy')
     sinogram_dir = os.path.join(args.dir, 'sinogram_npy')
     dest_dir = args.dest
-    num_ranks = args.num_ranks
     train = args.train
     valid = args.valid
+    test = args.test
     sinogram_file_dirs = np.sort(glob.glob(sinogram_dir + '/*_sinogram.npy'))
     ground_truth_file_dirs = np.sort(glob.glob(ground_truth_dir + '/*.npy'))
 
@@ -128,13 +119,14 @@ def main():
     sinogram_file_dirs, ground_truth_file_dirs = clean_up_preprocessed(sinogram_file_dirs, ground_truth_file_dirs)
     
     # Create all the necessary directories to store the split arrays
-    create_dirs(dest_dir, num_ranks)
+    create_dirs(dest_dir)
 
     # Split the cleanup data into 4 groups
-    sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups = split_data(sinogram_file_dirs,ground_truth_file_dirs,train,num_ranks)
+    sino_train, sino_valid, sino_test = split_data(sinogram_file_dirs,train,valid,test)
+    gt_train, gt_valid, gt_test = split_data(ground_truth_file_dirs,train,valid,test)
 
     # Copy and paste the .npy files to from source dir to the appropriate dir
-    copy_paste_files(num_ranks, sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups, dest_dir)
+    #copy_paste_files(num_ranks, sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups, dest_dir)
 
 if __name__ == "__main__":
     main()

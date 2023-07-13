@@ -12,15 +12,16 @@
 #SBATCH -o %j.out
 #SBATCH -e %j.err
 #SBATCH --mail-type=begin,end,fail
-#SBATCH --mail-user=gchen4@lbl.gov
+#SBATCH --mail-user=$3
 
 
 module load python
 conda activate CT_NVAE
 
 export EXPR_ID=$1
-
 export BATCH_SIZE=$2
+export CT_NVAE_PATH=$4
+
 export EPOCHS=100
 export NUM_LATENT_SCALES=2
 export NUM_GROUPS_PER_SCALE=10
@@ -40,7 +41,7 @@ export PNM=1e1
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=$SCRATCH/output_CT_NVAE/checkpts
 export MASTER_ADDR=$(hostname)
-export CT_NVAE_PATH=/global/homes/g/gchen4/CT_NVAE
+
 
 mkdir $CHECKPOINT_DIR/eval-$EXPR_ID
 

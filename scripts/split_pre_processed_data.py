@@ -1,8 +1,9 @@
 # Created by: Gary Chen
-# Date: July 12, 2023
-# Purpose: evenly split preprocessed sinogramsm and ground truth to into a valid and a train group; each group contains num_ranks ranks
+# Date: July 13, 2023
+# Purpose: evenly split preprocessed sinogramsm and ground truth to into train, valid, and test groups in a specfic ratio
 # input directories to the preprocessed sinograms and ground truths
 # Process: 1) remove the outlier files and the duplicates and 2) split the cleaned up files into proper folders
+# output: files are split into the desired directory strucutre under the specific target directory
 
 import numpy as np
 import os
@@ -64,8 +65,6 @@ def split_data(file_dirs,train,valid,test):
     # Splitting the data into train, valid, and train
     cleaned_file_num = len(file_dirs)
     ratio = np.array([train,valid,test])
-    print(f'ratio sum is {np.sum(ratio)}')
-    print(f'ratio sum type is {type(np.sum(ratio))}')
     assert np.ceil(np.sum(ratio)) == 1
 
     cum_ratio = np.cumsum(ratio)
@@ -76,25 +75,12 @@ def split_data(file_dirs,train,valid,test):
         print(f'data is successfully split')
     else:
         print(f'failure in splitting')
-
     return train, valid, test
 
-def copy_paste_files(num_ranks, sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups, dest_dir):
-    for i in range(num_ranks):
-        print(f'Moving rank {i} files')
-        for src_file in sino_train_groups[i]:
-            target_dir = os.path.join(dest_dir, 'train', f'{i}')
-            shutil.copy(src_file, target_dir)
-        for src_file in gt_train_groups[i]:
-            target_dir = os.path.join(dest_dir, 'train', f'{i}')
-            shutil.copy(src_file, target_dir)
-        for src_file in sino_valid_groups[i]:
-            target_dir = os.path.join(dest_dir, 'valid', f'{i}')
-            shutil.copy(src_file, target_dir)
-        for src_file in gt_valid_groups[i]:
-            target_dir = os.path.join(dest_dir, 'valid', f'{i}')
-            shutil.copy(src_file, target_dir)
-    print('Successfully moved all the pre-processed .npy files')
+def copy_paste_files(file_dirs, dest_dir, data_type):
+    for src_file in file_dirs:
+        target_dir = os.path.join(dest_dir, data_type)
+        shutil.copy(src_file, target_dir)
 
 def main():
     parser = argparse.ArgumentParser(description='Get command line args')
@@ -121,12 +107,18 @@ def main():
     # Create all the necessary directories to store the split arrays
     create_dirs(dest_dir)
 
-    # Split the cleanup data into 4 groups
+    # Split the cleanup data into train, valid, and test
     sino_train, sino_valid, sino_test = split_data(sinogram_file_dirs,train,valid,test)
     gt_train, gt_valid, gt_test = split_data(ground_truth_file_dirs,train,valid,test)
 
     # Copy and paste the .npy files to from source dir to the appropriate dir
-    #copy_paste_files(num_ranks, sino_train_groups, gt_train_groups, sino_valid_groups, gt_valid_groups, dest_dir)
+    copy_paste_files(sino_train, dest_dir, 'train')
+    copy_paste_files(sino_valid, dest_dir, 'valid')
+    copy_paste_files(sino_test, dest_dir, 'test')
+    copy_paste_files(gt_train, dest_dir, 'train')
+    copy_paste_files(gt_valid, dest_dir, 'valid')
+    copy_paste_files(gt_test, dest_dir, 'test')
+    print(f'Successfully split and moved all the files')
 
 if __name__ == "__main__":
     main()

@@ -133,7 +133,7 @@ cd $WORKING_DIR
 On NERSC, set an environment variable with your allocation `{NERSC_GPU_ALLOCATION}` (e.g. `m3562_g`)) and start an interactive session:
 ```
 export NERSC_GPU_ALLOCATION={NERSC_GPU_ALLOCATION}
-salloc -N 1 --time=60 -C gpu -A {NERSC_GPU_ALLOCATION} --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
 
 Run the following to create a synthetic foam dataset of `{T}` training examples and `{V}` validation examples, saved to the current working directory (`{T}` and `{V}` must be integers):

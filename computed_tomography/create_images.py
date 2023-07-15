@@ -4,12 +4,14 @@ Usage:
 srun -n NUM_RANKS python create_images.py -n NUM_EXAMPLES --dest SAVE_DIR --type IMG_TYPE
 
 Example for foam images:
+export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n 4 python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest $SCRATCH/$WORKING_DIR/images_foam --type foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
 
 Example for covid images:
+export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n 4 python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest $SCRATCH/$WORKING_DIR/images_covid --type covid
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_covid --type covid
 """
 
 import os
@@ -49,7 +51,7 @@ def create_dataset(num_examples, rank, world_size, dest_dir, type):
         covid_list = np.sort(glob.glob('/global/cfs/cdirs/m3562/users/hkim/real_data/raw/*.nii'))
 
     for example_index in range(num_examples):
-        if example_index % world_size == rank: # distribute work across ranks
+        if example_index % int(world_size) == rank: # distribute work across ranks
             if type=='foam':
                 example, filename = create_foam_example()
             elif type=='covid':
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD
-    world_size = comm.get_size()
+    world_size = os.environ['SLURM_NTASKS']
     print('World size: ' + str(world_size))
 
     # check rank

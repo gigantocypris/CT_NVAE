@@ -55,7 +55,7 @@ python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset
 
 Refactoring entire pipeline, inclusion of ring artifact
 1. Get data: Either (1) convert real data to npy or (2) create 3D foam data
-create_foam_images.py OR create_real_images.py
+create_images.py
 Make a folder: images_foam
 2. Go through all examples one by one and create a corresponding sinogram
 Put in the folder images_foam

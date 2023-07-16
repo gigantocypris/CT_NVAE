@@ -9,7 +9,7 @@ def create_folder(save_path=None,**kwargs):
         if not os.path.isdir(save_path):
             raise
 
-def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False, ring_artifact_strength=0.3):
+def create_sinogram(img_stack, theta, pad=True):
     """
     Dimensions of img_stack should be num_images x x_size x y_size
     Output dimensions of proj are num_images x num_angles x num_proj_pix
@@ -18,14 +18,14 @@ def create_sinogram(img_stack, theta, pad=True, add_ring_artifact=False, ring_ar
     # multiprocessing.freeze_support()
 
     proj = tomopy.project(img_stack, theta, center=None, emission=True, pad=pad, sinogram_order=False)
-
-    # add ring artifact
-    if add_ring_artifact:
-        num_proj_pix = proj.shape[2]
-        ring_artifact = np.random.rand(num_proj_pix)*ring_artifact_strength+(1-ring_artifact_strength)
-        ring_artifact = np.expand_dims(np.expand_dims(ring_artifact, axis=0),axis=0)
-        proj = proj*ring_artifact
     proj = np.transpose(proj, (1, 0, 2))
+    return proj
+
+def add_ring_artifact(proj, ring_artifact_strength=0.3):
+    num_proj_pix = proj.shape[2]
+    ring_artifact = np.random.rand(num_proj_pix)*ring_artifact_strength+(1-ring_artifact_strength)
+    ring_artifact = np.expand_dims(np.expand_dims(ring_artifact, axis=0),axis=0)
+    proj = proj*ring_artifact
     return proj
 
 def get_images(rank, img_type = 'foam', dataset_type = 'train'):

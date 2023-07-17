@@ -60,9 +60,11 @@ Make a folder: images_foam
 2. Go through all examples one by one and create a corresponding sinogram
 Put in the folder images_foam
 computed_tomography/create_sinograms.py
-START FROM HERE
 3. Split into training/test/validate
 split within the folder images_foam
 scripts/create_splits.py
+STOPPED HERE
 4. Create a dataset from each of the splits
 this will be in the newly created folder dataset_foam; each 3D example should have a common identifier for ring artifact removal
+computed_tomography/create_dataset.py
+5. Refactor the CT_NVAE code to allow any CT dataset in (remove all the old datasets), removal of ring artifact, option for the output distribution to be Gaussian (need an extra dimension in the output) or Bernoulli

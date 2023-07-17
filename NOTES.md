@@ -68,3 +68,4 @@ STOPPED HERE
 this will be in the newly created folder dataset_foam; each 3D example should have a common identifier for ring artifact removal
 computed_tomography/create_dataset.py
 5. Refactor the CT_NVAE code to allow any CT dataset in (remove all the old datasets), removal of ring artifact, option for the output distribution to be Gaussian (need an extra dimension in the output) or Bernoulli
+6. Go through and make the entire pipeline sbatch-able

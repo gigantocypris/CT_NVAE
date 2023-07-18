@@ -21,19 +21,30 @@ import xdesign as xd
 from mpi4py import MPI
 import nibabel as nib
 import glob
+import gzip
+import shutil
 
 def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.2, GAP = 0, Z_SLICES = 32):
     """Creates a single 3D example of a foam phantom"""
     example = []
     for z_index in range(Z_SLICES):
         phantom = xd.Foam(size_range=[SIZE_UPPER, SIZE_LOWER], gap=GAP, porosity=np.random.rand())
-        discrete = xd.discrete_phantom(phantom, N_PIXEL)
+        discrete = xd.discrete_phantom(phantom, N_PIXEL)/N_PIXEL
         example.append(discrete)
     example = np.stack(example, axis=0) # shape is Z_SLICES x N_PIXEL x N_PIXEL
     return example, None
 
 def create_covid_example(nib_file_path):
     """Get a single 3D example of a covid patient lung scan"""
+
+    if nib_file_path[-3:]=='.gz':
+        destination_path = os.path.splitext(nib_file_path)[0]
+
+        # Open the .gz file and extract its contents
+        with gzip.open(nib_file_path, 'rb') as gz_file:
+            with open(destination_path, 'wb') as extracted_file:
+                shutil.copyfileobj(gz_file, extracted_file)
+
     img = nib.load(nib_file_path)
     example = img.get_fdata()
     example = example.transpose((2, 0, 1))
@@ -43,9 +54,11 @@ def create_covid_example(nib_file_path):
     example /= np.max(example)
     example[example < 0] = 0
 
+    example /= example.shape[1]
+
     return example, filename
 
-def create_dataset(num_examples, rank, world_size, dest_dir, type):
+def main(num_examples, rank, world_size, dest_dir, type):
     os.system('mkdir -p ' + dest_dir)
     if type=='covid':
         covid_list = np.sort(glob.glob('/global/cfs/cdirs/m3562/users/hkim/real_data/raw/*.nii'))
@@ -83,7 +96,7 @@ if __name__ == '__main__':
 
     np.random.seed(0)
 
-    create_dataset(args.num_examples, rank, world_size, args.dest_dir, args.type)
+    main(args.num_examples, rank, world_size, args.dest_dir, args.type)
 
 
     

@@ -47,16 +47,7 @@ def copy_paste_files(sinogram_filenames, dest_dir, data_type):
         shutil.copy(src_file, target_dir)
         shutil.copy(''.join(src_file.split('_sinogram')), target_dir)
 
-def main():
-    parser = argparse.ArgumentParser(description='Get command line args')
-    parser.add_argument('--src', dest = 'source_dir', help='source directory where ground truth and sinogram npy are')
-    parser.add_argument('--dest', dest = 'dest_dir', help='dest directory where split data are')
-    parser.add_argument('--train', dest = 'train_fraction', type=float, help='train fraction', default=0.7)
-    parser.add_argument('--valid', dest = 'valid_fraction', type=float, help='valid fraction', default=0.2)
-    parser.add_argument('--test', dest = 'test_fraction', type=float, help='test fraction', default=0.1)
-    parser.add_argument('-n',dest='num_truncate', type=int, help='number of 2D examples')
-    args = parser.parse_args()
-
+def main(args):
     # Normalize the ratios
     total = args.train_fraction + args.valid_fraction + args.test_fraction
     args.train_fraction = args.train_fraction / total
@@ -84,4 +75,12 @@ def main():
     print(f'Successfully split and moved all the files')
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Get command line args')
+    parser.add_argument('--src', dest = 'source_dir', help='source directory where ground truth and sinogram npy are')
+    parser.add_argument('--dest', dest = 'dest_dir', help='dest directory where split data are')
+    parser.add_argument('--train', dest = 'train_fraction', type=float, help='train fraction', default=0.7)
+    parser.add_argument('--valid', dest = 'valid_fraction', type=float, help='valid fraction', default=0.2)
+    parser.add_argument('--test', dest = 'test_fraction', type=float, help='test fraction', default=0.1)
+    parser.add_argument('-n',dest='num_truncate', type=int, help='number of 2D examples')
+    args = parser.parse_args()
+    main(args)

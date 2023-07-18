@@ -54,6 +54,8 @@ python $SCRATCH/CT_NVAE/computed_tomography/create_real_dataset.py --dir dataset
 ## July 14, 2023
 
 Refactoring entire pipeline, inclusion of ring artifact
+
+`tomopy` environment:
 1. Get data: Either (1) convert real data to npy or (2) create 3D foam data
 computed_tomography/create_images.py
 Make a folder: images_foam
@@ -67,5 +69,8 @@ STOPPED HERE
 4. Create a dataset from each of the splits
 this will be in the newly created folder dataset_foam; each 3D example should have a common identifier for ring artifact removal
 computed_tomography/create_dataset.py
+
+
+`CT_NVAE` environment:
 5. Refactor the CT_NVAE code to allow any CT dataset in (remove all the old datasets), removal of ring artifact, option for the output distribution to be Gaussian (need an extra dimension in the output) or Bernoulli
 6. Go through and make the entire pipeline sbatch-able

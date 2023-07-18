@@ -15,11 +15,9 @@ python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 
 
 import argparse
 import numpy as np
-import numpy.matlib
 from utils import process_sinogram, create_sinogram, get_images, create_folder, create_sparse_dataset
 import time
 import glob
-import os
 
 def main(args, dataset_type):
 
@@ -35,11 +33,12 @@ def main(args, dataset_type):
     all_reconstructed_objects = []
     all_sparse_sinograms = []
     all_3d_object_ids = []
+    all_sparse_sinograms_raw = []
 
     print(f'sub_dir is {sub_dir}')
 
     sinogram_files = np.sort(glob.glob(sub_dir + '/*_sinogram.npy'))
-    print(f'Total number of sinograms found: {sinogram_files}')
+    print(f'Total number of sinograms found: {len(sinogram_files)}')
 
     for i in range(len(sinogram_files)):
         filepath_sino = sinogram_files[i] # sinogram filepath
@@ -51,12 +50,11 @@ def main(args, dataset_type):
         x_train_sinogram = np.load(filepath_sino)
         print(f'x_train has shape {x_train.shape}')
         print(f'x_train_sinogram has shape {x_train_sinogram.shape}')
-        breakpoint()
+
         # make sparse sinogram and reconstruct
-        sparse_angles, reconstruction, sparse_sinogram = process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 
-                                                                          poisson_noise_multiplier = args.pnm, 
-                                                                          remove_ring_artifact = False,
-                                                                          ring_artifact_strength = 0.3)
+        sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram = \
+            process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 
+                             poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, ring_artifact_strength = 0.3)
 
         # append to lists
 
@@ -65,7 +63,7 @@ def main(args, dataset_type):
         all_mask_inds.append(np.repeat(np.expand_dims(sparse_angles,axis=0),x_train.shape[0],axis=0))
         all_reconstructed_objects.append(reconstruction)
         all_sparse_sinograms.append(np.transpose(sparse_sinogram,axes=[1,0,2]))
-        breakpoint()
+        all_sparse_sinograms_raw.append(np.transpose(sparse_sinogram_raw,axes=[1,0,2]))
         all_3d_object_ids.append(np.repeat(np.expand_dims(np.sum(reconstruction,axis=0),axis=0),x_train.shape[0],axis=0))
 
     x_train_imgs = np.concatenate(x_train_imgs, axis=0)
@@ -73,22 +71,24 @@ def main(args, dataset_type):
     all_mask_inds = np.concatenate(all_mask_inds, axis=0)
     all_reconstructed_objects = np.concatenate(all_reconstructed_objects, axis=0)
     all_sparse_sinograms = np.concatenate(all_sparse_sinograms, axis=0)
+    all_sparse_sinograms_raw = np.concatenate(all_sparse_sinograms_raw, axis=0)
     all_3d_object_ids = np.concatenate(all_3d_object_ids, axis=0)
 
     num_proj_pix = x_train_sinograms.shape[-1]
     
-    np.save(args.dir + '/' + args.dataset_type + '_sinograms.npy', x_train_sinograms)
-    np.save(args.dir + '/' + args.dataset_type + '_ground_truth.npy', x_train_imgs)
-    np.save(args.dir + '/' + args.dataset_type + '_theta.npy', theta)
-    np.save(args.dir + '/' + args.dataset_type + '_num_proj_pix.npy', num_proj_pix)
+    np.save(args.dir + '/' + dataset_type + '_sinograms.npy', x_train_sinograms)
+    np.save(args.dir + '/' + dataset_type + '_ground_truth.npy', x_train_imgs)
+    np.save(args.dir + '/' + dataset_type + '_theta.npy', theta)
+    np.save(args.dir + '/' + dataset_type + '_num_proj_pix.npy', num_proj_pix)
 
-    np.save(args.dir + '/' + args.dataset_type + '_x_size.npy', x_train_imgs.shape[1]) # size of original image
-    np.save(args.dir + '/' + args.dataset_type + '_y_size.npy', x_train_imgs.shape[2]) # size of original image
+    np.save(args.dir + '/' + dataset_type + '_x_size.npy', x_train_imgs.shape[1]) # size of original image
+    np.save(args.dir + '/' + dataset_type + '_y_size.npy', x_train_imgs.shape[2]) # size of original image
 
-    np.save(args.dir + '/' + args.dataset_type + '_masks.npy', all_mask_inds)
-    np.save(args.dir + '/' + args.dataset_type + '_reconstructions.npy', all_reconstructed_objects)
-    np.save(args.dir + '/' + args.dataset_type + '_sparse_sinograms.npy', all_sparse_sinograms)
-    np.save(args.dir + '/' + args.dataset_type + '_3d_object_ids.npy', all_3d_object_ids)
+    np.save(args.dir + '/' + dataset_type + '_masks.npy', all_mask_inds)
+    np.save(args.dir + '/' + dataset_type + '_reconstructions.npy', all_reconstructed_objects)
+    np.save(args.dir + '/' + dataset_type + '_sparse_sinograms.npy', all_sparse_sinograms)
+    np.save(args.dir + '/' + dataset_type + '_sparse_sinograms_raw.npy', all_sparse_sinograms_raw)
+    np.save(args.dir + '/' + dataset_type + '_3d_object_ids.npy', all_3d_object_ids)
 
     print("Shape of sinograms: ", x_train_sinograms.shape)
     print("Shape of original training images: ", x_train_imgs.shape)

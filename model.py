@@ -334,17 +334,7 @@ class AutoEncoder(nn.Module):
 
     def init_image_conditional(self, mult):
         C_in = int(self.num_channels_dec * mult)
-        if self.dataset in {'mnist', 'omniglot'}:
-            C_out = 1
-        elif self.dataset in {'foam'}:
-            C_out = 1 # XXX
-        elif self.dataset in {'covid'}:
-            C_out = 1 # XXX
-        else:
-            if self.num_mix_output == 1:
-                C_out = 2 * 3
-            else:
-                C_out = 10 * self.num_mix_output
+        C_out = 2
         return nn.Sequential(nn.ELU(),
                              Conv2D(C_in, C_out, 3, padding=1, bias=True))
 
@@ -496,44 +486,35 @@ class AutoEncoder(nn.Module):
 
     def decoder_output(self, logits, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
+                       use_bernoulli=False, reg_std=1e-3,
                        ):
-        if self.dataset in {'mnist', 'omniglot'}:
-            return Bernoulli(logits=logits)
-        elif self.dataset in {'foam', 'covid'}:
-
-            # process the output of the decoder into a distribution
-            # sample the distribution to get the phantom
-            # enforce that phantom that is nonnegative through the distribution or sampling
-
+        # process the output of the decoder into a distribution
+        # sample the distribution to get the phantom
+        breakpoint()
+        if use_bernoulli:
             object_dist = RelaxedBernoulli(temperature, logits=logits)
-            phantom = object_dist.rsample().half()
-
-            # phantom = torch.sigmoid(logits)
             
-            # phantom is batch x channels x num_proj_pix x num_proj_pix
-            # move channel dimension to the last dimension
-            phantom = torch.transpose(phantom, 1,2)
-            phantom = torch.transpose(phantom, 2,3)
+        else: # use normal distribution
+            object_dist = normal.Normal(logits[0], reg_std + torch.exp(logits[1]))
 
-            sino = project_torch(phantom, theta_degrees, pad=pad)
-            sino_dist = normal.Normal(sino, 1e-2 + torch.sqrt(sino/poisson_noise_multiplier))
-
-            sino_no_model_correction = sino_dist.rsample().half()
-            # breakpoint()
-
-            # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
-
-
-            return sino_dist, phantom.float()
+        phantom = object_dist.rsample().half()
         
-        elif self.dataset in {'stacked_mnist', 'cifar10', 'celeba_64', 'celeba_256', 'imagenet_32', 'imagenet_64', 'ffhq',
-                              'lsun_bedroom_128', 'lsun_bedroom_256', 'lsun_church_64', 'lsun_church_128'}:
-            if self.num_mix_output == 1:
-                return NormalDecoder(logits, num_bits=self.num_bits)
-            else:
-                return DiscMixLogistic(logits, self.num_mix_output, num_bits=self.num_bits)
-        else:
-            raise NotImplementedError
+        # phantom is batch x channels x num_proj_pix x num_proj_pix
+        # move channel dimension to the last dimension
+        phantom = torch.transpose(phantom, 1,2)
+        phantom = torch.transpose(phantom, 2,3)
+
+        sino = project_torch(phantom, theta_degrees, pad=pad)
+        sino_raw = torch.exp(-sino)
+        sino_dist = normal.Normal(sino, reg_std + torch.sqrt(sino/poisson_noise_multiplier))
+
+        # # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
+        # sino_no_model_correction = sino_dist.rsample().half()
+
+
+        return sino_dist, phantom.float()
+    
+
 
     # def forward_physics(self, phantom, theta_degrees, poisson_noise_multiplier, pad):
     #     sino = project_torch(phantom, theta_degrees, pad=pad)

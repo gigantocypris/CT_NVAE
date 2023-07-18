@@ -3,6 +3,8 @@
 #
 # This work is licensed under the NVIDIA Source Code License
 # for NVAE. To view a copy of this license, see the LICENSE file.
+#
+# Modified July 18, 2023
 # ---------------------------------------------------------------
 
 """Code for getting the data loaders."""
@@ -19,113 +21,24 @@ import urllib
 from lmdb_datasets import LMDBDataset
 from thirdparty.lsun import LSUN
 
-
-class StackedMNIST(dset.MNIST):
-    def __init__(self, root, train=True, transform=None, target_transform=None,
-                 download=False):
-        super(StackedMNIST, self).__init__(root=root, train=train, transform=transform,
-                                           target_transform=target_transform, download=download)
-
-        index1 = np.hstack([np.random.permutation(len(self.data)), np.random.permutation(len(self.data))])
-        index2 = np.hstack([np.random.permutation(len(self.data)), np.random.permutation(len(self.data))])
-        index3 = np.hstack([np.random.permutation(len(self.data)), np.random.permutation(len(self.data))])
-        self.num_images = 2 * len(self.data)
-
-        self.index = []
-        for i in range(self.num_images):
-            self.index.append((index1[i], index2[i], index3[i]))
-
-    def __len__(self):
-        return self.num_images
-
-    def __getitem__(self, index):
-        img = np.zeros((28, 28, 3), dtype=np.uint8)
-        target = 0
-        for i in range(3):
-            img_, target_ = self.data[self.index[index][i]], int(self.targets[self.index[index][i]])
-            img[:, :, i] = img_
-            target += target_ * 10 ** (2 - i)
-
-        img = Image.fromarray(img, mode="RGB")
-
-        if self.transform is not None:
-            img = self.transform(img)
-
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
-
-
-
-class Binarize(object):
-    """ This class introduces a binarization transformation
-    """
-    def __call__(self, pic):
-        return torch.Tensor(pic.size()).bernoulli_(pic)
-
-    def __repr__(self):
-        return self.__class__.__name__ + '()'
-
-
-class CropCelebA64(object):
-    """ This class applies cropping for CelebA64. This is a simplified implementation of:
-    https://github.com/andersbll/autoencoding_beyond_pixels/blob/master/dataset/celeba.py
-    """
-    def __call__(self, pic):
-        new_pic = pic.crop((15, 40, 178 - 15, 218 - 30))
-        return new_pic
-
-    def __repr__(self):
-        return self.__class__.__name__ + '()'
-
-
-
 def get_loaders(args):
     """Get data loaders for required dataset."""
     return get_loaders_eval(args.dataset, args)
 
-def download_omniglot(data_dir):
-    filename = 'chardata.mat'
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
-    url = 'https://raw.github.com/yburda/iwae/master/datasets/OMNIGLOT/chardata.mat'
-
-    filepath = os.path.join(data_dir, filename)
-    if not os.path.exists(filepath):
-        filepath, _ = urllib.request.urlretrieve(url, filepath)
-        print('Downloaded', filename)
-
-    return
-
-
-def load_omniglot(data_dir):
-    download_omniglot(data_dir)
-
-    data_path = os.path.join(data_dir, 'chardata.mat')
-
-    omni = loadmat(data_path)
-    train_data = 255 * omni['data'].astype('float32').reshape((28, 28, -1)).transpose((2, 1, 0))
-    test_data = 255 * omni['testdata'].astype('float32').reshape((28, 28, -1)).transpose((2, 1, 0))
-
-    train_data = train_data.astype('uint8')
-    test_data = test_data.astype('uint8')
-
-    return train_data, test_data
-
-class Foam(Dataset):
-    def __init__(self, sparse_recons, sparse_sino, masks, theta, 
-                 x_size, y_size, num_proj_pix, ground_truth,
-                 ):
-        self.sparse_recons = sparse_recons[:,None,:,:]
-        self.sparse_sino = sparse_sino
+class CT_Dataset(Dataset):
+    def __init__(self, ground_truth, reconstruction, sparse_sinogram, sparse_sinogram_raw,\
+                 object_ids, mask, x_size, y_size, num_proj_pix, theta):
+        self.sparse_recons = reconstruction[:,None,:,:]
+        self.sparse_sino = sparse_sinogram
+        self.sparse_sino_raw  = sparse_sinogram_raw
+        self.object_ids = object_ids
         self.ground_truth = ground_truth
-        self.masks = masks
+        self.masks = mask
         self.theta = theta
         self.x_size = x_size
         self.y_size = y_size
         self.num_proj_pix = num_proj_pix
-        self.index = [i for i in range(len(sparse_recons))]
+        self.index = [i for i in range(len(self.sparse_recons))]
 
     def __getitem__(self, index):
         # d = self.transform(self.sparse_recons[index])
@@ -136,141 +49,38 @@ class Foam(Dataset):
         y_size = torch.from_numpy(self.y_size).float()
         num_proj_pix = torch.from_numpy(self.num_proj_pix).float()
         ground_truth = torch.from_numpy(self.ground_truth[index]).float()
-        return (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix, ground_truth)
+        sparse_sinogram_raw = torch.from_numpy(self.sparse_sino_raw[index]).float()
+        object_id = torch.from_numpy(self.object_ids[index]).float()
+        return (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
+                angles, x_size, y_size, num_proj_pix, ground_truth)
 
     def __len__(self):
         return len(self.sparse_recons)
 
-class OMNIGLOT(Dataset):
-    def __init__(self, data, transform):
-        self.data = data
-        self.transform = transform
-
-    def __getitem__(self, index):
-        d = self.data[index]
-        img = Image.fromarray(d)
-        return self.transform(img), 0     # return zero as label.
-
-    def __len__(self):
-        return len(self.data)
+def load_data(dataset, dataset_dir, dataset_type='train'):
+    ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_ground_truth.npy')
+    reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_reconstructions.npy')
+    sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms.npy')
+    sparse_sinogram_raw = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms_raw.npy')
+    object_ids = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_3d_object_ids.npy')
+    mask = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_masks.npy')
+    x_size = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_x_size.npy')
+    y_size = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_y_size.npy')
+    num_proj_pix = np.load(dataset_dir +  '/dataset_' + dataset + '/' + dataset_type + '_num_proj_pix.npy')
+    theta = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_theta.npy')
+    return (ground_truth, reconstruction, sparse_sinogram, sparse_sinogram_raw,\
+        object_ids, mask, x_size, y_size, num_proj_pix, theta)
 
 def get_loaders_eval(dataset, args):
     """Get train and valid loaders for cifar10/tiny imagenet."""
 
-    if dataset == 'cifar10':
-        num_classes = 10
-        train_transform, valid_transform = _data_transforms_cifar10(args)
-        train_data = dset.CIFAR10(
-            root=args.data, train=True, download=True, transform=train_transform)
-        valid_data = dset.CIFAR10(
-            root=args.data, train=False, download=True, transform=valid_transform)
-    elif dataset == 'mnist':
-        num_classes = 10
-        train_transform, valid_transform = _data_transforms_mnist(args)
-        train_data = dset.MNIST(
-            root=args.data, train=True, download=True, transform=train_transform)
-        valid_data = dset.MNIST(
-            root=args.data, train=False, download=True, transform=valid_transform)
-    elif dataset == 'stacked_mnist':
-        num_classes = 1000
-        train_transform, valid_transform = _data_transforms_stacked_mnist(args)
-        train_data = StackedMNIST(
-            root=args.data, train=True, download=True, transform=train_transform)
-        valid_data = StackedMNIST(
-            root=args.data, train=False, download=True, transform=valid_transform)
-    elif dataset == 'omniglot':
-        num_classes = 0
-        download_omniglot(args.data)
-        train_transform, valid_transform = _data_transforms_mnist(args)
-        train_data, valid_data = load_omniglot(args.data)
-        train_data = OMNIGLOT(train_data, train_transform)
-        valid_data = OMNIGLOT(valid_data, valid_transform)
-    elif dataset.startswith('celeba'):
-        if dataset == 'celeba_64':
-            resize = 64
-            num_classes = 40
-            train_transform, valid_transform = _data_transforms_celeba64(resize)
-            train_data = LMDBDataset(root=args.data, name='celeba64', train=True, transform=train_transform, is_encoded=True)
-            valid_data = LMDBDataset(root=args.data, name='celeba64', train=False, transform=valid_transform, is_encoded=True)
-        elif dataset in {'celeba_256'}:
-            num_classes = 1
-            resize = int(dataset.split('_')[1])
-            train_transform, valid_transform = _data_transforms_generic(resize)
-            train_data = LMDBDataset(root=args.data, name='celeba', train=True, transform=train_transform)
-            valid_data = LMDBDataset(root=args.data, name='celeba', train=False, transform=valid_transform)
-        else:
-            raise NotImplementedError
-    elif dataset.startswith('lsun'):
-        if dataset.startswith('lsun_bedroom'):
-            resize = int(dataset.split('_')[-1])
-            num_classes = 1
-            train_transform, valid_transform = _data_transforms_lsun(resize)
-            train_data = LSUN(root=args.data, classes=['bedroom_train'], transform=train_transform)
-            valid_data = LSUN(root=args.data, classes=['bedroom_val'], transform=valid_transform)
-        elif dataset.startswith('lsun_church'):
-            resize = int(dataset.split('_')[-1])
-            num_classes = 1
-            train_transform, valid_transform = _data_transforms_lsun(resize)
-            train_data = LSUN(root=args.data, classes=['church_outdoor_train'], transform=train_transform)
-            valid_data = LSUN(root=args.data, classes=['church_outdoor_val'], transform=valid_transform)
-        elif dataset.startswith('lsun_tower'):
-            resize = int(dataset.split('_')[-1])
-            num_classes = 1
-            train_transform, valid_transform = _data_transforms_lsun(resize)
-            train_data = LSUN(root=args.data, classes=['tower_train'], transform=train_transform)
-            valid_data = LSUN(root=args.data, classes=['tower_val'], transform=valid_transform)
-        else:
-            raise NotImplementedError
-    elif dataset.startswith('imagenet'):
-        num_classes = 1
-        resize = int(dataset.split('_')[1])
-        assert args.data.replace('/', '')[-3:] == dataset.replace('/', '')[-3:], 'the size should match'
-        train_transform, valid_transform = _data_transforms_generic(resize)
-        train_data = LMDBDataset(root=args.data, name='imagenet-oord', train=True, transform=train_transform)
-        valid_data = LMDBDataset(root=args.data, name='imagenet-oord', train=False, transform=valid_transform)
-    elif dataset.startswith('ffhq'):
-        num_classes = 1
-        resize = 256
-        train_transform, valid_transform = _data_transforms_generic(resize)
-        train_data = LMDBDataset(root=args.data, name='ffhq', train=True, transform=train_transform)
-        valid_data = LMDBDataset(root=args.data, name='ffhq', train=False, transform=valid_transform)
-    else:
-        num_classes = 0
+    num_classes = 0
 
-        # train_transform, valid_transform = _data_transforms_foam(args)
-        dataset_dir = os.environ['DATASET_DIR']
+    # train_transform, valid_transform = _data_transforms_foam(args)
+    dataset_dir = os.environ['DATASET_DIR']
 
-        train_ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/train_ground_truth.npy')
-        valid_ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/valid_ground_truth.npy')
-
-        train_reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/train_reconstructions.npy')
-        valid_reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/valid_reconstructions.npy')
-
-        train_sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/train_sparse_sinograms.npy')
-        valid_sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/valid_sparse_sinograms.npy')
-
-        train_mask = np.load(dataset_dir + '/dataset_' + dataset + '/train_masks.npy')
-        valid_mask = np.load(dataset_dir + '/dataset_' + dataset + '/valid_masks.npy')
-
-
-        train_x_size = np.load(dataset_dir + '/dataset_' + dataset + '/train_x_size.npy')
-        valid_x_size = np.load(dataset_dir + '/dataset_' + dataset + '/valid_x_size.npy')
-
-        train_y_size = np.load(dataset_dir + '/dataset_' + dataset + '/train_y_size.npy')
-        valid_y_size = np.load(dataset_dir + '/dataset_' + dataset + '/valid_y_size.npy')
-
-        train_num_proj_pix = np.load(dataset_dir +  '/dataset_' + dataset + '/train_num_proj_pix.npy')
-        valid_num_proj_pix = np.load(dataset_dir + '/dataset_' + dataset + '/valid_num_proj_pix.npy')
-
-        train_theta = np.load(dataset_dir + '/dataset_' + dataset + '/train_theta.npy')
-        valid_theta = np.load(dataset_dir + '/dataset_' + dataset + '/valid_theta.npy')
-
-        train_data = Foam(train_reconstruction, train_sparse_sinogram, train_mask, train_theta,
-                          train_x_size, train_y_size, train_num_proj_pix, train_ground_truth,
-                          )
-        valid_data = Foam(valid_reconstruction, valid_sparse_sinogram, valid_mask, valid_theta,
-                          valid_x_size, valid_y_size, valid_num_proj_pix, valid_ground_truth,
-                          )
+    train_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='train'))
+    valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid'))
 
     train_sampler, valid_sampler = None, None
     if args.distributed:
@@ -288,110 +98,3 @@ def get_loaders_eval(dataset, args):
         sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
 
     return train_queue, valid_queue, num_classes
-
-
-def _data_transforms_cifar10(args):
-    """Get data transforms for cifar10."""
-
-    train_transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor()
-    ])
-
-    valid_transform = transforms.Compose([
-        transforms.ToTensor()
-    ])
-
-    return train_transform, valid_transform
-
-
-def _data_transforms_mnist(args):
-    """Get data transforms for cifar10."""
-    train_transform = transforms.Compose([
-        transforms.Pad(padding=2),
-        transforms.ToTensor(),
-        Binarize(),
-    ])
-
-    valid_transform = transforms.Compose([
-        transforms.Pad(padding=2),
-        transforms.ToTensor(),
-        Binarize(),
-    ])
-
-    return train_transform, valid_transform
-
-# def _data_transforms_foam(args):
-#     """Get data transforms for foam dataset."""
-#     train_transform = transforms.Compose([
-#         transforms.ToTensor(),
-#     ])
-
-#     valid_transform = transforms.Compose([
-#         transforms.ToTensor(),
-#     ])
-
-#     return train_transform, valid_transform
-
-def _data_transforms_stacked_mnist(args):
-    """Get data transforms for cifar10."""
-    train_transform = transforms.Compose([
-        transforms.Pad(padding=2),
-        transforms.ToTensor()
-    ])
-
-    valid_transform = transforms.Compose([
-        transforms.Pad(padding=2),
-        transforms.ToTensor()
-    ])
-
-    return train_transform, valid_transform
-
-
-def _data_transforms_generic(size):
-    train_transform = transforms.Compose([
-        transforms.Resize(size),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-    ])
-
-    valid_transform = transforms.Compose([
-        transforms.Resize(size),
-        transforms.ToTensor(),
-    ])
-
-    return train_transform, valid_transform
-
-
-def _data_transforms_celeba64(size):
-    train_transform = transforms.Compose([
-        CropCelebA64(),
-        transforms.Resize(size),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-    ])
-
-    valid_transform = transforms.Compose([
-        CropCelebA64(),
-        transforms.Resize(size),
-        transforms.ToTensor(),
-    ])
-
-    return train_transform, valid_transform
-
-
-def _data_transforms_lsun(size):
-    train_transform = transforms.Compose([
-        transforms.Resize(size),
-        transforms.RandomCrop(size),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-    ])
-
-    valid_transform = transforms.Compose([
-        transforms.Resize(size),
-        transforms.CenterCrop(size),
-        transforms.ToTensor(),
-    ])
-
-    return train_transform, valid_transform

@@ -65,12 +65,32 @@ computed_tomography/create_sinograms.py
 3. Split into training/test/validate
 split within the folder images_foam
 scripts/create_splits.py
-STOPPED HERE
 4. Create a dataset from each of the splits
-this will be in the newly created folder dataset_foam; each 3D example should have a common identifier for ring artifact removal
+this will be in the newly created folder dataset_foam; each 3D example has a common identifier for ring artifact removal
 computed_tomography/create_dataset.py
 
 
 `CT_NVAE` environment:
+```
+conda activate CT_NVAE
+salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+cd output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export EXPR_ID=test_0000_foam2
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
+export CHECKPOINT_DIR=checkpts
+export MASTER_ADDR=$(hostname)
+```
+
+Single GPU:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 8 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
+Multi-GPU:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 8 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
 5. Refactor the CT_NVAE code to allow any CT dataset in (remove all the old datasets), removal of ring artifact, option for the output distribution to be Gaussian (need an extra dimension in the output) or Bernoulli
 6. Go through and make the entire pipeline sbatch-able

@@ -68,11 +68,11 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
     # remove angles
     num_angles = len(theta)
     sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles)
-    sparse_sinogram = exp_sinogram[sparse_angles,:,:]
+    sparse_sinogram_raw = exp_sinogram[sparse_angles,:,:]
 
     # transform sinogram with tomopy
     # sinogram in tomopy.recon must be num_angles x num_z x num_proj_pix
-    sparse_sinogram = -np.log(sparse_sinogram) # linearize the sinogram
+    sparse_sinogram = -np.log(sparse_sinogram_raw) # linearize the sinogram
     reconstruction = tomopy.recon(sparse_sinogram, theta[sparse_angles], center=None, sinogram_order=False, algorithm='gridrec')
     # reconstruction = tomopy.recon(sparse_sinogram, theta[sparse_angles], algorithm='sirt',center=None, 
     #                     sinogram_order=False, interpolation='LINEAR', num_iter=20)
@@ -80,7 +80,7 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
     if remove_ring_artifact:
         reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
     
-    return sparse_angles, reconstruction, sparse_sinogram
+    return sparse_angles, reconstruction, sparse_sinogram, sparse_sinogram_raw
 
 def create_sparse_dataset(x_train_sinograms, 
                           theta,

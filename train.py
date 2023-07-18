@@ -3,6 +3,8 @@
 #
 # This work is licensed under the NVIDIA Source Code License
 # for NVAE. To view a copy of this license, see the LICENSE file.
+# 
+# Modified July 18, 2023
 # ---------------------------------------------------------------
 
 import argparse
@@ -20,8 +22,6 @@ from thirdparty.adamax import Adamax
 import utils
 import datasets
 
-from fid.fid_score import compute_statistics_of_generator, load_statistics, calculate_frechet_distance
-from fid.inception import InceptionV3
 
 import matplotlib.pyplot as plt
 
@@ -105,15 +105,6 @@ def main(args):
         # generate samples less frequently
         eval_freq = 1 if args.epochs <= 50 else 20
         if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
-            # with torch.no_grad():
-            #     num_samples = 16
-            #     n = int(np.floor(np.sqrt(num_samples)))
-            #     for t in [0.7, 0.8, 0.9, 1.0]:
-            #         logits = model.sample(num_samples, t)
-            #         output, phantom = model.decoder_output(logits)
-            #         output_img = output.mean if isinstance(output, torch.distributions.bernoulli.Bernoulli) else output.sample(t)
-            #         output_tiled = utils.tile_image(output_img, n)
-            #         writer.add_image('generated_%0.1f' % t, output_tiled, global_step)
 
             valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging)
             logging.info('valid_nelbo %f', valid_nelbo)
@@ -134,7 +125,7 @@ def main(args):
                             'args': args, 'arch_instance': arch_instance, 'scheduler': cnn_scheduler.state_dict(),
                             'grad_scalar': grad_scalar.state_dict()}, checkpoint_file)
 
-    """
+
     # Final validation
     valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=1000, args=args, logging=logging)
     logging.info('final valid nelbo %f', valid_nelbo)
@@ -143,7 +134,7 @@ def main(args):
     writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
     writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
     writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
-    """
+
     writer.close()
 
 
@@ -157,18 +148,15 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
     model.train()
     for step, x_full in enumerate(train_queue):
 
-        if args.dataset == 'foam' or 'covid':
-            # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix, ground_truth)
-            x = x_full[0]
+        # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
+        # angles, x_size, y_size, num_proj_pix, ground_truth)
+        x = x_full[0]
 
-            # import matplotlib.pyplot as plt
-            # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
+        # import matplotlib.pyplot as plt
+        # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
 
-            theta = x_full[2]
-            theta = theta.cuda()
-        else:
-            x = x_full
-            x = x[0] if len(x) > 1 else x
+        theta = x_full[4]
+        theta = theta.cuda()
 
         x = x.cuda()
 
@@ -195,7 +183,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
             output, phantom = model.decoder_output(logits, temperature, theta_degrees.half(), args.pnm, pad=False) 
             kl_coeff = utils.kl_coeff(global_step, args.kl_anneal_portion * args.num_total_iter,
                                       args.kl_const_portion * args.num_total_iter, args.kl_const_coeff)
-            recon_loss = utils.reconstruction_loss(output, x_full[1].cuda(), args.dataset, crop=model.crop_output)
+            recon_loss = utils.reconstruction_loss(output, x_full[2].cuda(), args.dataset, crop=model.crop_output)
             balanced_kl, kl_coeffs, kl_vals = utils.kl_balancer(kl_all, kl_coeff, kl_balance=True, alpha_i=alpha_i)
 
             nelbo_batch = recon_loss + balanced_kl
@@ -219,7 +207,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
         nelbo.update(loss.data, 1)
 
         if (global_step + 1) % 5 == 0:
-            if (global_step + 1) % 10 == 0:  # reduced frequency
+            if (global_step + 1) % 20 == 0:  # reduced frequency
                 n = int(np.floor(np.sqrt(x.size(0))))
 
                 x_img = x[:n*n]
@@ -299,24 +287,21 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
 
 
 def test(valid_queue, model, num_samples, args, logging):
+    print('WARNING: NOT UPDATED')
+    NotImplementedError('This function has not been updated to work with the CT dataset.')
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
     for step, x_full in enumerate(valid_queue):
-        if args.dataset == 'foam' or 'covid':
-            # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
-            x = x_full[0]
-            # import matplotlib.pyplot as plt
-            # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
+        # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
+        x = x_full[0]
+        # import matplotlib.pyplot as plt
+        # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
 
-            theta = x_full[2]
-            theta = theta.cuda()
-        else:
-            x = x_full
-            x = x[0] if len(x) > 1 else x
-
+        theta = x_full[2]
+        theta = theta.cuda()
         x = x.cuda()
 
         # change bit length
@@ -352,45 +337,6 @@ def test(valid_queue, model, num_samples, args, logging):
     return neg_log_p_avg.avg, nelbo_avg.avg
 
 
-def create_generator_vae(model, batch_size, num_total_samples):
-    num_iters = int(np.ceil(num_total_samples / batch_size))
-    for i in range(num_iters):
-        with torch.no_grad():
-            logits = model.sample(batch_size, 1.0)
-            output, phantom = model.decoder_output(logits)
-            output_img = output.mean if isinstance(output, torch.distributions.bernoulli.Bernoulli) else output.mean()
-        yield output_img.float()
-
-
-def test_vae_fid(model, args, total_fid_samples):
-    dims = 2048
-    device = 'cuda'
-    num_gpus = args.num_process_per_node * args.num_proc_node
-    num_sample_per_gpu = int(np.ceil(total_fid_samples / num_gpus))
-
-    g = create_generator_vae(model, args.batch_size, num_sample_per_gpu)
-    block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
-    model = InceptionV3([block_idx], model_dir=args.fid_dir).to(device)
-    m, s = compute_statistics_of_generator(g, model, args.batch_size, dims, device, max_samples=num_sample_per_gpu)
-
-    # share m and s
-    m = torch.from_numpy(m).cuda()
-    s = torch.from_numpy(s).cuda()
-    # take average across gpus
-    utils.average_tensor(m, args.distributed)
-    utils.average_tensor(s, args.distributed)
-
-    # convert m, s
-    m = m.cpu().numpy()
-    s = s.cpu().numpy()
-
-    # load precomputed m, s
-    path = os.path.join(args.fid_dir, args.dataset + '.npz')
-    m0, s0 = load_statistics(path)
-
-    fid = calculate_frechet_distance(m0, s0, m, s)
-    return fid
-
 
 def init_processes(rank, size, fn, args):
     """ Initialize the distributed environment. """
@@ -412,21 +358,12 @@ def cleanup():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('encoder decoder examiner')
     # experimental results
-    parser.add_argument('--root', type=str, default='/tmp/nasvae/expr',
-                        help='location of the results')
     parser.add_argument('--save', type=str, default='exp',
                         help='id used for storing intermediate results')
     # data
     parser.add_argument('--dataset', type=str, default='foam',
-                        help='which dataset to use')
-    """
-    Default dataset choices:
-    'cifar10', 'mnist', 'omniglot', 'celeba_64', 'celeba_256',
-    'imagenet_32', 'ffhq', 'lsun_bedroom_128', 'stacked_mnist',
-    'lsun_church_128', 'lsun_church_64'
-    """
-    parser.add_argument('--data', type=str, default='/tmp/nasvae/data',
-                        help='location of the data corpus')
+                        help='dataset type to use, dataset should be in format dataset_type')
+
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
                         help='batch size per GPU')

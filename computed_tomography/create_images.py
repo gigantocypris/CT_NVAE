@@ -29,9 +29,9 @@ def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.2, GAP = 
     example = []
     for z_index in range(Z_SLICES):
         phantom = xd.Foam(size_range=[SIZE_UPPER, SIZE_LOWER], gap=GAP, porosity=np.random.rand())
-        discrete = xd.discrete_phantom(phantom, N_PIXEL)/N_PIXEL
+        discrete = xd.discrete_phantom(phantom, N_PIXEL)
         example.append(discrete)
-    example = np.stack(example, axis=0) # shape is Z_SLICES x N_PIXEL x N_PIXEL
+    example = np.stack(example, axis=0)/N_PIXEL # shape is Z_SLICES x N_PIXEL x N_PIXEL
     return example, None
 
 def create_covid_example(nib_file_path):

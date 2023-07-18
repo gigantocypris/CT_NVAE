@@ -202,7 +202,7 @@ class AutoEncoder(nn.Module):
     def init_stem(self):
         """Initial conversion of number of channels"""
         Cout = self.num_channels_enc
-        Cin = 1 if self.dataset in {'mnist', 'omniglot', 'foam', 'covid'} else 3
+        Cin = 1
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 
@@ -490,12 +490,11 @@ class AutoEncoder(nn.Module):
                        ):
         # process the output of the decoder into a distribution
         # sample the distribution to get the phantom
-        breakpoint()
         if use_bernoulli:
-            object_dist = RelaxedBernoulli(temperature, logits=logits)
+            object_dist = RelaxedBernoulli(temperature, logits=logits[:,0][:,None,:,:])
             
         else: # use normal distribution
-            object_dist = normal.Normal(logits[0], reg_std + torch.exp(logits[1]))
+            object_dist = normal.Normal(logits[:,0][:,None,:,:], reg_std + torch.exp(logits[:,1][:,None,:,:]))
 
         phantom = object_dist.rsample().half()
         
@@ -506,8 +505,8 @@ class AutoEncoder(nn.Module):
 
         sino = project_torch(phantom, theta_degrees, pad=pad)
         sino_raw = torch.exp(-sino)
-        sino_dist = normal.Normal(sino, reg_std + torch.sqrt(sino/poisson_noise_multiplier))
-
+        sino_dist = normal.Normal(sino_raw, reg_std + torch.sqrt(sino_raw/poisson_noise_multiplier))
+        breakpoint()
         # # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
         # sino_no_model_correction = sino_dist.rsample().half()
 

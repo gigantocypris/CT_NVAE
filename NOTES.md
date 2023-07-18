@@ -72,6 +72,7 @@ computed_tomography/create_dataset.py
 
 `CT_NVAE` environment:
 ```
+module load python
 conda activate CT_NVAE
 salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 cd output_CT_NVAE

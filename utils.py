@@ -239,10 +239,7 @@ def log_iw(decoder, x, log_q, log_p, dataset, crop=False):
 
 
 def reconstruction_loss(decoder, x, dataset, crop=False):
-    from distributions import Normal, DiscMixLogistic
-
     recon = decoder.log_prob(x)
-
     return - torch.sum(recon, dim=[1, 2])    # summation over RGB is done.
    
 

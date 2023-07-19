@@ -177,5 +177,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset f
 #### TODO: Convert to sbatch scripts
 #### TODO: Run the tests in computed_tomography
 #### TODO: Remove descriptions in the preprocessing scripts
+#### TODO: Clean-up the scripts
+#### TODO: Update the README
 
 ### Full pass through the pipeline with the COVID images:

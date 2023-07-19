@@ -28,7 +28,7 @@ def main(source_path, destination_path, smaller):
 #     print('Number of unique PatientIDs:', num_unique_patient_ids)
 
     # Organize DICOM files into patient folders
-    print("Organizing DICOM files by patient)
+    print("Organizing DICOM files by patient")
     organize_dcm_files_by_patient_id(dcm_path, dcm_organized_path)
 
     # Make a dataset with 3D numpy arrays (can be smaller)

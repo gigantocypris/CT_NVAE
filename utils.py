@@ -300,35 +300,15 @@ def one_hot(indices, depth, dim):
 
 
 def num_output(dataset):
-    if dataset in {'mnist', 'omniglot'}:
-        return 28 * 28
-    elif dataset == 'cifar10':
-        return 3 * 32 * 32
-    elif dataset.startswith('celeba') or dataset.startswith('imagenet') or dataset.startswith('lsun'):
-        size = int(dataset.split('_')[-1])
-        return 3 * size * size
-    elif dataset == 'ffhq':
-        return 3 * 256 * 256
-    else:
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
-        return size * size
+    dataset_dir = os.environ['DATASET_DIR']
+    size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+    return size * size
 
 
 def get_input_size(dataset):
-    if dataset in {'mnist', 'omniglot'}:
-        return 32
-    elif dataset == 'cifar10':
-        return 32
-    elif dataset.startswith('celeba') or dataset.startswith('imagenet') or dataset.startswith('lsun'):
-        size = int(dataset.split('_')[-1])
-        return size
-    elif dataset == 'ffhq':
-        return 256
-    else:
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
-        return size
+    dataset_dir = os.environ['DATASET_DIR']
+    size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+    return size
 
 
 

@@ -74,8 +74,6 @@ def load_data(dataset, dataset_dir, dataset_type='train'):
 def get_loaders_eval(dataset, args):
     """Get train and valid loaders for cifar10/tiny imagenet."""
 
-    num_classes = 0
-
     # train_transform, valid_transform = _data_transforms_foam(args)
     dataset_dir = os.environ['DATASET_DIR']
 
@@ -97,4 +95,4 @@ def get_loaders_eval(dataset, args):
         shuffle=(valid_sampler is None),
         sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
 
-    return train_queue, valid_queue, num_classes
+    return train_queue, valid_queue

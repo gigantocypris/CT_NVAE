@@ -6,16 +6,16 @@ python create_dataset.py --dir <DIR> --pnm <POISSON_NOISE_MULTIPLIER> --sparse <
 
 Example for foam images:
 cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True
+python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
 
 Example for covid images:
 cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 --sparse 20 --random True
+python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 --sparse 20 --random True --ring 0
 """
 
 import argparse
 import numpy as np
-from utils import process_sinogram, create_sinogram, get_images, create_folder, create_sparse_dataset
+from utils import process_sinogram
 import time
 import glob
 
@@ -54,7 +54,7 @@ def main(args, dataset_type):
         # make sparse sinogram and reconstruct
         sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram = \
             process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 
-                             poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, ring_artifact_strength = 0.3)
+                             poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, ring_artifact_strength = args.ring_artifact_strength)
 
         # append to lists
 
@@ -99,6 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
     parser.add_argument('--sparse', dest='num_sparse_angles', type=int, help='number of angles to image per sample (dose remains the same)', default=10)
     parser.add_argument('--random', dest='random', type=bool, help='If True, randomly pick angles', default=True)
+    parser.add_argument('--ring', dest='ring_artifact_strength', type=float, help='if >0, add ring artifact to sinograms', default=0.0)
     args = parser.parse_args()
 
 

@@ -36,7 +36,7 @@ def main(args):
     writer = utils.Writer(args.global_rank, args.save)
 
     # Get data loaders.
-    train_queue, valid_queue, num_classes = datasets.get_loaders(args)
+    train_queue, valid_queue = datasets.get_loaders(args)
     args.num_total_iter = len(train_queue) * args.epochs
     warmup_iters = len(train_queue) * args.warmup_epochs
     swa_start = len(train_queue) * (args.epochs - 1)
@@ -127,7 +127,7 @@ def main(args):
 
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=1000, args=args, logging=logging)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -137,6 +137,31 @@ def main(args):
 
     writer.close()
 
+def parse_x_full(x_full, args):
+    # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
+    # angles, x_size, y_size, num_proj_pix, ground_truth)
+    x = x_full[0].cuda()
+    sparse_sinogram_raw = x_full[2].cuda()
+    sparse_sinogram = x_full[1].cuda()
+    ground_truth = x_full[8].cuda()
+    theta = x_full[4].cuda()
+
+    # change bit length
+    x = utils.pre_process(x, args.num_x_bits)
+    return(x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta)
+
+def process_decoder_output(x, args, model, theta,
+                           sparse_sinogram_raw):
+
+    logits, log_q, log_p, kl_all, kl_diag = model(x)
+    temperature = torch.tensor([args.temp_bernoulli])
+    temperature = temperature.half().cuda()
+
+    theta_degrees = theta*180/np.pi
+    sino_raw_dist, phantom = model.decoder_output(logits, temperature, theta_degrees.half(), args.pnm, pad=False) 
+    recon_loss = utils.reconstruction_loss(sino_raw_dist, sparse_sinogram_raw, args.dataset, crop=model.crop_output)
+    return(logits, log_q, log_p, kl_all, kl_diag, 
+           sino_raw_dist, phantom, recon_loss)
 
 def train(train_queue, model, cnn_optimizer, grad_scalar, 
           global_step, warmup_iters, writer, logging,
@@ -147,21 +172,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
     nelbo = utils.AvgrageMeter()
     model.train()
     for step, x_full in enumerate(train_queue):
-
-        # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
-        # angles, x_size, y_size, num_proj_pix, ground_truth)
-        x = x_full[0]
-
-        # import matplotlib.pyplot as plt
-        # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
-
-        theta = x_full[4]
-        theta = theta.cuda()
-
-        x = x.cuda()
-
-        # change bit length
-        x = utils.pre_process(x, args.num_x_bits)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta = parse_x_full(x_full, args)
 
         # warm-up lr
         if global_step < warmup_iters:
@@ -175,18 +186,16 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
 
         cnn_optimizer.zero_grad()
         with autocast():
-            logits, log_q, log_p, kl_all, kl_diag = model(x)
-            temperature = torch.tensor([args.temp_bernoulli])
-            temperature = temperature.half().cuda()
-
-            theta_degrees = theta*180/np.pi
-            output, phantom = model.decoder_output(logits, temperature, theta_degrees.half(), args.pnm, pad=False) 
+            logits, log_q, log_p, kl_all, kl_diag, \
+            sino_raw_dist, phantom, recon_loss = \
+                process_decoder_output(x, args, model, theta, sparse_sinogram_raw)
+            
             kl_coeff = utils.kl_coeff(global_step, args.kl_anneal_portion * args.num_total_iter,
                                       args.kl_const_portion * args.num_total_iter, args.kl_const_coeff)
-            recon_loss = utils.reconstruction_loss(output, x_full[2].cuda(), args.dataset, crop=model.crop_output)
             balanced_kl, kl_coeffs, kl_vals = utils.kl_balancer(kl_all, kl_coeff, kl_balance=True, alpha_i=alpha_i)
 
             nelbo_batch = recon_loss + balanced_kl
+            
             loss = torch.mean(nelbo_batch)
             norm_loss = model.spectral_norm_parallel()
             bn_loss = model.batchnorm_loss()
@@ -218,7 +227,6 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 plt.imshow(x_tiled[0].detach().cpu().numpy())
                 plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
 
-                ground_truth = x_full[6]
                 ground_truth = ground_truth[:n*n,None]
                 ground_truth_tiled = utils.tile_image(ground_truth, n)
                 writer.add_image('ground truth', ground_truth_tiled, global_step)
@@ -226,17 +234,17 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
                 plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
 
-                output_img = output.mean if isinstance(output, torch.distributions.bernoulli.Bernoulli) else output.sample()
-                output_img = output_img[:n*n]
-                output_img = output_img[:,None,:,:]
-                output_tiled = utils.tile_image(output_img, n)     
+                output_sinogram_raw = sino_raw_dist.mean if isinstance(sino_raw_dist, torch.distributions.bernoulli.Bernoulli) else sino_raw_dist.sample()
+                output_sinogram_raw = output_sinogram_raw[:n*n]
+                output_sinogram_raw = output_sinogram_raw[:,None,:,:]
+                output_sinogram_raw = utils.tile_image(output_sinogram_raw, n)  
+                output_sinogram_raw = -torch.log(output_sinogram_raw + 1e-8) # linearize
 
-                x_sino = x_full[1].cuda()
-                x_sino = x_sino[:n*n]
-                x_sino = x_sino[:,None,:,:]
-                x_sino_tiled = utils.tile_image(x_sino, n)  
-                in_out_tiled = torch.cat((x_sino_tiled, output_tiled), dim=2)
-
+                sparse_sinogram = sparse_sinogram[:n*n]
+                sparse_sinogram = sparse_sinogram[:,None,:,:]
+                sparse_sinogram_tiled = utils.tile_image(sparse_sinogram, n)  
+                in_out_tiled = torch.cat((sparse_sinogram_tiled, output_sinogram_raw), dim=2)
+                # breakpoint()   
                 writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
                 plt.figure()
                 plt.imshow(in_out_tiled[0].detach().cpu().numpy())
@@ -266,7 +274,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                               'param_groups'][0]['lr'], global_step)
             writer.add_scalar('train/nelbo_iter', loss, global_step)
             writer.add_scalar('train/kl_iter', torch.mean(sum(kl_all)), global_step)
-            writer.add_scalar('train/recon_iter', torch.mean(utils.reconstruction_loss(output, x_full[1].cuda(), args.dataset, crop=model.crop_output)), global_step)
+            writer.add_scalar('train/recon_iter', torch.mean(utils.reconstruction_loss(sino_raw_dist, sparse_sinogram_raw, args.dataset, crop=model.crop_output)), global_step)
             writer.add_scalar('kl_coeff/coeff', kl_coeff, global_step)
             total_active = 0
             for i, kl_diag_i in enumerate(kl_diag):
@@ -287,40 +295,26 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
 
 
 def test(valid_queue, model, num_samples, args, logging):
-    print('WARNING: NOT UPDATED')
-    NotImplementedError('This function has not been updated to work with the CT dataset.')
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
     for step, x_full in enumerate(valid_queue):
-        # x_full is (sparse_reconstruction, sparse_sinogram, angles, x_size, y_size, num_proj_pix)
-        x = x_full[0]
-        # import matplotlib.pyplot as plt
-        # plt.imshow(x_full[0][0]);plt.save('sparse_recon.png')
-
-        theta = x_full[2]
-        theta = theta.cuda()
-        x = x.cuda()
-
-        # change bit length
-        x = utils.pre_process(x, args.num_x_bits)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta = parse_x_full(x_full, args)
 
         with torch.no_grad():
             nelbo, log_iw = [], []
             for k in range(num_samples):
-                logits, log_q, log_p, kl_all, _ = model(x)
-                temperature = torch.tensor([args.temp_bernoulli])
-                temperature = temperature.half().cuda()
+                logits, log_q, log_p, kl_all, kl_diag, \
+                sino_raw_dist, phantom, recon_loss = \
+                    process_decoder_output(x, args, model, theta, sparse_sinogram_raw)
 
-                theta_degrees = theta*180/np.pi
-                output, phantom = model.decoder_output(logits.half(), temperature,theta_degrees.half(), args.pnm, pad=False)
-                recon_loss = utils.reconstruction_loss(output, x_full[1].cuda(), args.dataset, crop=model.crop_output)
                 balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
                 nelbo_batch = recon_loss + balanced_kl
+                
                 nelbo.append(nelbo_batch)
-                log_iw.append(utils.log_iw(output, x_full[1].cuda(), log_q, log_p, args.dataset, crop=model.crop_output))
+                log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
 
             nelbo = torch.mean(torch.stack(nelbo, dim=1))
             log_p = torch.mean(torch.logsumexp(torch.stack(log_iw, dim=1), dim=1) - np.log(num_samples))

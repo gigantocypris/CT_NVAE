@@ -486,17 +486,17 @@ class AutoEncoder(nn.Module):
 
     def decoder_output(self, logits, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
-                       use_bernoulli=False, reg_std=1e-3,
+                       use_bernoulli=True, reg_std=1e-3, normalizer=128,
                        ):
         # process the output of the decoder into a distribution
         # sample the distribution to get the phantom
         if use_bernoulli:
             object_dist = RelaxedBernoulli(temperature, logits=logits[:,0][:,None,:,:])
+            phantom = object_dist.rsample().half()/128
             
         else: # use normal distribution
-            object_dist = normal.Normal(logits[:,0][:,None,:,:], reg_std + torch.exp(logits[:,1][:,None,:,:]))
-
-        phantom = object_dist.rsample().half()
+            object_dist = normal.Normal(torch.exp(logits[:,0][:,None,:,:])/normalizer, reg_std + torch.exp(logits[:,1][:,None,:,:])/normalizer/2)
+            phantom = object_dist.rsample().half()
         
         # phantom is batch x channels x num_proj_pix x num_proj_pix
         # move channel dimension to the last dimension
@@ -506,19 +506,11 @@ class AutoEncoder(nn.Module):
         sino = project_torch(phantom, theta_degrees, pad=pad)
         sino_raw = torch.exp(-sino)
         sino_dist = normal.Normal(sino_raw, reg_std + torch.sqrt(sino_raw/poisson_noise_multiplier))
-        breakpoint()
         # # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
         # sino_no_model_correction = sino_dist.rsample().half()
 
-
         return sino_dist, phantom.float()
     
-
-
-    # def forward_physics(self, phantom, theta_degrees, poisson_noise_multiplier, pad):
-    #     sino = project_torch(phantom, theta_degrees, pad=pad)
-    #     sino_dist = normal.Normal(sino, torch.sqrt(sino/poisson_noise_multiplier))
-    #     return sino_dist
 
     def spectral_norm_parallel(self):
         """ This method computes spectral normalization for all conv layers in parallel. This method should be called

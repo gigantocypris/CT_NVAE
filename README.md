@@ -12,10 +12,7 @@ Navigate to the directory where you want the code to reside and clone the reposi
 ```
 git clone https://github.com/gigantocypris/CT_NVAE.git
 ```
-If the repository is private, use the SSH link instead
-```
-git clone git@github.com:gigantocypris/CT_NVAE.git
-```
+
 If using NERSC, use the following command to load Python:
 ```
 module load python
@@ -93,16 +90,16 @@ Install the pip dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Installation is complete! Deactivate and activate the conda environment to use the newly installed dependencies
+Installation is complete! 
 
 To exit the conda environment:
 ```
 conda deactivate
 ```
 
-# Synthetic Dataset Preparation
+# Dataset Preparation
 
-## Small Dataset Preparation on an Interactive Node
+## Using an Interactive Node on NERSC
 
 Activate the `tomopy` environment:
 ```
@@ -120,7 +117,7 @@ Create an environment variable `WORKING_DIR`
 export WORKING_DIR={WORKING_DIR}
 ```
 
-Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory (`{CT_NVAE_PATH}` could be found by cd to CT_NVAE directory and typing the `pwd` command):
+Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory:
 ```
 export CT_NVAE_PATH={CT_NVAE_PATH}
 ```
@@ -136,10 +133,11 @@ export NERSC_GPU_ALLOCATION={NERSC_GPU_ALLOCATION}
 salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
 
-Run the following to create a synthetic foam dataset of `{T}` training examples and `{V}` validation examples, saved to the current working directory (`{T}` and `{V}` must be integers):
+Run the following to create a synthetic foam dataset of `{n}` examples:
 
 ```
-srun -n 1 python $CT_NVAE_PATH/computed_tomography/create_foam_images.py -t {T} -v {V}
+export SLURM_NTASKS=4
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n {n} --dest images_foam --type foam
 ```
 
 To visualize a training example:

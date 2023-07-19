@@ -17,10 +17,10 @@ import torch.distributed as dist
 from torch.multiprocessing import Process
 from torch.cuda.amp import autocast, GradScaler
 
-from model import AutoEncoder
+from vae.model import AutoEncoder
 from thirdparty.adamax import Adamax
-import utils
-import datasets
+import vae.utils as utils
+import vae.datasets as datasets
 
 
 import matplotlib.pyplot as plt

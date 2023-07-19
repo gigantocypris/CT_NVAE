@@ -19,7 +19,7 @@ import argparse
 import numpy as np
 from mpi4py import MPI
 import glob
-from utils import create_sinogram
+from computed_tomography.utils import create_sinogram
 
 def main(rank, world_size, dir, theta):
     file_list = np.sort(glob.glob(dir + '/*[!_sinogram].npy'))

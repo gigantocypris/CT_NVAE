@@ -7,8 +7,8 @@ import tomopy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from utils import create_sinogram, get_sparse_angles
-from forward_physics import pad_phantom
+from computed_tomography.utils import create_sinogram, get_sparse_angles
+from computed_tomography.forward_physics import pad_phantom
 
 if __name__ == '__main__':
     # get a phantom

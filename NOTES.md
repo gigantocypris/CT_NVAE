@@ -113,7 +113,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_foam --type foam
 ```
 Images are created in `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -123,7 +123,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_sinograms.py --dir images_foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_foam
 ```
 Sinograms are created in the existing `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -131,7 +131,7 @@ Sinograms are created in the existing `images_foam` folder in the working direct
 ```
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
-python $CT_NVAE_PATH/scripts/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
 ```
 The split datasets are created in the `dataset_foam2` folder in the working directory `$WORKING_DIR`.
 
@@ -140,7 +140,7 @@ The split datasets are created in the `dataset_foam2` folder in the working dire
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
 ```
 The dataset is created in the `dataset_foam2` folder in the working directory `$WORKING_DIR`.
 
@@ -175,5 +175,6 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset f
 ```
 
 TODO: Convert to sbatch scripts
+TODO: Run the tests in computed_tomography
 
 ### Full pass through the pipeline with the COVID images:

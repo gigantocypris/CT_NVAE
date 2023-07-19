@@ -10,16 +10,9 @@
 """Code for getting the data loaders."""
 
 import numpy as np
-from PIL import Image
 import torch
-import torchvision.datasets as dset
-import torchvision.transforms as transforms
 from torch.utils.data import Dataset
-from scipy.io import loadmat
 import os
-import urllib
-from lmdb_datasets import LMDBDataset
-from thirdparty.lsun import LSUN
 
 def get_loaders(args):
     """Get data loaders for required dataset."""

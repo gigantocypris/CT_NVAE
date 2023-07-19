@@ -2,12 +2,11 @@
 Compare tomopy and forward_physics.py
 """
 
-import tomopy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from utils import create_sinogram
-from forward_physics import project_torch
+from computed_tomography.utils import create_sinogram
+from computed_tomography.forward_physics import project_torch
 
 if __name__ == '__main__':
     theta = np.linspace(0, np.pi, 180, endpoint=False) # projection angles

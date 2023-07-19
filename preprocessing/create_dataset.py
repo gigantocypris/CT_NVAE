@@ -15,7 +15,7 @@ python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 
 
 import argparse
 import numpy as np
-from utils import process_sinogram
+from computed_tomography.utils import process_sinogram
 import time
 import glob
 

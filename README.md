@@ -440,6 +440,32 @@ tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 
 XXX
 
+
+## Brain Dataset Preparation
+
+Activate the `tomopy` environment and enter in the working directory:
+```
+module load python
+conda activate tomopy
+cd $WORKING_DIR
+```
+
+We used the [RSNA Intracranial Hemorrhage Detection](https://www.kaggle.com/competitions/rsna-intracranial-hemorrhage-detection/data) provided by Radiological Society of North America. The dataset consists of 25k CT scans (874k slices) of human brain. On NERSC, the raw files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/brain_data/raw`.
+
+Create an environment variable for both `{SOURCE_DIR}` and a `{TARGET_DIR}`. `{TARGET_DIR}` should be in the format `dataset_{DESCRIPTOR}` where `{DESCRIPTOR}` is a string describing the dataset (e.g. `covid` for the COVID dataset). The `TARGET_DIR` should be in the working directory. Download DICOM files from the dataset to a folder `{SOURCE_DIR}` using kaggle CLI `kaggle competitions download -c rsna-intracranial-hemorrhage-detection`. You have to join the competition to get the full dataset. Otherwise, the Kaggle command will only download the test data.  
+
+```
+export SOURCE_DIR={SOURCE_DIR}
+export TARGET_DIR={TARGET_DIR}
+```
+
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the `computed_tomography/dcm_to_npy.py` script provided to accomplish this. Add True after `{TARGET_DIR}` to make a smaller dataset.
+
+```
+python $CT_NVAE_PATH/computed_tomography/dcm_to_npy.py $SOURCE_DIR $TARGET_DIR
+```
+
+
 ## Resources:
 
 [P-VAE papers](https://arxiv.org/abs/2211.00002)

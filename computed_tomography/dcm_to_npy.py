@@ -14,11 +14,11 @@ from tqdm import tqdm
 # Input: whether to make a smaller dataset or not
 def convert_dcm_to_3D_npy(smaller = True):
     # Set the path
-    dcm_path = "/global/cfs/cdirs/m3562/users/hkim/brain/rsna-intracranial-hemorrhage-detection/stage_2_test"
-    dcm_organized_path = "/global/cfs/cdirs/m3562/users/hkim/brain/dcm_organized_by_patient"
-    npy_organized_path = "/global/cfs/cdirs/m3562/users/hkim/brain/npy_organized_by_patient"
-    smaller_organized_dcm_path = "/global/cfs/cdirs/m3562/users/hkim/brain/smaller_dcm_organized_by_patient"
-    smaller_organized_npy_path = "/global/cfs/cdirs/m3562/users/hkim/brain/smaller_npy_organized_by_patient"
+    dcm_path = "/global/cfs/cdirs/m3562/users/hkim/brain_data/raw/stage_2_test"
+    dcm_organized_path = "/global/cfs/cdirs/m3562/users/hkim/brain_data/dcm_organized_by_patient"
+    npy_organized_path = "/global/cfs/cdirs/m3562/users/hkim/brain_data/npy_organized_by_patient"
+    smaller_organized_dcm_path = "/global/cfs/cdirs/m3562/users/hkim/brain_data/smaller_dcm_organized_by_patient"
+    smaller_organized_npy_path = "/global/cfs/cdirs/m3562/users/hkim/brain_data/smaller_npy_organized_by_patient"
     # Make directories if they don't exist
     os.makedirs(dcm_organized_path, exist_ok=True)
     os.makedirs(npy_organized_path, exist_ok=True)

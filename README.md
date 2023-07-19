@@ -466,10 +466,10 @@ export TARGET_DIR={TARGET_DIR}
 kaggle competitions download -c rsna-intracranial-hemorrhage-detection
 ```
 
-After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the `computed_tomography/dcm_to_npy.py` script provided to accomplish this. Add True after `{TARGET_DIR}` to make a smaller dataset.
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the `computed_tomography/dcm_to_npy.py` script provided to accomplish this. Add `True` after `{TARGET_DIR}` to make a smaller dataset.
 
 ```
-python $CT_NVAE_PATH/computed_tomography/dcm_to_npy.py $SOURCE_DIR $TARGET_DIR
+python $CT_NVAE_PATH/computed_tomography/test.py --source_path $SOURCE_DIR --destination_path $TARGET_DIR --smaller True
 ```
 
 

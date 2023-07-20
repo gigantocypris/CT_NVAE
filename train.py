@@ -238,11 +238,10 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 output_sinogram_raw = output_sinogram_raw[:n*n]
                 output_sinogram_raw = output_sinogram_raw[:,None,:,:]
                 output_sinogram_raw = utils.tile_image(output_sinogram_raw, n)  
-                output_sinogram_raw = -torch.log(output_sinogram_raw + 1e-8) # linearize
 
-                sparse_sinogram = sparse_sinogram[:n*n]
-                sparse_sinogram = sparse_sinogram[:,None,:,:]
-                sparse_sinogram_tiled = utils.tile_image(sparse_sinogram, n)  
+                sparse_sinogram_raw = sparse_sinogram_raw[:n*n]
+                sparse_sinogram_raw = sparse_sinogram_raw[:,None,:,:]
+                sparse_sinogram_tiled = utils.tile_image(sparse_sinogram_raw, n)  
                 in_out_tiled = torch.cat((sparse_sinogram_tiled, output_sinogram_raw), dim=2)
                 # breakpoint()   
                 writer.add_image('sinogram reconstruction', in_out_tiled, global_step)

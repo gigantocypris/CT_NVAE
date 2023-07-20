@@ -103,6 +103,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset f
 Start with the `tomopy` environment:
 ```
 module load python
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 conda activate tomopy
 salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
@@ -113,7 +114,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_foam --type foam
 ```
 Images are created in `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -123,7 +124,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_sinograms.py --dir images_foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_foam
 ```
 Sinograms are created in the existing `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -148,6 +149,7 @@ The dataset is created in the `dataset_foam2` folder in the working directory `$
 First exit the interactive session, `conda deactivate`, and start a new one with the `CT_NVAE` environment:
 ```
 module load python
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 conda activate CT_NVAE
 salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
@@ -174,8 +176,11 @@ Multi-GPU training:
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 32 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
+### Full pass with the COVID data
 
-Dataset creation steps:
+### Full pass with the brain data
+
+### Dataset creation steps:
 create_images.py
 
 ```

@@ -4,7 +4,7 @@ Process sinograms into a dataset for CT_NVAE training.
 
 import argparse
 import numpy as np
-from utils import process_sinogram
+from computed_tomography.utils import process_sinogram
 import time
 import glob
 

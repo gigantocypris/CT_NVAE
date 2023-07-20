@@ -8,7 +8,7 @@ import torch
 import matplotlib.pyplot as plt
 from computed_tomography.utils import create_sinogram
 from computed_tomography.forward_physics import project_torch
-from computed_tomography.create_images import create_foam_example
+from preprocessing.create_images import create_foam_example
 
 if __name__ == '__main__':
     theta = np.linspace(0, np.pi, 180, endpoint=False) # projection angles

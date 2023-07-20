@@ -8,7 +8,7 @@ import torch
 import matplotlib.pyplot as plt
 from computed_tomography.utils import create_sinogram, get_sparse_angles
 from computed_tomography.forward_physics import pad_phantom
-from computed_tomography.create_images import create_foam_example
+from preprocessing.create_images import create_foam_example
 
 if __name__ == '__main__':
     # make a phantom

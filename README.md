@@ -452,7 +452,7 @@ cd $WORKING_DIR
 
 We used the [RSNA Intracranial Hemorrhage Detection](https://www.kaggle.com/competitions/rsna-intracranial-hemorrhage-detection/data) provided by Radiological Society of North America. The dataset consists of 25k CT scans (874k slices) of human brain. On NERSC, the raw files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/brain_data/raw`.
 
-Create an environment variable for both `{SOURCE_DIR}` and a `{TARGET_DIR}`. `{TARGET_DIR}` should be in the format `dataset_{DESCRIPTOR}` where `{DESCRIPTOR}` is a string describing the dataset (e.g. `covid` for the COVID dataset). The `TARGET_DIR` should be in the working directory. 
+Create an environment variable for both `{SOURCE_DIR}` and a `{TARGET_DIR}`. `{TARGET_DIR}` should be in the format `dataset_{DESCRIPTOR}` where `{DESCRIPTOR}` is a string describing the dataset (e.g. `brain` for the brain dataset). The `TARGET_DIR` should be in the working directory. 
 
 ```
 export SOURCE_DIR={SOURCE_DIR}
@@ -466,10 +466,10 @@ export TARGET_DIR={TARGET_DIR}
 kaggle competitions download -c rsna-intracranial-hemorrhage-detection
 ```
 
-After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the `computed_tomography/dcm_to_npy.py` script provided to accomplish this. Add `True` after `{TARGET_DIR}` to make a smaller dataset.
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the `computed_tomography/preprocess_brain_data.py` script provided to accomplish this. Set `small` into `True` to make a small dataset.(100 Patients) The number of files that will be processed is given by the -n flag. The -v flag is optional and will print out .png visualizations of all the images and sinograms in the dataset. Only use the -v flag for a small dataset.
 
 ```
-python $CT_NVAE_PATH/computed_tomography/test.py --source_path $SOURCE_DIR --destination_path $TARGET_DIR --smaller True
+python $CT_NVAE_PATH/computed_tomography/preprocess_brain_data.py $SOURCE_DIR $TARGET_DIR -small True -n 100
 ```
 
 

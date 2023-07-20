@@ -1,21 +1,10 @@
 """
 Process sinograms into a dataset for CT_NVAE training.
-
-Usage:
-python create_dataset.py --dir <DIR> --pnm <POISSON_NOISE_MULTIPLIER> --sparse <NUM_SPARSE_ANGLES> --random <RANDOM>
-
-Example for foam images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
-
-Example for covid images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 --sparse 20 --random True --ring 0
 """
 
 import argparse
 import numpy as np
-from computed_tomography.utils import process_sinogram
+from utils import process_sinogram
 import time
 import glob
 

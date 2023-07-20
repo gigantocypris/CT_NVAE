@@ -113,7 +113,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_foam --type foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
 ```
 Images are created in `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -123,7 +123,7 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
 cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_foam
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_sinograms.py --dir images_foam
 ```
 Sinograms are created in the existing `images_foam` folder in the working directory `$WORKING_DIR`.
 
@@ -174,10 +174,65 @@ Multi-GPU training:
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 32 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
-#### TODO: Convert to sbatch scripts
-#### TODO: Run the tests in computed_tomography
-#### TODO: Remove descriptions in the preprocessing scripts
-#### TODO: Clean-up the scripts
-#### TODO: Update the README
 
-### Full pass through the pipeline with the COVID images:
+Dataset creation steps:
+create_images.py
+
+```
+Usage:
+srun -n NUM_RANKS python create_images.py -n NUM_EXAMPLES --dest SAVE_DIR --type IMG_TYPE
+
+Example for foam images:
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_foam --type foam
+
+Example for covid images:
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_covid --type covid
+```
+
+Create sinograms:
+```
+Usage:
+python create_sinograms.py --dir <dir> -n <num_examples>
+
+Example for foam images:
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_foam
+
+Example for covid images:
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_covid
+```
+
+create_splits.py
+```
+Usage:
+python create_splits.py --src <source_dir> --dest <dest_dir> --train <train_ratio> --valid <valid_ratio> --test <test_ratio> -n <num_truncate>
+
+Example for foam images:
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
+
+Example for covid images:
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_covid --dest dataset_covid2 --train 0.7 --valid 0.2 --test 0.1 -n 64
+```
+
+create_dataset.py
+```
+Usage:
+python create_dataset.py --dir <DIR> --pnm <POISSON_NOISE_MULTIPLIER> --sparse <NUM_SPARSE_ANGLES> --random <RANDOM> --ring <RING_ARTIFACT_STRENGTH>
+
+Example for foam images:
+cd $WORKING_DIR
+python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
+
+Example for covid images:
+cd $WORKING_DIR
+python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 --sparse 20 --random True --ring 0
+```

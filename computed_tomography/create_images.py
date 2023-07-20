@@ -1,17 +1,5 @@
 """
 Creates dataset of 3D objects
-Usage:
-srun -n NUM_RANKS python create_images.py -n NUM_EXAMPLES --dest SAVE_DIR --type IMG_TYPE
-
-Example for foam images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
-
-Example for covid images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_covid --type covid
 """
 
 import os

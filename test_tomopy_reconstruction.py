@@ -8,11 +8,11 @@ import torch
 import matplotlib.pyplot as plt
 from computed_tomography.utils import create_sinogram, get_sparse_angles
 from computed_tomography.forward_physics import pad_phantom
+from computed_tomography.create_images import create_foam_example
 
 if __name__ == '__main__':
-    # get a phantom
-    img = np.load('foam_train.npy')[0:3]
-
+    # make a phantom
+    img = create_foam_example()[0][0:3]
     num_angles = 180
     num_sparse_angles = 45 # number of angles to image per sample
     random = False
@@ -49,30 +49,30 @@ if __name__ == '__main__':
     fig.suptitle('Ground Truth vs Reconstruction')
     img_0 = np.squeeze(pad_phantom(torch.Tensor(np.expand_dims(img,axis=3))).numpy(),axis=-1)
  
+    vmax = np.max(img_0[0,:,:])
     ax1.title.set_text('Ground Truth')
-    ax1.imshow(img_0[0,:,:],vmin=0,vmax=1)
+    ax1.imshow(img_0[0,:,:],vmin=0,vmax=vmax)
     # remove all axes
     ax1.axis('off')
 
     ax2.title.set_text('GridRec1')
-    ax2.imshow(rec_0[0,:,:],vmin=0,vmax=1)
+    ax2.imshow(rec_0[0,:,:],vmin=0,vmax=vmax)
     ax2.axis('off')
 
     ax3.title.set_text('GridRec2')
-    ax3.imshow(rec_1[0,:,:],vmin=0,vmax=1)
+    ax3.imshow(rec_1[0,:,:],vmin=0,vmax=vmax)
     ax3.axis('off')
 
     ax4.title.set_text('GridRec3')
-    ax4.imshow(rec_2[0,:,:],vmin=0,vmax=1)
+    ax4.imshow(rec_2[0,:,:],vmin=0,vmax=vmax)
     ax4.axis('off')
 
     ax5.title.set_text('TV')
-    ax5.imshow(rec_3[0,:,:],vmin=0,vmax=1)
+    ax5.imshow(rec_3[0,:,:],vmin=0,vmax=vmax)
     ax5.axis('off')
 
     ax6.title.set_text('SIRT')
-    ax6.imshow(rec_4[0,:,:],vmin=0,vmax=1)
+    ax6.imshow(rec_4[0,:,:],vmin=0,vmax=vmax)
     ax6.axis('off')
 
     plt.savefig('reconstruction.png')
-    plt.show()

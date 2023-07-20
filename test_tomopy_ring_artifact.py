@@ -9,10 +9,11 @@ import torch
 import matplotlib.pyplot as plt
 from computed_tomography.utils import create_sinogram, get_sparse_angles
 from computed_tomography.forward_physics import pad_phantom
+from computed_tomography.create_images import create_foam_example
 
 if __name__ == '__main__':
-    # get a phantom
-    img = np.load('dataset_foam/train_ground_truth.npy')[0:3]
+    # make a phantom
+    img = create_foam_example()[0][0:3]
 
     num_angles = 180
     num_sparse_angles = 45 # number of angles to image per sample
@@ -23,10 +24,10 @@ if __name__ == '__main__':
     theta_sparse = theta[sparse_angles]
 
     # get the sinogram with tomopy, without ring artifact
-    proj_0 = create_sinogram(img, theta_sparse, pad=True, add_ring_artifact=False)
+    proj_0 = create_sinogram(img, theta_sparse, pad=True, ring_artifact_strength=0)
 
     # get the sinogram with tomopy, adding ring artifact
-    proj_0_ring = create_sinogram(img, theta_sparse, pad=True, add_ring_artifact=True)
+    proj_0_ring = create_sinogram(img, theta_sparse, pad=True, ring_artifact_strength=0.3)
 
     # plot sinograms
     fig, (ax1, ax2) = plt.subplots(1, 2)

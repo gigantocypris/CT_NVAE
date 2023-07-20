@@ -2,17 +2,19 @@
 Compare tomopy and forward_physics.py
 """
 
+import tomopy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from computed_tomography.utils import create_sinogram
 from computed_tomography.forward_physics import project_torch
+from computed_tomography.create_images import create_foam_example
 
 if __name__ == '__main__':
     theta = np.linspace(0, np.pi, 180, endpoint=False) # projection angles
 
     # get a phantom
-    img = np.load('foam_train.npy')[0:3]
+    img = create_foam_example()[0][0:3]
 
     # get the sinogram with tomopy
     proj_0 = create_sinogram(img, theta, pad=True)
@@ -29,12 +31,10 @@ if __name__ == '__main__':
     ax1.imshow(proj_0[0,:,:])
     ax2.imshow(proj_1[0,:,:])
     plt.savefig('sinogram_comparison.png')
-    plt.show()
 
     plt.figure()
     plt.title('Difference Map')
     plt.imshow(proj_0[0,:,:]-proj_1.numpy()[0,:,:])
     plt.savefig('sinogram_difference.png')
-    plt.show()
 
     print('Max Absolute Difference: ' + str(np.max(np.abs(proj_0-proj_1.numpy()))))

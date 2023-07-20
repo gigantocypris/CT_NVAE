@@ -145,20 +145,21 @@ def parse_x_full(x_full, args):
     sparse_sinogram = x_full[1].cuda()
     ground_truth = x_full[8].cuda()
     theta = x_full[4].cuda()
-
+    x_size = x_full[5].cuda()
     # change bit length
     x = utils.pre_process(x, args.num_x_bits)
-    return(x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta)
+    return(x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size)
 
 def process_decoder_output(x, args, model, theta,
-                           sparse_sinogram_raw):
+                           sparse_sinogram_raw, x_size):
 
     logits, log_q, log_p, kl_all, kl_diag = model(x)
     temperature = torch.tensor([args.temp_bernoulli])
     temperature = temperature.half().cuda()
 
     theta_degrees = theta*180/np.pi
-    sino_raw_dist, phantom = model.decoder_output(logits, temperature, theta_degrees.half(), args.pnm, pad=False) 
+    sino_raw_dist, phantom = model.decoder_output(logits, temperature, theta_degrees=theta_degrees.half(), 
+                                                  poisson_noise_multiplier=args.pnm, pad=False, normalizer=x_size) 
     recon_loss = utils.reconstruction_loss(sino_raw_dist, sparse_sinogram_raw, args.dataset, crop=model.crop_output)
     return(logits, log_q, log_p, kl_all, kl_diag, 
            sino_raw_dist, phantom, recon_loss)
@@ -172,7 +173,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
     nelbo = utils.AvgrageMeter()
     model.train()
     for step, x_full in enumerate(train_queue):
-        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta = parse_x_full(x_full, args)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size = parse_x_full(x_full, args)
 
         # warm-up lr
         if global_step < warmup_iters:
@@ -188,7 +189,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
         with autocast():
             logits, log_q, log_p, kl_all, kl_diag, \
             sino_raw_dist, phantom, recon_loss = \
-                process_decoder_output(x, args, model, theta, sparse_sinogram_raw)
+                process_decoder_output(x, args, model, theta, sparse_sinogram_raw, x_size)
             
             kl_coeff = utils.kl_coeff(global_step, args.kl_anneal_portion * args.num_total_iter,
                                       args.kl_const_portion * args.num_total_iter, args.kl_const_coeff)
@@ -300,14 +301,14 @@ def test(valid_queue, model, num_samples, args, logging):
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
     for step, x_full in enumerate(valid_queue):
-        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta = parse_x_full(x_full, args)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size = parse_x_full(x_full, args)
 
         with torch.no_grad():
             nelbo, log_iw = [], []
             for k in range(num_samples):
                 logits, log_q, log_p, kl_all, kl_diag, \
                 sino_raw_dist, phantom, recon_loss = \
-                    process_decoder_output(x, args, model, theta, sparse_sinogram_raw)
+                    process_decoder_output(x, args, model, theta, sparse_sinogram_raw, x_size)
 
                 balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
                 nelbo_batch = recon_loss + balanced_kl

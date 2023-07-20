@@ -334,7 +334,7 @@ class AutoEncoder(nn.Module):
 
     def init_image_conditional(self, mult):
         C_in = int(self.num_channels_dec * mult)
-        C_out = 2
+        C_out = 1
         return nn.Sequential(nn.ELU(),
                              Conv2D(C_in, C_out, 3, padding=1, bias=True))
 
@@ -486,23 +486,32 @@ class AutoEncoder(nn.Module):
 
     def decoder_output(self, logits, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
-                       use_bernoulli=True, reg_std=1e-3, normalizer=128,
+                       normalizer=None, transform='sigmoid', alpha=1.0, reg_std=1e-3,
                        ):
-        # process the output of the decoder into a distribution
-        # sample the distribution to get the phantom
-        if use_bernoulli:
-            object_dist = RelaxedBernoulli(temperature, logits=logits[:,0][:,None,:,:])
-            phantom = object_dist.rsample().half()/128
-            
-        else: # use normal distribution
-            object_dist = normal.Normal(torch.exp(logits[:,0][:,None,:,:])/normalizer, reg_std + torch.exp(logits[:,1][:,None,:,:])/normalizer/2)
-            phantom = object_dist.rsample().half()
+        
+        # process the output of the decoder into the phantom
+        # applying prior knowledge of the phantom
+        normalizer_expand = torch.unsqueeze(torch.unsqueeze(torch.unsqueeze(normalizer, -1), -1),-1)
+        phantom = logits[:,0][:,None,:,:]
+        breakpoint()
+        if transform == 'sigmoid':
+            phantom = torch.sigmoid(phantom)
+        elif transform == 'elu':
+            phantom = torch.nn.ELU(alpha=alpha)(phantom) + alpha
+        elif transform == 'exp':
+            phantom = torch.exp(phantom)
+
+        phantom = phantom/normalizer_expand
+        phantom = phantom.half()
+
         
         # phantom is batch x channels x num_proj_pix x num_proj_pix
         # move channel dimension to the last dimension
         phantom = torch.transpose(phantom, 1,2)
         phantom = torch.transpose(phantom, 2,3)
 
+        # print(phantom.dtype)
+        # print(theta_degrees.dtype)
         sino = project_torch(phantom, theta_degrees, pad=pad)
         sino_raw = torch.exp(-sino)
         sino_dist = normal.Normal(sino_raw, reg_std + torch.sqrt(sino_raw/poisson_noise_multiplier))

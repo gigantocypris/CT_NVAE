@@ -120,6 +120,7 @@ Images are created in `images_foam` folder in the working directory `$WORKING_DI
 
 2. Create the sinograms
 ```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export SLURM_NTASKS=4
@@ -130,20 +131,32 @@ Sinograms are created in the existing `images_foam` folder in the working direct
 
 3. Split into training/test/validate
 ```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
 python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
 ```
 The split datasets are created in the `dataset_foam2` folder in the working directory `$WORKING_DIR`.
 
+Create ring artifact dataset:
+```
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam_ring --train 0.7 --valid 0.2 --test 0.1 -n 64
+```
+
 4. Create the dataset
 ```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 cd $WORKING_DIR
 python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
 ```
 The dataset is created in the `dataset_foam2` folder in the working directory `$WORKING_DIR`.
+
+Create ring artifact dataset:
+```
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_foam_ring --sparse 20 --random True --ring 0.3
+```
 
 5. Train the model.
 First exit the interactive session, `conda deactivate`, and start a new one with the `CT_NVAE` environment:
@@ -173,10 +186,91 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset f
 
 Multi-GPU training:
 ```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 32 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
 ### Full pass with the COVID data
+
+Start with the `tomopy` environment:
+```
+module load python
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+conda activate tomopy
+salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+```
+
+1. Create the COVID images
+```
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_covid --type covid
+```
+Images are created in `images_covid` folder in the working directory `$WORKING_DIR`.
+
+2. Create the sinograms
+```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export SLURM_NTASKS=4
+cd $WORKING_DIR
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_covid
+```
+Sinograms are created in the existing `images_covid` folder in the working directory `$WORKING_DIR`.
+
+3. Split into training/test/validate
+```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_covid --dest dataset_covid2 --train 0.7 --valid 0.2 --test 0.1 -n 64
+```
+The split datasets are created in the `dataset_covid2` folder in the working directory `$WORKING_DIR`.
+
+4. Create the dataset
+```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_covid2 --sparse 20 --random True --ring 0
+```
+The dataset is created in the `dataset_covid2` folder in the working directory `$WORKING_DIR`.
+
+
+5. Train the model.
+First exit the interactive session, `conda deactivate`, and start a new one with the `CT_NVAE` environment:
+```
+module load python
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+conda activate CT_NVAE
+salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+```
+
+Set environment variables for training:
+```
+export EXPR_ID=test_0000_foam2
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
+export CHECKPOINT_DIR=checkpts
+export MASTER_ADDR=$(hostname)
+```
+
+Single GPU training to test everything is working:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
+Multi-GPU training:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+```
+
 
 ### Full pass with the brain data
 

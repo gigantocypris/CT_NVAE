@@ -5,8 +5,10 @@ Process sinograms into a dataset for CT_NVAE training.
 import argparse
 import numpy as np
 from computed_tomography.utils import process_sinogram
+from computed_tomography.forward_physics import pad_phantom
 import time
 import glob
+import torch
 
 def main(args, dataset_type):
 
@@ -47,7 +49,10 @@ def main(args, dataset_type):
 
         # append to lists
 
-        x_train_imgs.append(x_train)
+        x_train_pad = pad_phantom(torch.Tensor(np.expand_dims(x_train, axis=-1)))
+        x_train_pad = np.squeeze(x_train_pad.numpy(),axis=-1)
+        x_train_imgs.append(x_train_pad)
+
         x_train_sinograms.append(x_train_sinogram)
         all_mask_inds.append(np.repeat(np.expand_dims(sparse_angles,axis=0),x_train.shape[0],axis=0))
         all_reconstructed_objects.append(reconstruction)

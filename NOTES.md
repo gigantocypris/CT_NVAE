@@ -173,7 +173,7 @@ export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 
 Set environment variables for training:
 ```
-export EXPR_ID=test_0000_foam2
+export EXPR_ID=test_0000_foam2_1channel
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=checkpts
 export MASTER_ADDR=$(hostname)
@@ -186,7 +186,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset f
 
 Multi-GPU training:
 ```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
 ### Full pass with the COVID data
@@ -255,7 +255,7 @@ export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 
 Set environment variables for training:
 ```
-export EXPR_ID=test_0000_foam2
+export EXPR_ID=test_0000_covid2
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=checkpts
 export MASTER_ADDR=$(hostname)
@@ -263,75 +263,27 @@ export MASTER_ADDR=$(hostname)
 
 Single GPU training to test everything is working:
 ```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset covid2 --batch_size 32 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
 Multi-GPU training:
 ```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset covid2 --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
 ```
 
 
 ### Full pass with the brain data
 
-### Dataset creation steps:
-create_images.py
+Raw data files are available here:
+/global/cfs/cdirs/m3562/users/hkim/brain_data/raw
 
 ```
-Usage:
-srun -n NUM_RANKS python create_images.py -n NUM_EXAMPLES --dest SAVE_DIR --type IMG_TYPE
+ export SOURCE_DIR={SOURCE_DIR}
+ export TARGET_DIR={TARGET_DIR}
+```
+You can use the `computed_tomography/preprocess_brain_data.py` script provided to accomplish this. Set `small` into `True` to make a small dataset.(100 Patients) The number of files that will be processed is given by the -n flag. The -v flag is optional and will print out .png visualizations of all the images and sinograms in the dataset. Only use the -v flag for a small dataset.
 
-Example for foam images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_foam --type foam
-
-Example for covid images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 64 --dest images_covid --type covid
+```
+python $CT_NVAE_PATH/computed_tomography/preprocess_brain_data.py $SOURCE_DIR $TARGET_DIR -small True -n 100
 ```
 
-Create sinograms:
-```
-Usage:
-python create_sinograms.py --dir <dir> -n <num_examples>
-
-Example for foam images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_foam
-
-Example for covid images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_covid
-```
-
-create_splits.py
-```
-Usage:
-python create_splits.py --src <source_dir> --dest <dest_dir> --train <train_ratio> --valid <valid_ratio> --test <test_ratio> -n <num_truncate>
-
-Example for foam images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
-
-Example for covid images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_covid --dest dataset_covid2 --train 0.7 --valid 0.2 --test 0.1 -n 64
-```
-
-create_dataset.py
-```
-Usage:
-python create_dataset.py --dir <DIR> --pnm <POISSON_NOISE_MULTIPLIER> --sparse <NUM_SPARSE_ANGLES> --random <RANDOM> --ring <RING_ARTIFACT_STRENGTH>
-
-Example for foam images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_foam2 --sparse 20 --random True --ring 0
-
-Example for covid images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/computed_tomography/create_dataset.py --dir dataset_covid2 --sparse 20 --random True --ring 0
-```

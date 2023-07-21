@@ -47,30 +47,9 @@ def create_covid_example(nib_file_path):
     return example, filename
 
 def create_brain_example(nib_file_path):
-    # XXX
     # TODO
-    """Get a single 3D example of a covid patient lung scan"""
-
-    if nib_file_path[-3:]=='.gz':
-        destination_path = os.path.splitext(nib_file_path)[0]
-
-        # Open the .gz file and extract its contents
-        with gzip.open(nib_file_path, 'rb') as gz_file:
-            with open(destination_path, 'wb') as extracted_file:
-                shutil.copyfileobj(gz_file, extracted_file)
-
-    img = nib.load(nib_file_path)
-    example = img.get_fdata()
-    example = example.transpose((2, 0, 1))
-    filename = os.path.splitext(os.path.basename(nib_file_path))[0]
-
-    example += 2048
-    example /= np.max(example)
-    example[example < 0] = 0
-
-    example /= example.shape[1]
-
-    return example, filename
+    """Get a single 3D example of a single patient brain scan"""
+    return
 
 
 
@@ -78,6 +57,8 @@ def main(num_examples, rank, world_size, dest_dir, type):
     os.system('mkdir -p ' + dest_dir)
     if type=='covid':
         covid_list = np.sort(glob.glob('/global/cfs/cdirs/m3562/users/hkim/real_data/raw/*.nii'))
+    if type=='brain':
+        brain_list = None # TODO
 
     for example_index in range(num_examples):
         if example_index % int(world_size) == rank: # distribute work across ranks

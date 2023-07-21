@@ -127,7 +127,7 @@ def main(args):
 
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging, save_images=True)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -294,7 +294,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, num_samples, args, logging):
+def test(valid_queue, model, num_samples, args, logging, save_images=False):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
@@ -315,6 +315,12 @@ def test(valid_queue, model, num_samples, args, logging):
                 
                 nelbo.append(nelbo_batch)
                 log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
+
+            if save_images:
+                # save ground truth
+                np.save(args.save + '/ground_truth_' + str(step) + '_global_rank_' + str(args.global_rank) + '.npy', ground_truth.cpu().numpy())
+                # save phantom
+                np.save(args.save + '/final_phantom_' + str(step) + '_global_rank_' + str(args.global_rank) + '.npy', phantom.cpu().numpy())
 
             nelbo = torch.mean(torch.stack(nelbo, dim=1))
             log_p = torch.mean(torch.logsumexp(torch.stack(log_iw, dim=1), dim=1) - np.log(num_samples))

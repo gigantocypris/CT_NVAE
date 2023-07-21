@@ -71,4 +71,4 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
     if remove_ring_artifact:
         reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
     
-    return sparse_angles, reconstruction, sparse_sinogram, sparse_sinogram_raw
+    return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram

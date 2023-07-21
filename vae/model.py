@@ -334,7 +334,7 @@ class AutoEncoder(nn.Module):
 
     def init_image_conditional(self, mult):
         C_in = int(self.num_channels_dec * mult)
-        C_out = 1
+        C_out = 1 # number of channels in the object
         return nn.Sequential(nn.ELU(),
                              Conv2D(C_in, C_out, 3, padding=1, bias=True))
 
@@ -486,14 +486,13 @@ class AutoEncoder(nn.Module):
 
     def decoder_output(self, logits, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
-                       normalizer=None, transform='sigmoid', alpha=1.0, reg_std=1e-3,
+                       normalizer=None, transform='elu', alpha=1.0, reg_std=1e-3,
                        ):
         
         # process the output of the decoder into the phantom
         # applying prior knowledge of the phantom
         normalizer_expand = torch.unsqueeze(torch.unsqueeze(torch.unsqueeze(normalizer, -1), -1),-1)
         phantom = logits[:,0][:,None,:,:]
-        breakpoint()
         if transform == 'sigmoid':
             phantom = torch.sigmoid(phantom)
         elif transform == 'elu':

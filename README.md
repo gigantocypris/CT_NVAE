@@ -279,17 +279,9 @@ scancel ${JobID1} ${JobID2}
 ```
 ## Covid CT Dataset Preparation
 
-Activate the `tomopy` environment and enter in the working directory:
-```
-module load python
-conda activate tomopy
-cd $WORKING_DIR
-```
-
 We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/display/Public/CT+Images+in+COVID-19). The dataset consists of 650 individual CT images, with each CT image comprising 70 image slices of size 512x512. On NERSC, the raw unzipped files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/real_data/raw`.
 
 If not using NERSC, download the zipped `.gz` files to a folder and update the path in `preprocessing/create_images.py`.
-
 
 ## Resources:
 

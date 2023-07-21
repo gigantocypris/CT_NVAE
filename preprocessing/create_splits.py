@@ -1,17 +1,7 @@
 """
 Split objects and corresponding sinograms into train, valid, and test sets.
 Reads in the sinogram and object .npy files from the specified directory and saves to
-a new directory.
-Usage:
-python create_splits.py --src <source_dir> --dest <dest_dir> --train <train_ratio> --valid <valid_ratio> --test <test_ratio>
-
-Example for foam images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/scripts/create_splits.py --src images_foam --dest dataset_foam2 --train 0.7 --valid 0.2 --test 0.1 -n 64
-
-Example for covid images:
-cd $WORKING_DIR
-python $CT_NVAE_PATH/scripts/create_splits.py --src images_covid --dest dataset_covid2 --train 0.7 --valid 0.2 --test 0.1 -n 64
+a new directory. Truncates the total dataset to the specified number of examples.
 """
 
 import numpy as np

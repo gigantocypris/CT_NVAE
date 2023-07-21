@@ -14,15 +14,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from neural_operations import OPS, EncCombinerCell, DecCombinerCell, Conv2D, get_skip_connection, SE
-from neural_ar_operations import ARConv2d, ARInvertedResidual, MixLogCDFParam, mix_log_cdf_flow
-from neural_ar_operations import ELUConv as ARELUConv
+from vae.neural_operations import OPS, EncCombinerCell, DecCombinerCell, Conv2D, get_skip_connection, SE
+from vae.neural_ar_operations import ARConv2d, ARInvertedResidual, MixLogCDFParam, mix_log_cdf_flow
+from vae.neural_ar_operations import ELUConv as ARELUConv
 from torch.distributions.bernoulli import Bernoulli
 from torch.distributions.relaxed_bernoulli import RelaxedBernoulli
 from torch.distributions import normal
 
-from utils import get_stride_for_cell_type, get_input_size, groups_per_scale
-from distributions import Normal, DiscMixLogistic, NormalDecoder
+from vae.utils import get_stride_for_cell_type, get_input_size, groups_per_scale
+from vae.distributions import Normal, DiscMixLogistic, NormalDecoder
 from thirdparty.inplaced_sync_batchnorm import SyncBatchNormSwish
 
 from computed_tomography.forward_physics import project_torch
@@ -202,7 +202,7 @@ class AutoEncoder(nn.Module):
     def init_stem(self):
         """Initial conversion of number of channels"""
         Cout = self.num_channels_enc
-        Cin = 1 if self.dataset in {'mnist', 'omniglot', 'foam', 'covid'} else 3
+        Cin = 1
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 
@@ -334,17 +334,7 @@ class AutoEncoder(nn.Module):
 
     def init_image_conditional(self, mult):
         C_in = int(self.num_channels_dec * mult)
-        if self.dataset in {'mnist', 'omniglot'}:
-            C_out = 1
-        elif self.dataset in {'foam'}:
-            C_out = 1 # XXX
-        elif self.dataset in {'covid'}:
-            C_out = 1 # XXX
-        else:
-            if self.num_mix_output == 1:
-                C_out = 2 * 3
-            else:
-                C_out = 10 * self.num_mix_output
+        C_out = 1 # number of channels in the object
         return nn.Sequential(nn.ELU(),
                              Conv2D(C_in, C_out, 3, padding=1, bias=True))
 
@@ -496,49 +486,39 @@ class AutoEncoder(nn.Module):
 
     def decoder_output(self, logits, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
+                       normalizer=None, transform='elu', alpha=1.0, reg_std=1e-3,
                        ):
-        if self.dataset in {'mnist', 'omniglot'}:
-            return Bernoulli(logits=logits)
-        elif self.dataset in {'foam', 'covid'}:
-
-            # process the output of the decoder into a distribution
-            # sample the distribution to get the phantom
-            # enforce that phantom that is nonnegative through the distribution or sampling
-
-            object_dist = RelaxedBernoulli(temperature, logits=logits)
-            phantom = object_dist.rsample().half()
-
-            # phantom = torch.sigmoid(logits)
-            
-            # phantom is batch x channels x num_proj_pix x num_proj_pix
-            # move channel dimension to the last dimension
-            phantom = torch.transpose(phantom, 1,2)
-            phantom = torch.transpose(phantom, 2,3)
-
-            sino = project_torch(phantom, theta_degrees, pad=pad)
-            sino_dist = normal.Normal(sino, 1e-2 + torch.sqrt(sino/poisson_noise_multiplier))
-
-            sino_no_model_correction = sino_dist.rsample().half()
-            # breakpoint()
-
-            # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
-
-
-            return sino_dist, phantom.float()
         
-        elif self.dataset in {'stacked_mnist', 'cifar10', 'celeba_64', 'celeba_256', 'imagenet_32', 'imagenet_64', 'ffhq',
-                              'lsun_bedroom_128', 'lsun_bedroom_256', 'lsun_church_64', 'lsun_church_128'}:
-            if self.num_mix_output == 1:
-                return NormalDecoder(logits, num_bits=self.num_bits)
-            else:
-                return DiscMixLogistic(logits, self.num_mix_output, num_bits=self.num_bits)
-        else:
-            raise NotImplementedError
+        # process the output of the decoder into the phantom
+        # applying prior knowledge of the phantom
+        normalizer_expand = torch.unsqueeze(torch.unsqueeze(torch.unsqueeze(normalizer, -1), -1),-1)
+        phantom = logits[:,0][:,None,:,:]
+        if transform == 'sigmoid':
+            phantom = torch.sigmoid(phantom)
+        elif transform == 'elu':
+            phantom = torch.nn.ELU(alpha=alpha)(phantom) + alpha
+        elif transform == 'exp':
+            phantom = torch.exp(phantom)
 
-    # def forward_physics(self, phantom, theta_degrees, poisson_noise_multiplier, pad):
-    #     sino = project_torch(phantom, theta_degrees, pad=pad)
-    #     sino_dist = normal.Normal(sino, torch.sqrt(sino/poisson_noise_multiplier))
-    #     return sino_dist
+        phantom = phantom/normalizer_expand
+        phantom = phantom.half()
+
+        
+        # phantom is batch x channels x num_proj_pix x num_proj_pix
+        # move channel dimension to the last dimension
+        phantom = torch.transpose(phantom, 1,2)
+        phantom = torch.transpose(phantom, 2,3)
+
+        # print(phantom.dtype)
+        # print(theta_degrees.dtype)
+        sino = project_torch(phantom, theta_degrees, pad=pad)
+        sino_raw = torch.exp(-sino)
+        sino_dist = normal.Normal(sino_raw, reg_std + torch.sqrt(sino_raw/poisson_noise_multiplier))
+        # # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
+        # sino_no_model_correction = sino_dist.rsample().half()
+
+        return sino_dist, phantom.float()
+    
 
     def spectral_norm_parallel(self):
         """ This method computes spectral normalization for all conv layers in parallel. This method should be called

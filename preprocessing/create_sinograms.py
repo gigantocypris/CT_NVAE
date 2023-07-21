@@ -1,17 +1,5 @@
 """
 Processes each .npy object file into a sinogram and saves it as a .npy file.
-Usage:
-python create_sinograms.py --dir <dir> -n <num_examples>
-
-Example for foam images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_sinograms.py --dir images_foam
-
-Example for covid images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_sinograms.py --dir images_covid
 """
 
 import os
@@ -19,7 +7,7 @@ import argparse
 import numpy as np
 from mpi4py import MPI
 import glob
-from utils import create_sinogram
+from computed_tomography.utils import create_sinogram
 
 def main(rank, world_size, dir, theta):
     file_list = np.sort(glob.glob(dir + '/*[!_sinogram].npy'))

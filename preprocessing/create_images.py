@@ -1,17 +1,5 @@
 """
 Creates dataset of 3D objects
-Usage:
-srun -n NUM_RANKS python create_images.py -n NUM_EXAMPLES --dest SAVE_DIR --type IMG_TYPE
-
-Example for foam images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_foam --type foam
-
-Example for covid images:
-export SLURM_NTASKS=4
-cd $WORKING_DIR
-srun -n $SLURM_NTASKS python $CT_NVAE_PATH/computed_tomography/create_images.py -n 64 --dest images_covid --type covid
 """
 
 import os
@@ -29,9 +17,9 @@ def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.2, GAP = 
     example = []
     for z_index in range(Z_SLICES):
         phantom = xd.Foam(size_range=[SIZE_UPPER, SIZE_LOWER], gap=GAP, porosity=np.random.rand())
-        discrete = xd.discrete_phantom(phantom, N_PIXEL)/N_PIXEL
+        discrete = xd.discrete_phantom(phantom, N_PIXEL)
         example.append(discrete)
-    example = np.stack(example, axis=0) # shape is Z_SLICES x N_PIXEL x N_PIXEL
+    example = np.stack(example, axis=0)/N_PIXEL # shape is Z_SLICES x N_PIXEL x N_PIXEL
     return example, None
 
 def create_covid_example(nib_file_path):
@@ -58,10 +46,19 @@ def create_covid_example(nib_file_path):
 
     return example, filename
 
+def create_brain_example(nib_file_path):
+    # TODO
+    """Get a single 3D example of a single patient brain scan"""
+    return
+
+
+
 def main(num_examples, rank, world_size, dest_dir, type):
     os.system('mkdir -p ' + dest_dir)
     if type=='covid':
         covid_list = np.sort(glob.glob('/global/cfs/cdirs/m3562/users/hkim/real_data/raw/*.nii'))
+    if type=='brain':
+        brain_list = None # TODO
 
     for example_index in range(num_examples):
         if example_index % int(world_size) == rank: # distribute work across ranks
@@ -83,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', dest = 'num_examples', type=int, help='number of total examples', default=64)
     parser.add_argument('--dest', dest = 'dest_dir', type=str, help='where the numpy files are saved')
     parser.add_argument('--type', dest = 'type', type=str, help='type of data to create', default='foam', 
-                        choices=['foam', 'covid'])
+                        choices=['foam', 'covid', 'brain'])
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD

@@ -15,9 +15,9 @@ from time import time
 from torch.multiprocessing import Process
 from torch.cuda.amp import autocast
 
-from model import AutoEncoder
-import utils
-import datasets
+from vae.model import AutoEncoder
+import vae.utils as utils
+import vae.datasets as datasets
 from train import test, init_processes, test_vae_fid
 
 

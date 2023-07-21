@@ -239,16 +239,9 @@ def log_iw(decoder, x, log_q, log_p, dataset, crop=False):
 
 
 def reconstruction_loss(decoder, x, dataset, crop=False):
-    from distributions import Normal, DiscMixLogistic
-
     recon = decoder.log_prob(x)
-    if crop:
-        recon = recon[:, :, 2:30, 2:30]
-
-    if isinstance(decoder, DiscMixLogistic) or dataset in {'foam', 'covid'}:
-        return - torch.sum(recon, dim=[1, 2])    # summation over RGB is done.
-    else:
-        return - torch.sum(recon, dim=[1, 2, 3])
+    return - torch.sum(recon, dim=[1, 2])    # summation over RGB is done.
+   
 
 
 def tile_image(batch_image, n):
@@ -307,35 +300,15 @@ def one_hot(indices, depth, dim):
 
 
 def num_output(dataset):
-    if dataset in {'mnist', 'omniglot'}:
-        return 28 * 28
-    elif dataset == 'cifar10':
-        return 3 * 32 * 32
-    elif dataset.startswith('celeba') or dataset.startswith('imagenet') or dataset.startswith('lsun'):
-        size = int(dataset.split('_')[-1])
-        return 3 * size * size
-    elif dataset == 'ffhq':
-        return 3 * 256 * 256
-    else:
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
-        return size * size
+    dataset_dir = os.environ['DATASET_DIR']
+    size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+    return size * size
 
 
 def get_input_size(dataset):
-    if dataset in {'mnist', 'omniglot'}:
-        return 32
-    elif dataset == 'cifar10':
-        return 32
-    elif dataset.startswith('celeba') or dataset.startswith('imagenet') or dataset.startswith('lsun'):
-        size = int(dataset.split('_')[-1])
-        return size
-    elif dataset == 'ffhq':
-        return 256
-    else:
-        dataset_dir = os.environ['DATASET_DIR']
-        size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
-        return size
+    dataset_dir = os.environ['DATASET_DIR']
+    size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
+    return size
 
 
 

@@ -1,7 +1,4 @@
-# Created by: Hojune Kim
-# Date: July 19, 2023
 # Purpose: Converting unorganized DICOM files to organized 3D numpy arrays
-
 # Usage: python preprocess_brain_data.py <source_dir> <target_dir>
 # Example: python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_DIR 
 

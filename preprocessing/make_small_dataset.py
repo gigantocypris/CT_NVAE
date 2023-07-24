@@ -1,7 +1,6 @@
-# Created July 24, 2023 by Hojune Kim
 # Purpose: Create a small dataset for testing pipeline
 # Usage: python make_small_dataset.py <input_dir> <output_dir> --num_files <num_files>
-# Example: python $CT_NVAE_PATH/preprocessing/make_small_dataset.py $SOURCE_DIR $SMALL_TARGET_DIR --num_files 1000
+# Example: python $CT_NVAE_PATH/preprocessing/make_small_dataset.py $SOURCE_DIR $SMALL_TARGET_DIR --num_files 100
 
 import shutil
 import os
@@ -27,7 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description='Copy a random selection of files from one directory to another.')
     parser.add_argument('input_dir', type=str, help='The directory to copy files from.')
     parser.add_argument('output_dir', type=str, help='The directory to copy files to.')
-    parser.add_argument('--num_files', type=int, default=1000, help='The number of files to copy.')
+    parser.add_argument('--num_files', type=int, default=100, help='The number of files to copy.')
     
     args = parser.parse_args()
 

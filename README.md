@@ -302,6 +302,13 @@ python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_
 
 where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TARGET_DIR` is the directory where the converted .npy files will be saved.
 
+After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
+
+```
+python $CT_NVAE_PATH/preprocessing/make_small_dataset.py $SOURCE_DIR $SMALL_TARGET_DIR --num_files 1000
+```
+where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The `--num_files` option specifies the number of files to be included in the smaller dataset.
+
 ## Resources:
 
 TODO: Add more resources

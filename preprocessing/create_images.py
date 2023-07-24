@@ -38,9 +38,17 @@ def create_covid_example(nib_file_path):
     example = example.transpose((2, 0, 1))
     filename = os.path.splitext(os.path.basename(nib_file_path))[0]
 
+
+
     example += 2048
-    example /= np.max(example)
+    example /= 2000
     example[example < 0] = 0
+
+    print(nib_file_path)
+    print('example min is ' + str(np.min(example)))
+    print('example max is ' + str(np.max(example)))
+    print('example median is ' + str(np.median(example)))
+    print('example background is ' + str(example[0,0,0]))
 
     example /= example.shape[1]
 

@@ -22,8 +22,9 @@ from thirdparty.adamax import Adamax
 import vae.utils as utils
 import vae.datasets as datasets
 
-
 import matplotlib.pyplot as plt
+
+import wandb
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -95,6 +96,7 @@ def main(args):
                                          global_step, warmup_iters, writer, logging,
                                         )
         
+
         if epoch > args.warmup_epochs:
             cnn_scheduler.step()
 
@@ -125,6 +127,7 @@ def main(args):
                             'args': args, 'arch_instance': arch_instance, 'scheduler': cnn_scheduler.state_dict(),
                             'grad_scalar': grad_scalar.state_dict()}, checkpoint_file)
 
+        wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
     # Final validation
     valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging, save_images=True)
@@ -233,6 +236,7 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 writer.add_image('ground truth', ground_truth_tiled, global_step)
                 plt.figure()
                 plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
+                plt.colorbar()
                 plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
 
                 output_sinogram_raw = sino_raw_dist.mean if isinstance(sino_raw_dist, torch.distributions.bernoulli.Bernoulli) else sino_raw_dist.sample()
@@ -468,6 +472,16 @@ if __name__ == '__main__':
     utils.create_exp_dir(args.save)
 
     size = args.num_process_per_node
+
+    # start a new wandb run to track this script
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="CT_NVAE",
+        name=args.save,
+        # track hyperparameters and run metadata
+        config=args
+    )
+
 
     if size > 1:
         args.distributed = True

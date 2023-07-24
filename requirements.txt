@@ -17,3 +17,4 @@ astropy
 kornia
 imageio
 glob2
+wandb

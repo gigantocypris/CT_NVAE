@@ -5,7 +5,7 @@ Covid CT image classifier implemented with PyTorch. Forked from the original htt
 
 After cloning the repository, you'll need to download the datasets and put them in the `data/` folder. 
 
-#### Dataset
+### Dataset
 
 The authors utilized two publicly available COVID-19 CT datasets:
 
@@ -14,11 +14,11 @@ The authors utilized two publicly available COVID-19 CT datasets:
 
 You can download their pre-processed datasets from [Google Drive](https://drive.google.com/file/d/1JBp9RH9-yBEdtkNYDi6wWL79o62JD5Td/view?usp=sharing) and put it into the `data/` directory.
 
-#### Pretrained Model
+### Pretrained Model
 
 You can also directly download their pretrained model from [Google Drive](https://drive.google.com/file/d/1ZwtxF4c_pvyv_uyE4Zx4_bNNHQx7Y_Ao/view?usp=sharing) and put into `saved/` directory for testing.
 
-#### Training
+### Training
 
 Activate an interactive session.
 ```shell
@@ -36,7 +36,7 @@ cd code
 srun -n 1 python main.py --bna True --bnd True --cosine True --cont True
 ```
 
-#### Testing
+### Testing
 
 ```shell
 cd code

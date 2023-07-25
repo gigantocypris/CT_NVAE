@@ -6,21 +6,15 @@
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 00:05:00
+#SBATCH -t 00:30:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
-#SBATCH -o %j.out
-#SBATCH -e %j.err
-#SBATCH --mail-type=begin,end,fail
-#SBATCH --mail-user=$3
 
-
-module load python
-conda activate CT_NVAE
 
 export EXPR_ID=$1
 export BATCH_SIZE=$2
-export CT_NVAE_PATH=$4
+export CT_NVAE_PATH=$3
+export D_TYPE=$4
 
 export EPOCHS=100
 export NUM_LATENT_SCALES=2
@@ -41,14 +35,13 @@ export PNM=1e1
 export DATASET_DIR=$SCRATCH/output_CT_NVAE
 export CHECKPOINT_DIR=$SCRATCH/output_CT_NVAE/checkpts
 export MASTER_ADDR=$(hostname)
-
-
+mkdir -p $CHECKPOINT_DIR
 mkdir $CHECKPOINT_DIR/eval-$EXPR_ID
 
 echo "jobstart $(date)";pwd
 
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID \
-        --dataset foam --batch_size $BATCH_SIZE --epochs $EPOCHS \
+        --dataset $D_TYPE --batch_size $BATCH_SIZE --epochs $EPOCHS \
         --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE \
         --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS \
         --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC \

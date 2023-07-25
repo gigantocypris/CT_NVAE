@@ -52,6 +52,3 @@ python3 predict.py -backbone DenseNet121_change_avg -img_size 256 -tbs 4 -vbs 4 
 python3 predict.py -backbone DenseNet169_change_avg -img_size 256 -tbs 4 -vbs 4 -spth DenseNet169_change_avg_256
 python3 predict.py -backbone se_resnext101_32x4d -img_size 256 -tbs 4 -vbs 4 -spth se_resnext101_32x4d_256
 ```
-
-## TODO:
-1. Create a .gitignore

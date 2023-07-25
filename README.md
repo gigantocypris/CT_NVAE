@@ -174,8 +174,24 @@ The dataset is created in the `dataset_foam` folder in the working directory `$W
 
 ## Large Dataset Preparation
 
-TODO: sbatch script to create a dataset
+```
+module load python
+conda activate tomopy
+export CT_NVAE_PATH={CT_NVAE_PATH}
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p {WORKING_DIR}
+cd $WORKING_DIR
+export N={number of examples}
+```
+Prepare foam dataset:
+```
+sbatch $CT_NVAE_PATH/slurm/slurm_create_dataset_foam.sh $CT_NVAE_PATH $N
+```
 
+Prepare covid dataset:
+```
+sbatch $CT_NVAE_PATH/slurm/slurm_create_dataset_covid.sh $CT_NVAE_PATH $N
+```
 
 ## Training and validating the CT_NVAE
 
@@ -242,26 +258,25 @@ tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 
 ## Running Batch Jobs on NERSC
 
-TODO: Update with new pipeline
-
 To run batch jobs on NERSC:
-
-Set the environmental variable 'MyEmail' to receive batch job updates:
 ```
-export MyEmail={Email address to receive job status}
+conda deactivate 
+conda activate CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
 ```
 Change the permissions of the loop jobs shell script to make it executable on the terminal:
 ```
-chmod +x $CT_NVAE_PATH/scripts/loop_jobs_batches.sh
+chmod +x $CT_NVAE_PATH/slurm/loop_jobs_batches.sh
 ```
-Running Batch Jobs; each job runs on an exclusive GPU node with 4 GPUs:
+Running Batch Jobs with foam dataset; each job runs on an exclusive GPU node with 4 GPUs:
 ```
-$CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
+$CT_NVAE_PATH/slurm/loop_jobs_batches.sh $CT_NVAE_PATH foam
 ```
 
 The default batch_sizes='8'. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
 ```
-batch_sizes="4 8 16 32" $CT_NVAE_PATH/scripts/loop_jobs_batches.sh $MyEmail
+batch_sizes="4 8 16 32" $CT_NVAE_PATH/slurm/loop_jobs_batches.sh $CT_NVAE_PATH foam
 ```
 The environmental variable 'batch_sizes' can be changed based on your preference for the duration of 'loop_jobs_batches.sh'
 

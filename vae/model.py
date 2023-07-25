@@ -484,9 +484,10 @@ class AutoEncoder(nn.Module):
         logits = self.image_conditional(s)
         return logits
 
-    def decoder_output(self, logits, temperature=None,
+    def decoder_output(self, logits, logits_ring, temperature=None,
                        theta_degrees=None, poisson_noise_multiplier=None, pad=None,
                        normalizer=None, transform='elu', alpha=1.0, reg_std=1e-3,
+                       model_ring_artifact=False,
                        ):
         
         # process the output of the decoder into the phantom
@@ -512,7 +513,13 @@ class AutoEncoder(nn.Module):
         # print(phantom.dtype)
         # print(theta_degrees.dtype)
         sino = project_torch(phantom, theta_degrees, pad=pad)
+
         sino_raw = torch.exp(-sino)
+
+        if model_ring_artifact:
+            logits_ring_ave = torch.mean(logits_ring, dim=-1)
+            sino_raw = sino_raw*torch.exp(-logits_ring_ave)
+
         sino_dist = normal.Normal(sino_raw, reg_std + torch.sqrt(sino_raw/poisson_noise_multiplier))
         # # process sino_no_model_correction with a model correction network that outputs a mean and variance of a normal distribution
         # sino_no_model_correction = sino_dist.rsample().half()

@@ -222,6 +222,7 @@ Sinograms are created in the existing `images_covid` folder in the working direc
 
 3. Split into training/test/validate
 ```
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
@@ -273,6 +274,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset c
 
 
 ### Full pass with the brain data
+TODO
 
 Raw data files are available here:
 /global/cfs/cdirs/m3562/users/hkim/brain_data/raw
@@ -294,4 +296,78 @@ conda activate CT_NVAE
 python -m pip install wandb
 wandb login
 https://wandb.ai/gigantocypris
+```
+
+## July 24, 2023
+
+### Full pass through the pipeline with the foam images and ring artifact
+
+Start with the `tomopy` environment:
+```
+module load python
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+conda activate tomopy
+salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+```
+
+1. Use foam images already created in `images_foam` folder in the working directory `$WORKING_DIR`.
+
+2. Use sinograms already created in the existing `images_foam` folder in the working directory `$WORKING_DIR`.
+
+3. Split into training/test/validate
+```
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_foam --dest dataset_foam_ring --train 0.7 --valid 0.2 --test 0.1 -n 64
+```
+The split datasets are created in the `dataset_foam_ring` folder in the working directory `$WORKING_DIR`.
+
+
+4. Create the dataset
+```
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_foam_ring --sparse 20 --random True --ring 0.05
+```
+The dataset is created in the `dataset_foam_ring` folder in the working directory `$WORKING_DIR`.
+
+
+5. Train the model.
+First exit the interactive session, `conda deactivate`, and start a new one with the `CT_NVAE` environment:
+```
+module load python
+conda activate CT_NVAE
+salloc -N 1 --time=120 -C gpu -A m3562_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+```
+
+Set environment variables for training:
+```
+export EXPR_ID=test_0000_foam2_ring
+export DATASET_DIR=$SCRATCH/output_CT_NVAE
+export CHECKPOINT_DIR=checkpts
+export MASTER_ADDR=$(hostname)
+```
+
+Single GPU training to test everything is working (not considering ring artifact):
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam_ring --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 20
+```
+
+Single GPU training to test everything is working (considering ring artifact):
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam_ring --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 20 --model_ring_artifact
+```
+
+Multi-GPU training, considering ring artifact
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam_ring --batch_size 64 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 100 --model_ring_artifact
 ```

@@ -62,7 +62,7 @@ def main(args):
     copy_paste_files(test_files, args.dest_dir, 'test')
 
     shutil.copy(args.source_dir + '/theta.npy', args.dest_dir)
-    print(f'Successfully split and moved all the files')
+    print(f'Successfully split and moved a copy of all the files')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Get command line args')

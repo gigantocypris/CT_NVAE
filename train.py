@@ -47,20 +47,36 @@ def main(args):
     model = AutoEncoder(args, writer, arch_instance)
     model = model.cuda()
 
+    if args.model_ring_artifact:
+        model_ring = AutoEncoder(args, writer, arch_instance)
+        model_ring = model_ring.cuda()
+    else:
+        model_ring = None
+
     logging.info('args = %s', args)
     logging.info('param size = %fM ', utils.count_parameters_in_M(model))
     logging.info('groups per scale: %s, total_groups: %d', model.groups_per_scale, sum(model.groups_per_scale))
 
     if args.fast_adamax:
         # Fast adamax has the same functionality as torch.optim.Adamax, except it is faster.
-        cnn_optimizer = Adamax(model.parameters(), args.learning_rate,
-                               weight_decay=args.weight_decay, eps=1e-3)
+        adamax_fn = Adamax
     else:
-        cnn_optimizer = torch.optim.Adamax(model.parameters(), args.learning_rate,
-                                           weight_decay=args.weight_decay, eps=1e-3)
+        adamax_fn = torch.optim.Adamax
+
+    cnn_optimizer = adamax_fn(model.parameters(), args.learning_rate,
+                            weight_decay=args.weight_decay, eps=1e-3)
+    if args.model_ring_artifact:
+        cnn_optimizer_ring = adamax_fn(model_ring.parameters(), args.learning_rate,
+                                    weight_decay=args.weight_decay, eps=1e-3)
+    else:
+        cnn_optimizer_ring = None
 
     cnn_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         cnn_optimizer, float(args.epochs - args.warmup_epochs - 1), eta_min=args.learning_rate_min)
+    if args.model_ring_artifact:
+        cnn_scheduler_ring = torch.optim.lr_scheduler.CosineAnnealingLR(
+            cnn_optimizer, float(args.epochs - args.warmup_epochs - 1), eta_min=args.learning_rate_min)
+
     grad_scalar = GradScaler(2**10)
 
     num_output = utils.num_output(args.dataset) # total number of output pixels
@@ -77,6 +93,9 @@ def main(args):
         cnn_optimizer.load_state_dict(checkpoint['optimizer'])
         grad_scalar.load_state_dict(checkpoint['grad_scalar'])
         cnn_scheduler.load_state_dict(checkpoint['scheduler'])
+        if args.model_ring_artifact:
+            cnn_optimizer_ring.load_state_dict(checkpoint['optimizer_ring'])
+            cnn_scheduler_ring.load_state_dict(checkpoint['scheduler_ring'])
         global_step = checkpoint['global_step']
     else:
         global_step, init_epoch = 0, 0
@@ -92,13 +111,15 @@ def main(args):
         logging.info('epoch %d', epoch)
 
         # Training.
-        train_nelbo, global_step = train(train_queue, model, cnn_optimizer, grad_scalar, 
-                                         global_step, warmup_iters, writer, logging,
+        train_nelbo, global_step = train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring,
+                                         grad_scalar, global_step, warmup_iters, writer, logging,
                                         )
         
 
         if epoch > args.warmup_epochs:
             cnn_scheduler.step()
+            if args.model_ring_artifact:
+                cnn_scheduler_ring.step()
 
         logging.info('train_nelbo %f', train_nelbo)
         writer.add_scalar('train/nelbo', train_nelbo, global_step)
@@ -108,7 +129,7 @@ def main(args):
         eval_freq = 1 if args.epochs <= 50 else 20
         if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
 
-            valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging)
+            valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging)
             logging.info('valid_nelbo %f', valid_nelbo)
             logging.info('valid neg log p %f', valid_neg_log_p)
             logging.info('valid bpd elbo %f', valid_nelbo * bpd_coeff)
@@ -122,15 +143,22 @@ def main(args):
         if epoch % save_freq == 0 or epoch == (args.epochs - 1):
             if args.global_rank == 0:
                 logging.info('saving the model.')
-                torch.save({'epoch': epoch + 1, 'state_dict': model.state_dict(),
-                            'optimizer': cnn_optimizer.state_dict(), 'global_step': global_step,
-                            'args': args, 'arch_instance': arch_instance, 'scheduler': cnn_scheduler.state_dict(),
-                            'grad_scalar': grad_scalar.state_dict()}, checkpoint_file)
+                save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
+                                'optimizer': cnn_optimizer.state_dict(), 
+                                'global_step': global_step,
+                                'args': args, 'arch_instance': arch_instance, 
+                                'scheduler': cnn_scheduler.state_dict(),
+                                'grad_scalar': grad_scalar.state_dict()}
+                if args.model_ring_artifact:
+                    save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
+                    save_dict['cnn_scheduler_ring'] = cnn_scheduler_ring.state_dict()
+
+                torch.save(save_dict, checkpoint_file)
 
         wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=10, args=args, logging=logging, save_images=True)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, save_images=True)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -145,29 +173,58 @@ def parse_x_full(x_full, args):
     # angles, x_size, y_size, num_proj_pix, ground_truth)
     x = x_full[0].cuda()
     sparse_sinogram_raw = x_full[2].cuda()
+    object_id = x_full[3].cuda()
     sparse_sinogram = x_full[1].cuda()
     ground_truth = x_full[8].cuda()
     theta = x_full[4].cuda()
     x_size = x_full[5].cuda()
     # change bit length
     x = utils.pre_process(x, args.num_x_bits)
-    return(x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size)
+    object_id = utils.pre_process(object_id, args.num_x_bits)
+    object_id = torch.unsqueeze(object_id, 1)
+    return(x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id)
 
-def process_decoder_output(x, args, model, theta,
-                           sparse_sinogram_raw, x_size):
-
+def process_decoder_output(x, args, model, model_ring, theta,
+                           sparse_sinogram_raw, x_size, object_id):
     logits, log_q, log_p, kl_all, kl_diag = model(x)
+    if args.model_ring_artifact:
+        logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring = model_ring(object_id)
+    else:
+        logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring = None, None, None, None, None
     temperature = torch.tensor([args.temp_bernoulli])
     temperature = temperature.half().cuda()
 
     theta_degrees = theta*180/np.pi
-    sino_raw_dist, phantom = model.decoder_output(logits, temperature, theta_degrees=theta_degrees.half(), 
-                                                  poisson_noise_multiplier=args.pnm, pad=False, normalizer=x_size) 
+    sino_raw_dist, phantom = model.decoder_output(logits, logits_ring, temperature, theta_degrees=theta_degrees.half(), 
+                                                  poisson_noise_multiplier=args.pnm, pad=False, normalizer=x_size, 
+                                                  model_ring_artifact=args.model_ring_artifact) 
     recon_loss = utils.reconstruction_loss(sino_raw_dist, sparse_sinogram_raw, args.dataset, crop=model.crop_output)
-    return(logits, log_q, log_p, kl_all, kl_diag, 
+    return(logits, log_q, log_p, kl_all, kl_diag,
+           logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, 
            sino_raw_dist, phantom, recon_loss)
 
-def train(train_queue, model, cnn_optimizer, grad_scalar, 
+def calculate_loss(args, global_step, kl_all, alpha_i, recon_loss, model):
+    kl_coeff = utils.kl_coeff(global_step, args.kl_anneal_portion * args.num_total_iter,
+                                args.kl_const_portion * args.num_total_iter, args.kl_const_coeff)
+    balanced_kl, kl_coeffs, kl_vals = utils.kl_balancer(kl_all, kl_coeff, kl_balance=True, alpha_i=alpha_i)
+
+    nelbo_batch = recon_loss + balanced_kl
+    
+    loss = torch.mean(nelbo_batch)
+    norm_loss = model.spectral_norm_parallel()
+    bn_loss = model.batchnorm_loss()
+    # get spectral regularization coefficient (lambda)
+    if args.weight_decay_norm_anneal:
+        assert args.weight_decay_norm_init > 0 and args.weight_decay_norm > 0, 'init and final wdn should be positive.'
+        wdn_coeff = (1. - kl_coeff) * np.log(args.weight_decay_norm_init) + kl_coeff * np.log(args.weight_decay_norm)
+        wdn_coeff = np.exp(wdn_coeff)
+    else:
+        wdn_coeff = args.weight_decay_norm
+
+    loss += norm_loss * wdn_coeff + bn_loss * wdn_coeff
+    return loss, norm_loss, bn_loss, wdn_coeff, kl_coeff, kl_coeffs, kl_vals
+
+def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, grad_scalar, 
           global_step, warmup_iters, writer, logging,
           ):
 
@@ -175,97 +232,56 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                                       groups_per_scale=model.groups_per_scale, fun='square')
     nelbo = utils.AvgrageMeter()
     model.train()
+    if args.model_ring_artifact:
+        model_ring.train()
     for step, x_full in enumerate(train_queue):
-        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size = parse_x_full(x_full, args)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
         # warm-up lr
         if global_step < warmup_iters:
             lr = args.learning_rate * float(global_step) / warmup_iters
             for param_group in cnn_optimizer.param_groups:
                 param_group['lr'] = lr
-
+            if args.model_ring_artifact:
+                for param_group in cnn_optimizer_ring.param_groups:
+                    param_group['lr'] = lr
         # sync parameters, it may not be necessary
         if step % 100 == 0:
             utils.average_params(model.parameters(), args.distributed)
+            if args.model_ring_artifact:
+                utils.average_params(model_ring.parameters(), args.distributed)
 
         cnn_optimizer.zero_grad()
+        if args.model_ring_artifact:
+            cnn_optimizer_ring.zero_grad()
         with autocast():
             logits, log_q, log_p, kl_all, kl_diag, \
+            logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, \
             sino_raw_dist, phantom, recon_loss = \
-                process_decoder_output(x, args, model, theta, sparse_sinogram_raw, x_size)
+                process_decoder_output(x, args, model, model_ring, theta, sparse_sinogram_raw, x_size, object_id)
             
-            kl_coeff = utils.kl_coeff(global_step, args.kl_anneal_portion * args.num_total_iter,
-                                      args.kl_const_portion * args.num_total_iter, args.kl_const_coeff)
-            balanced_kl, kl_coeffs, kl_vals = utils.kl_balancer(kl_all, kl_coeff, kl_balance=True, alpha_i=alpha_i)
+            loss, norm_loss, bn_loss, wdn_coeff, kl_coeff, kl_coeffs, kl_vals = calculate_loss(args, global_step, kl_all, alpha_i, recon_loss, model)
+            if args.model_ring_artifact:
+                loss_ring, _, _, _, _, _, _ = calculate_loss(args, global_step, kl_all_ring, alpha_i, recon_loss, model_ring)
 
-            nelbo_batch = recon_loss + balanced_kl
-            
-            loss = torch.mean(nelbo_batch)
-            norm_loss = model.spectral_norm_parallel()
-            bn_loss = model.batchnorm_loss()
-            # get spectral regularization coefficient (lambda)
-            if args.weight_decay_norm_anneal:
-                assert args.weight_decay_norm_init > 0 and args.weight_decay_norm > 0, 'init and final wdn should be positive.'
-                wdn_coeff = (1. - kl_coeff) * np.log(args.weight_decay_norm_init) + kl_coeff * np.log(args.weight_decay_norm)
-                wdn_coeff = np.exp(wdn_coeff)
-            else:
-                wdn_coeff = args.weight_decay_norm
-
-            loss += norm_loss * wdn_coeff + bn_loss * wdn_coeff
-
-        grad_scalar.scale(loss).backward()
+        total_loss = loss + loss_ring if args.model_ring_artifact else loss
+        grad_scalar.scale(total_loss).backward()
         utils.average_gradients(model.parameters(), args.distributed)
+        if args.model_ring_artifact:
+            # grad_scalar.scale(loss_ring).backward()
+            utils.average_gradients(model_ring.parameters(), args.distributed)
+            
         grad_scalar.step(cnn_optimizer)
+        grad_scalar.step(cnn_optimizer_ring)
+
+        # if args.model_ring_artifact:
+        #     # grad_scalar.scale(loss_ring).backward()
+        #     utils.average_gradients(model_ring.parameters(), args.distributed)
+        #     grad_scalar.step(cnn_optimizer_ring)
+
         grad_scalar.update()
         nelbo.update(loss.data, 1)
-
-        if (global_step + 1) % 5 == 0:
-            if (global_step + 1) % 20 == 0:  # reduced frequency
-                n = int(np.floor(np.sqrt(x.size(0))))
-
-                x_img = x[:n*n]
-                x_tiled = utils.tile_image(x_img, n)
-
-                writer.add_image('input image', x_tiled, global_step)
-                plt.figure()
-                plt.imshow(x_tiled[0].detach().cpu().numpy())
-                plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
-
-                ground_truth = ground_truth[:n*n,None]
-                ground_truth_tiled = utils.tile_image(ground_truth, n)
-                writer.add_image('ground truth', ground_truth_tiled, global_step)
-                plt.figure()
-                plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
-                plt.colorbar()
-                plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
-
-                output_sinogram_raw = sino_raw_dist.mean if isinstance(sino_raw_dist, torch.distributions.bernoulli.Bernoulli) else sino_raw_dist.sample()
-                output_sinogram_raw = output_sinogram_raw[:n*n]
-                output_sinogram_raw = output_sinogram_raw[:,None,:,:]
-                output_sinogram_raw = utils.tile_image(output_sinogram_raw, n)  
-
-                sparse_sinogram_raw = sparse_sinogram_raw[:n*n]
-                sparse_sinogram_raw = sparse_sinogram_raw[:,None,:,:]
-                sparse_sinogram_tiled = utils.tile_image(sparse_sinogram_raw, n)  
-                in_out_tiled = torch.cat((sparse_sinogram_tiled, output_sinogram_raw), dim=2)
-                # breakpoint()   
-                writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
-                plt.figure()
-                plt.imshow(in_out_tiled[0].detach().cpu().numpy())
-                plt.savefig(args.save + '/sinogram_reconstruction_' + str(global_step)+'.png')
-
-                phantom_sample = phantom
-                phantom_sample = phantom_sample[:n*n]
-                phantom_sample = torch.transpose(phantom_sample,2,3)
-                phantom_sample = torch.transpose(phantom_sample,1,2)
-                phantom_tiled = utils.tile_image(phantom_sample, n)
-
-                writer.add_image('phantom_reconstruction', phantom_tiled, global_step)
-                plt.figure()
-                plt.imshow(phantom_tiled[0].detach().cpu().numpy())
-                plt.savefig(args.save + '/phantom_reconstruction_' + str(global_step)+'.png')
-                plt.close('all')
-
+        if (global_step + 1) % int(args.save_interval//4) == 0:
             # norm
             writer.add_scalar('train/norm_loss', norm_loss, global_step)
             writer.add_scalar('train/bn_loss', bn_loss, global_step)
@@ -286,11 +302,59 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
                 num_active = torch.sum(kl_diag_i > 0.1).detach()
                 total_active += num_active
 
-                # kl_ceoff
+                # kl_coeff
                 writer.add_scalar('kl/active_%d' % i, num_active, global_step)
                 writer.add_scalar('kl_coeff/layer_%d' % i, kl_coeffs[i], global_step)
                 writer.add_scalar('kl_vals/layer_%d' % i, kl_vals[i], global_step)
             writer.add_scalar('kl/total_active', total_active, global_step)
+
+        if (global_step + 1) % args.save_interval == 0:  # reduced frequency
+            n = int(np.floor(np.sqrt(x.size(0))))
+
+            x_img = x[:n*n]
+            x_tiled = utils.tile_image(x_img, n)
+
+            writer.add_image('input image', x_tiled, global_step)
+            plt.figure()
+            plt.imshow(x_tiled[0].detach().cpu().numpy())
+            plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
+
+            ground_truth = ground_truth[:n*n,None]
+            ground_truth_tiled = utils.tile_image(ground_truth, n)
+            writer.add_image('ground truth', ground_truth_tiled, global_step)
+            plt.figure()
+            plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
+            plt.colorbar()
+            plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
+
+            output_sinogram_raw = sino_raw_dist.mean if isinstance(sino_raw_dist, torch.distributions.bernoulli.Bernoulli) else sino_raw_dist.sample()
+            output_sinogram_raw = output_sinogram_raw[:n*n]
+            output_sinogram_raw = output_sinogram_raw[:,None,:,:]
+            output_sinogram_raw = utils.tile_image(output_sinogram_raw, n)  
+
+            sparse_sinogram_raw = sparse_sinogram_raw[:n*n]
+            sparse_sinogram_raw = sparse_sinogram_raw[:,None,:,:]
+            sparse_sinogram_tiled = utils.tile_image(sparse_sinogram_raw, n)  
+            in_out_tiled = torch.cat((sparse_sinogram_tiled, output_sinogram_raw), dim=2)
+            # breakpoint()   
+            writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
+            plt.figure()
+            plt.imshow(in_out_tiled[0].detach().cpu().numpy())
+            plt.savefig(args.save + '/sinogram_reconstruction_' + str(global_step)+'.png')
+
+            phantom_sample = phantom
+            phantom_sample = phantom_sample[:n*n]
+            phantom_sample = torch.transpose(phantom_sample,2,3)
+            phantom_sample = torch.transpose(phantom_sample,1,2)
+            phantom_tiled = utils.tile_image(phantom_sample, n)
+
+            writer.add_image('phantom_reconstruction', phantom_tiled, global_step)
+            plt.figure()
+            plt.imshow(phantom_tiled[0].detach().cpu().numpy())
+            plt.savefig(args.save + '/phantom_reconstruction_' + str(global_step)+'.png')
+            plt.close('all')
+
+
 
         global_step += 1
 
@@ -298,21 +362,22 @@ def train(train_queue, model, cnn_optimizer, grad_scalar,
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, num_samples, args, logging, save_images=False):
+def test(valid_queue, model, model_ring, num_samples, args, logging, save_images=False):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
     for step, x_full in enumerate(valid_queue):
-        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size = parse_x_full(x_full, args)
+        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
         with torch.no_grad():
             nelbo, log_iw = [], []
             for k in range(num_samples):
                 logits, log_q, log_p, kl_all, kl_diag, \
+                logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, \
                 sino_raw_dist, phantom, recon_loss = \
-                    process_decoder_output(x, args, model, theta, sparse_sinogram_raw, x_size)
+                    process_decoder_output(x, args, model, model_ring, theta, sparse_sinogram_raw, x_size, object_id)
 
                 balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
                 nelbo_batch = recon_loss + balanced_kl
@@ -366,10 +431,11 @@ if __name__ == '__main__':
                         help='location of the results')
     parser.add_argument('--save', type=str, default='exp',
                         help='id used for storing intermediate results')
+    parser.add_argument('--save_interval', type=int, default=20,
+                        help='training iterations between saving images of results')
     # data
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
-
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
                         help='batch size per GPU')
@@ -442,6 +508,8 @@ if __name__ == '__main__':
     # physics parameters
     parser.add_argument('--pnm', dest='pnm', type=float, default=1e3,
                         help='poisson noise multiplier, higher value means higher SNR')
+    parser.add_argument('--model_ring_artifact', action='store_true', default=False,
+                    help='This flag is for correcting for a ring artifact.')
     # NAS
     parser.add_argument('--use_se', action='store_true', default=False,
                         help='This flag enables squeeze and excitation.')
@@ -449,7 +517,7 @@ if __name__ == '__main__':
                         help='This flag enables squeeze and excitation.')
     parser.add_argument('--cont_training', action='store_true', default=False,
                         help='This flag enables training from an existing checkpoint.')
-    # DDP.
+    # DDP
     parser.add_argument('--num_proc_node', type=int, default=1,
                         help='The number of nodes in multi node env.')
     parser.add_argument('--node_rank', type=int, default=0,
@@ -466,6 +534,7 @@ if __name__ == '__main__':
                         help='seed used for initialization')
     parser.add_argument('--use_nersc', action='store_true', default=False,
                         help='This flag is for running on NERSC.')
+
     
     args = parser.parse_args()
     args.save = args.root + '/eval-' + args.save

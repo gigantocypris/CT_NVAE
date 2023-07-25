@@ -320,9 +320,11 @@ where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `
 After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
 
 ```
-python $CT_NVAE_PATH/preprocessing/make_small_dataset.py $SOURCE_DIR $SMALL_TARGET_DIR --num_files 100
+python preprocessing/make_small_dataset.py $SOURCE_DIR --average_num_slice 25 --total_slice 1000 $SMALL_TARGET_DIR
+
 ```
-where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The `--num_files` option specifies the number of files to be included in the smaller dataset.
+where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. This code will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`.
+
 
 ## Resources:
 

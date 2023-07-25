@@ -283,6 +283,32 @@ We used the [TCIA COVID-19 Dataset](https://wiki.cancerimagingarchive.net/displa
 
 If not using NERSC, download the zipped `.gz` files to a folder and update the path in `preprocessing/create_images.py`.
 
+
+## Brain CT Dataset Preparation
+
+We used the[RSNA Intracranial Hemorrhage Detection](https://www.kaggle.com/competitions/rsna-intracranial-hemorrhage-detection/data) provided by Radiological Society of North America. The dataset consists of 25k CT scans (874k slices) of human brain. On NERSC, the raw files from this dataset are available in `/global/cfs/cdirs/m3562/users/hkim/brain_data/raw`.
+
+If not using NERSC, download the dataset using kaggle CLI. You will have to join the competition to get the full dataset. Otherwise, the Kaggle command will only download the test data. 
+
+```
+kaggle competitions download -c rsna-intracranial-hemorrhage-detection
+```
+
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the following command to convert DICOM files to .npy files.
+
+```
+python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_DIR 
+```
+
+where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TARGET_DIR` is the directory where the converted .npy files will be saved.
+
+After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
+
+```
+python $CT_NVAE_PATH/preprocessing/make_small_dataset.py $SOURCE_DIR $SMALL_TARGET_DIR --num_files 100
+```
+where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The `--num_files` option specifies the number of files to be included in the smaller dataset.
+
 ## Resources:
 
 TODO: Add more resources

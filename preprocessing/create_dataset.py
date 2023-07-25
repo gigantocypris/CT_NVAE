@@ -48,8 +48,7 @@ def main(args, dataset_type):
                              poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, ring_artifact_strength = args.ring_artifact_strength)
 
         # append to lists
-
-        x_train_pad = pad_phantom(torch.Tensor(np.expand_dims(x_train, axis=-1)))
+        x_train_pad = pad_phantom(torch.Tensor(np.expand_dims(x_train.astype(np.float32), axis=-1)))
         x_train_pad = np.squeeze(x_train_pad.numpy(),axis=-1)
         x_train_imgs.append(x_train_pad)
 

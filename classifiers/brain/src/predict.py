@@ -9,7 +9,7 @@ import cv2
 import csv
 from torch.utils.data import DataLoader
 from dataset.dataset import *
-from tuils.tools import *
+from utils.tools import *
 from tqdm import tqdm
 import torch.nn as nn
 import numpy as np

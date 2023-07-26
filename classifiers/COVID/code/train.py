@@ -2,7 +2,7 @@
 import torch
 import os
 import torch.nn as nn
-from util import Metrics, print_summary
+from utils import Metrics, print_summary
 from metric import accuracy, top_k_acc
 from dataset import COVID_CT_Dataset
 from torch.utils.data import DataLoader

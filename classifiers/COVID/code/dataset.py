@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from skimage.segmentation import slic, mark_boundaries
 import cv2
-from util import read_filepaths, read_filepaths2
+from utils import read_filepaths, read_filepaths2
 
 
 class COVID_CT_Dataset(Dataset):

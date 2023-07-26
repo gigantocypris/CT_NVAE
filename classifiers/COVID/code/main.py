@@ -4,7 +4,7 @@ import os
 import argparse
 import torch
 import numpy as np
-import util
+import COVID.code.utils as utils
 from train import *
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR
 import time
@@ -30,7 +30,7 @@ def main():
     torch.backends.cudnn.benchmark = False
     np.random.seed(SEED)
 
-    util.mkdir('runs')
+    utils.mkdir('runs')
 
     test_acc_file = 'runs/test' + str(args.cosine) + str(args.bna) + str(args.bnd) + '.txt'
     train_acc_file = 'runs/train' + str(args.cosine) + str(args.bna) + str(args.bnd) + '.txt'
@@ -53,7 +53,7 @@ def main():
         test_metrics, confusion_matrix, ucsd_correct_total, sars_correct_total, ucsd_test_total, sars_test_total \
             = validation(args, model, test_generator, epoch, mode='test')
 
-        best_pred_loss = util.save_model(model, optimizer, args, test_metrics, epoch, best_pred_loss, confusion_matrix)
+        best_pred_loss = utils.save_model(model, optimizer, args, test_metrics, epoch, best_pred_loss, confusion_matrix)
 
         print('COVID-CT Accuracy: {0:.2f}%\tSARS-Cov-2 Accuracy: {1:.2f}%\n'.format(
             100. * ucsd_correct_total / ucsd_test_total, 100. * sars_correct_total / sars_test_total))

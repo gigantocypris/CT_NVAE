@@ -100,6 +100,7 @@ def main(args):
     else:
         global_step, init_epoch = 0, 0
 
+    epoch = init_epoch
     for epoch in range(init_epoch, args.epochs):
         # update lrs.
         if args.distributed:
@@ -151,14 +152,14 @@ def main(args):
                                 'grad_scalar': grad_scalar.state_dict()}
                 if args.model_ring_artifact:
                     save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
-                    save_dict['cnn_scheduler_ring'] = cnn_scheduler_ring.state_dict()
+                    save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()
 
                 torch.save(save_dict, checkpoint_file)
 
         wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, save_images=True)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -272,7 +273,8 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             utils.average_gradients(model_ring.parameters(), args.distributed)
             
         grad_scalar.step(cnn_optimizer)
-        grad_scalar.step(cnn_optimizer_ring)
+        if args.model_ring_artifact:
+            grad_scalar.step(cnn_optimizer_ring)
 
         # if args.model_ring_artifact:
         #     # grad_scalar.scale(loss_ring).backward()
@@ -362,12 +364,18 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, num_samples, args, logging, save_images=False):
+def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_type='', save_images=False):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
+    if save_images:
+        all_reconstructed_objects = []
+        all_sparse_sinograms = []
+        all_ground_truth = []
+        all_theta = []
+        rank = dist.get_rank()
     for step, x_full in enumerate(valid_queue):
         x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
@@ -386,10 +394,11 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, save_images
                 log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
 
             if save_images:
-                # save ground truth
-                np.save(args.save + '/ground_truth_' + str(step) + '_global_rank_' + str(args.global_rank) + '.npy', ground_truth.cpu().numpy())
-                # save phantom
-                np.save(args.save + '/final_phantom_' + str(step) + '_global_rank_' + str(args.global_rank) + '.npy', phantom.cpu().numpy())
+                all_reconstructed_objects.append(torch.squeeze(phantom, dim=-1).cpu().numpy())
+                all_sparse_sinograms.append(sparse_sinogram_raw.cpu().numpy())
+                all_ground_truth.append(ground_truth.cpu().numpy())
+                all_theta.append(theta.cpu().numpy())
+
 
             nelbo = torch.mean(torch.stack(nelbo, dim=1))
             log_p = torch.mean(torch.logsumexp(torch.stack(log_iw, dim=1), dim=1) - np.log(num_samples))
@@ -399,6 +408,14 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, save_images
 
     utils.average_tensor(nelbo_avg.avg, args.distributed)
     utils.average_tensor(neg_log_p_avg.avg, args.distributed)
+
+    if save_images:
+        np.save(args.save + '/final_phantoms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_reconstructed_objects, axis=0))
+        np.save(args.save + '/final_sparse_sinograms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_sparse_sinograms, axis=0))
+        np.save(args.save + '/final_ground_truth_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_ground_truth, axis=0))
+        np.save(args.save + '/final_theta_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_theta, axis=0))
+
+
     if args.distributed:
         # block to sync
         dist.barrier()

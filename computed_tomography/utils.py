@@ -39,6 +39,25 @@ def get_sparse_angles(random, num_angles, num_sparse_angles, random_start_ind=Tr
     sparse_angles = np.sort(sparse_angles).astype(np.int32)
     return(sparse_angles)
 
+def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gridrec'):
+    """
+    transform sinogram with tomopy
+    proj in tomopy.recon must be num_angles x num_z x num_proj_pix
+    """
+
+    if algorithm=='gridrec':
+        reconstruction = tomopy.recon(proj, theta, center=None, sinogram_order=False, algorithm='gridrec')
+    elif algorithm=='sirt':
+        reconstruction = tomopy.recon(proj, theta, algorithm='sirt',center=None, 
+                            sinogram_order=False, interpolation='LINEAR', num_iter=20)
+    elif algorithm=='tv':
+        reconstruction = tomopy.recon(proj, theta, algorithm='tv',center=None, 
+                            sinogram_order=False, num_iter=20, reg_par=1e-3)
+    
+    if remove_ring_artifact:
+        reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
+    return reconstruction
+
 def process_sinogram(input_sinogram, random, num_sparse_angles, theta, 
                      poisson_noise_multiplier=1e3, remove_ring_artifact=False,
                      ring_artifact_strength=0.3, random_start_ind=True):
@@ -61,14 +80,9 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
     sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles, random_start_ind=random_start_ind)
     sparse_sinogram_raw = exp_sinogram[sparse_angles,:,:]
 
-    # transform sinogram with tomopy
-    # sinogram in tomopy.recon must be num_angles x num_z x num_proj_pix
-    sparse_sinogram = -np.log(sparse_sinogram_raw) # linearize the sinogram
-    reconstruction = tomopy.recon(sparse_sinogram, theta[sparse_angles], center=None, sinogram_order=False, algorithm='gridrec')
-    # reconstruction = tomopy.recon(sparse_sinogram, theta[sparse_angles], algorithm='sirt',center=None, 
-    #                     sinogram_order=False, interpolation='LINEAR', num_iter=20)
     
-    if remove_ring_artifact:
-        reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
+    sparse_sinogram = -np.log(sparse_sinogram_raw) # linearize the sinogram
+    reconstruction = reconstruct_sinogram(sparse_sinogram, theta[sparse_angles], remove_ring_artifact=remove_ring_artifact)
+
     
     return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram

@@ -14,9 +14,15 @@ The authors utilized two publicly available COVID-19 CT datasets:
 
 You can download their pre-processed datasets from [Google Drive](https://drive.google.com/file/d/1JBp9RH9-yBEdtkNYDi6wWL79o62JD5Td/view?usp=sharing) and put it into the `data/` directory.
 
+The path to the pre-processed datasets in CFS are:
+- `/global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/data/COVID-CT`
+- `/global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/data/SARS-Cov-2`
+
 ### Pretrained Model
 
 You can also directly download their pretrained model from [Google Drive](https://drive.google.com/file/d/1ZwtxF4c_pvyv_uyE4Zx4_bNNHQx7Y_Ao/view?usp=sharing) and put into `saved/` directory for testing.
+
+The path to the pretrained model in CFS is `/global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/saved/best_checkpoint.pth`
 
 ### Training
 

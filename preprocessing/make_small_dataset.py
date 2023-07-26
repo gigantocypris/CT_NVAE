@@ -61,7 +61,6 @@ def create_small_dataset(input_dir, average_num_slice, total_slice, output_dir):
         shutil.copy(os.path.join(input_dir, filename), output_dir)
 
 
-
 def main():
     parser = argparse.ArgumentParser(description='Copy a random selection of .npy files from one directory to another based on their shape.')
     parser.add_argument('input_dir', type=str, help='The directory to copy files from.')

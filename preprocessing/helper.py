@@ -8,25 +8,25 @@ from tqdm import tqdm
 
 # Input: path to unorganized dcm files
 # Output: create organized dcm files in output_directory
-def organize_dcm_files_by_patient_id(input_directory, output_directory):
-    patient_ids = set()
+def organize_dcm_files_by_Instance(input_directory, output_directory):
+    instance_ids = set()
     # Filter only .dcm files
     files = glob.glob(os.path.join(input_directory, "*.dcm"))
 
-    for filename in tqdm(files, desc="Organizing DICOM files by PatientID"):
+    for filename in tqdm(files, desc="Organizing DICOM files by StudyInstanceUID"):
         try:
             dicom_file = pydicom.dcmread(filename)
             
             # Extract the PatientID from the DICOM file
-            patient_id = dicom_file.PatientID
+            instance_id = dicom_file.StudyInstanceUID
 
-            if patient_id not in patient_ids:
-                # If it's a new patient_id, create a new subfolder
-                os.makedirs(os.path.join(output_directory, patient_id), exist_ok=True)
-                patient_ids.add(patient_id)
+            if instance_id not in instance_ids:
+                # If it's a new instance_id, create a new subfolder
+                os.makedirs(os.path.join(output_directory, instance_id), exist_ok=True)
+                instance_ids.add(instance_id)
 
             # Copy the DICOM file to the corresponding subfolder
-            shutil.copy(filename, os.path.join(output_directory, patient_id, os.path.basename(filename)))
+            shutil.copy(filename, os.path.join(output_directory, instance_id, os.path.basename(filename)))
         except Exception as e:
             print(f"Error processing file {filename}: {e}")
 

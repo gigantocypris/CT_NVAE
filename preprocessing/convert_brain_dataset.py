@@ -2,7 +2,7 @@
 # Usage: python preprocess_brain_data.py <source_dir> <target_dir>
 # Example: python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_DIR 
 
-from helper import dicom_to_npy, organize_dcm_files_by_patient_id
+from helper import dicom_to_npy, organize_dcm_files_by_Instance
 import os
 import argparse
 
@@ -10,17 +10,17 @@ def preprocess(source_directory, destination_directory):
 
     # Set the path
     dcm_path = source_directory
-    dcm_organized_path = os.path.join(destination_directory, "dcm_organized_by_patient")
-    npy_organized_path = os.path.join(destination_directory, "npy_organized_by_patient")
+    dcm_organized_path = os.path.join(destination_directory, "dcm_organized_by_instance")
+    npy_organized_path = os.path.join(destination_directory, "npy_organized_by_instance")
 
     # Make directories if they don't exist
     os.makedirs(dcm_organized_path, exist_ok=True)
     os.makedirs(npy_organized_path, exist_ok=True)
 
     # Start preprocessing 
-    # Organize DICOM files into patient folders
-    print("Organizing DICOM files by patient")
-    organize_dcm_files_by_patient_id(dcm_path, dcm_organized_path)
+    # Organize DICOM files into instance folders
+    print("Organizing DICOM files by instance")
+    organize_dcm_files_by_Instance(dcm_path, dcm_organized_path)
 
     # Convert organized DICOM files to 3D numpy arrays
     dicom_to_npy(dcm_organized_path, npy_organized_path)

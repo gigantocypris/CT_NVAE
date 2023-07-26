@@ -309,20 +309,22 @@ If not using NERSC, download the dataset using kaggle CLI. You will have to join
 kaggle competitions download -c rsna-intracranial-hemorrhage-detection
 ```
 
-After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. You can use the following command to convert DICOM files to .npy files.
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. First, run following code to generate .csv file that contains important metadata of each DICOM file and save it to `$WORKING_DIR`. 
+```
+python $CT_NVAE_PATH/preprocessing/brain_info.py $SOURCE_DIR $WORKING_DIR
+```
 
+Then, you can use the following command to convert DICOM files to .npy files.
 ```
 python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_DIR 
 ```
-
 where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TARGET_DIR` is the directory where the converted .npy files will be saved.
 
 After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
-
 ```
 python preprocessing/make_small_dataset.py $SOURCE_DIR --average_num_slice 25 --total_slice 1000 $SMALL_TARGET_DIR
 ```
-where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The fast_ver code `--fast_ver True` will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`. 
+where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The code will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`. 
 
 
 ## Resources:

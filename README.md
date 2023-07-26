@@ -320,10 +320,9 @@ where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `
 After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
 
 ```
-python preprocessing/make_small_dataset.py $SOURCE_DIR --average_num_slice 25 --total_slice 1000 $SMALL_TARGET_DIR --fast_ver False
-
+python preprocessing/make_small_dataset.py $SOURCE_DIR --average_num_slice 25 --total_slice 1000 $SMALL_TARGET_DIR
 ```
-where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The fast_ver code `--fast_ver True` will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`. The slow_ver code `--fast_ver True` starts from average_num_slice and increase size of the window by 1 until the total number of slices reaches `total_slice`. The slow_ver code is slower than the fast_ver code but it will create more balanced dataset. We recommend using the fast_ver code if the total_slice is over 5000.
+where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The fast_ver code `--fast_ver True` will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`. 
 
 
 ## Resources:

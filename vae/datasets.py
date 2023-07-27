@@ -50,13 +50,18 @@ class CT_Dataset(Dataset):
     def __len__(self):
         return len(self.sparse_recons)
 
-def load_data(dataset, dataset_dir, dataset_type='train'):
+def load_data(dataset, dataset_dir, dataset_type='train', truncate=None):
+
     ground_truth = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_ground_truth.npy')
-    reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_reconstructions.npy')
-    sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms.npy')
-    sparse_sinogram_raw = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms_raw.npy')
-    object_ids = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_3d_object_ids.npy')
-    mask = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_masks.npy')
+    if truncate is None: # do not truncate dataset
+        truncate = ground_truth.shape[0]
+    ground_truth = ground_truth[:truncate]
+
+    reconstruction = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_reconstructions.npy')[:truncate]
+    sparse_sinogram = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms.npy')[:truncate]
+    sparse_sinogram_raw = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_sparse_sinograms_raw.npy')[:truncate]
+    object_ids = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_3d_object_ids.npy')[:truncate]
+    mask = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_masks.npy')[:truncate]
     x_size = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_x_size.npy')
     y_size = np.load(dataset_dir + '/dataset_' + dataset + '/' + dataset_type + '_y_size.npy')
     num_proj_pix = np.load(dataset_dir +  '/dataset_' + dataset + '/' + dataset_type + '_num_proj_pix.npy')
@@ -71,7 +76,7 @@ def get_loaders_eval(dataset, args):
     dataset_dir = os.environ['DATASET_DIR']
 
     train_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='train'))
-    valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid'))
+    valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid', truncate=args.truncate))
 
     train_sampler, valid_sampler = None, None
     if args.distributed:

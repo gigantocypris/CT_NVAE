@@ -185,12 +185,12 @@ export N={number of examples}
 ```
 Prepare foam dataset:
 ```
-sbatch $CT_NVAE_PATH/slurm/slurm_create_dataset_foam.sh $CT_NVAE_PATH $N
+sbatch $CT_NVAE_PATH/slurm/create_dataset_foam.sh $CT_NVAE_PATH $N
 ```
 
 Prepare covid dataset:
 ```
-sbatch $CT_NVAE_PATH/slurm/slurm_create_dataset_covid.sh $CT_NVAE_PATH $N
+sbatch $CT_NVAE_PATH/slurm/create_dataset_covid.sh $CT_NVAE_PATH $N
 ```
 
 ## Training and validating the CT_NVAE

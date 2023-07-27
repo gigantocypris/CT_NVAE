@@ -453,6 +453,8 @@ if __name__ == '__main__':
     # data
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
+    parser.add_argument('--truncate', type=int, default=None,
+                        help='if not None, truncate the dataset to this many examples')
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
                         help='batch size per GPU')

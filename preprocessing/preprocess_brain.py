@@ -5,7 +5,6 @@ import os
 import argparse
 from tqdm import tqdm
 
-
 def create_dataset(csv_path, dicom_directory, output_path, thickness_path, num_instance):
     # Read the thickness CSV file
     df_thickness = pd.read_csv(thickness_path)
@@ -24,8 +23,6 @@ def create_dataset(csv_path, dicom_directory, output_path, thickness_path, num_i
 
     # Process the selected DICOM files
     process_dicom_files(os.path.join(output_path, f'{num_instance}_instances_selected.csv'), dicom_directory, output_path)
-
-
 
 def process_dicom_files(csv_path, dicom_directory, output_path):
     # Read the CSV file
@@ -47,7 +44,7 @@ def process_dicom_files(csv_path, dicom_directory, output_path):
         if current_study is not None and row['StudyInstanceUID'] != current_study:
             try:
                 # Convert the list of pixel arrays to a 3D numpy array
-                volume = np.stack(pixel_arrays, axis=2)
+                volume = np.stack(pixel_arrays, axis=0)  # Stack along the first axis
 
                 # Normalize the volume
                 volume = volume.astype(np.float32)
@@ -66,6 +63,7 @@ def process_dicom_files(csv_path, dicom_directory, output_path):
 
         # Update the current StudyInstanceUID
         current_study = row['StudyInstanceUID']
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process DICOM files.')

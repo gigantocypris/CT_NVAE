@@ -313,7 +313,7 @@ After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM 
 ```
 python $CT_NVAE_PATH/preprocessing/brain_create_CSV.py $SOURCE_DIR $TEMP_CSV_DIR  
 ```
-where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TEMP_CSV_DIR` is the directory where the intermediary csv files will be saved. After creating all the intermediary csv files, you can merge them and sort them by using the following command. `$FINAL_CSV_PATH` is the path where the final `brain_merged_info.csv` file will be saved. `$THICKNESS` is the path where the `instance_thickness.csv` file will be saved.
+ `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TEMP_CSV_DIR` is the directory where the intermediary csv files will be saved. After creating all the intermediary csv files, you can merge them and sort them by using the following command. `$FINAL_CSV_PATH` is the path where the final `brain_merged_info.csv` file will be saved. `$THICKNESS` is the path where the `instance_thickness.csv` file will be saved.
 ```
 python $CT_NVAE_PATH/preprocessing/brain_merge_and_sort_CSV.py $TEMP_CSV_DIR $FINAL_CSV_PATH $THICKNESS
 ```

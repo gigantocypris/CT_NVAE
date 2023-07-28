@@ -1,3 +1,7 @@
+# Purpose: Generate a dataset of 3D npy files from DICOM files.
+# Usage: python preprocessing/preprocess_brain.py <csv_path> <dicom_directory> <output_path> <thickness_path> <num_instance>
+# Example: python $CT_NVAE_PATH/preprocessing/preprocess_brain.py $FINAL_CSV_PATH $DICOM_DIRECTORY $OUTPUT_PATH $THICKNESS $NUM_INSTANCE
+
 import pandas as pd
 import pydicom
 import numpy as np

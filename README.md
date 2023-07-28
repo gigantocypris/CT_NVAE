@@ -309,22 +309,19 @@ If not using NERSC, download the dataset using kaggle CLI. You will have to join
 kaggle competitions download -c rsna-intracranial-hemorrhage-detection
 ```
 
-After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. First, run following code to generate .csv file that contains important metadata of each DICOM file and save it to `$WORKING_DIR`. 
+After downloading the RSNA Brain Dataset, you need to convert unorganized DICOM files to organized 3D .npy file. We provide a csv file that contains important metadata of each DICOM file. You can use this csv file to convert DICOM files to .npy files. The link to the csv file is [here](https://drive.google.com/drive/folders/1kcci7GK4M5-etTD8zf75z7GJhLYTFEFn?usp=sharing). Otherwise, you can generate the csv file by yourself using the following command.
 ```
-python $CT_NVAE_PATH/preprocessing/brain_info.py $SOURCE_DIR $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/brain_create_CSV.py $SOURCE_DIR $TEMP_CSV_DIR  
+```
+where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TEMP_CSV_DIR` is the directory where the intermediary csv files will be saved. After creating all the intermediary csv files, you can merge them and sort them by using the following command. `$FINAL_CSV_PATH` is the path where the final `brain_merged_info.csv` file will be saved. `$THICKNESS` is the path where the `instance_thickness.csv` file will be saved.
+```
+python $CT_NVAE_PATH/preprocessing/brain_merge_and_sort_CSV.py $TEMP_CSV_DIR $FINAL_CSV_PATH $THICKNESS
 ```
 
-Then, you can use the following command to convert DICOM files to .npy files.
+After downloading or generating the csv file, you can convert DICOM files to .npy files using the following command. `OUTPUT_PATH` is the path where the converted .npy files will be saved. `$NUM_INSTANCE` is the number of instances you want to convert. If you want to convert all the instances, you can set `$NUM_INSTANCE` to 21744
 ```
-python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TARGET_DIR 
+python $CT_NVAE_PATH/preprocessing/preprocess_brain.py $FINAL_CSV_PATH $SOURCE_DIR $OUTPUT_PATH $THICKNESS $NUM_INSTANCE
 ```
-where `$SOURCE_DIR` is the directory where the raw DICOM files are located and `$TARGET_DIR` is the directory where the converted .npy files will be saved.
-
-After successfully converting DICOM files to .npy files, you can create smaller dataset by using the following command.
-```
-python preprocessing/make_small_dataset.py $SOURCE_DIR --average_num_slice 25 --total_slice 1000 $SMALL_TARGET_DIR
-```
-where `$SOURCE_DIR` is the directory where the converted .npy files are located and `$SMALL_TARGET_DIR` is the directory where the smaller dataset will be saved. The code will randomly select 3D .npy files that has about the `average_num_slice` +_5 slices and save them to the `$SMALL_TARGET_DIR` until the total number of slices reaches `total_slice`. 
 
 
 ## Resources:

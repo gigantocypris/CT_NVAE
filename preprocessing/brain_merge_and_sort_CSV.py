@@ -1,3 +1,8 @@
+# Purpose: Merge and sort CSV files.
+# Usage: python preprocessing/brain_merge_and_sort_CSV.py <csv_directory> <final_csv_path> <thickness_output_path>
+# Example: python $CT_NVAE_PATH/preprocessing/brain_merge_and_sort_CSV.py $TEMP_CSV_DIR $FINAL_CSV_PATH $THICKNESS
+
+
 import os
 import glob
 import pandas as pd

@@ -1,6 +1,6 @@
 # Purpose: Creating cache that contains important metadata from DICOM files 
-# Usage: python preprocessing/create_CSV.py <source_dir> <temp_csv_dir> <output_dir>
-# Example: python $CT_NVAE_PATH/preprocessing/convert_brain_dataset.py $SOURCE_DIR $TEMP_CSV_DIR $OUTPUT_DIR 
+# Usage: python preprocessing/brain_create_CSV.py <source_dir> <temp_csv_dir> --start_file <start_file>
+# Example: python $CT_NVAE_PATH/preprocessing/brain_create_CSV.py $SOURCE_DIR $TEMP_CSV_DIR  
 
 import os
 import pydicom

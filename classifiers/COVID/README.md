@@ -46,5 +46,5 @@ srun -n 1 python main.py --bna True --bnd True --cosine True --cont True
 
 ```shell
 cd code
-python test.py
+python test.py /path/to/dataset/
 ```

@@ -15,7 +15,7 @@ print('Loading model...\n')
 model = CovidNet(bna=True, bnd=True, hidden_size=1024, emmbedding_size=128).to(device)
 
 model.load_state_dict(
-    torch.load('saved/cont/best_checkpoint.pth', map_location=str(device))['state_dict'])
+    torch.load('/global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/saved/best_checkpoint.pth', map_location=str(device))['state_dict'])
 model.eval()
 
 

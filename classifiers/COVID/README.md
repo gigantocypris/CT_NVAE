@@ -42,8 +42,25 @@ cd code
 srun -n 1 python main.py --bna True --bnd True --cosine True --cont True
 ```
 
-### Testing
+### Testing the SARS-Cov-2 Dataset
+To check what the `test_split.txt` file looks like, run:
+```shell
+cat /global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/data/SARS-Cov-2/test_split.txt
+```
+If should look like this:
 
+`COVID /global/cfs/cdirs/m3562/users/lchien/Contrastive-COVIDNet/data/SARS-Cov-2/COVID/Covid (409).png COVID-19`
+
+If it instead has abbreviated paths like this: 
+`COVID ../data/SARS-Cov-2/COVID/Covid (409).png COVID-19`
+
+Then fix it:
+```shell
+cd code
+python SARS_TEST_REWRITE.py
+```
+
+To actually test predictions:
 ```shell
 cd code
 python test.py /path/to/dataset/

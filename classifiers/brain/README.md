@@ -7,6 +7,8 @@ Download the following pretrained models and unzip them in `/src/` (I used GLOBU
 - densenet169_256*256 [\[densenet169\]](https://drive.google.com/open?id=1vCsX12pMZxBmuGGNVnjFFiZ-5u5vD-h6)
 - densenet121_512*512 [\[densenet121\]](https://drive.google.com/open?id=1o0ok-6I2hY1ygSWdZOKmSD84FsEpgDaa)
 
+You can also find them in CFS: `/global/cfs/cdirs/m3562/users/lchien/brain_weights`
+
 ## Preprocessing
 ![image](https://github.com/SeuTao/RSNA2019_1st_place_solution/blob/master/docs/preprocessing.png)
 

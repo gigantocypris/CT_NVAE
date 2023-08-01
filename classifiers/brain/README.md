@@ -1,6 +1,12 @@
 # 2D CNN Classifier
 The original author's repository is found at https://github.com/SeuTao/RSNA2019_Intracranial-Hemorrhage-Detection
 
+## Setup
+You'll need the following libraries:
+```shell
+pip install pydicom seaborn scikit-metrics pretrainedmodels efficientnet-pytorch albumentations
+```
+
 ## Pretrained models
 Pretrained models are in CFS: `/global/cfs/cdirs/m3562/users/lchien/brain_weights`
 

@@ -54,8 +54,8 @@ def process_dicom_files(csv_path, dicom_directory, output_path, global_norm=500)
                 volume = volume.astype(np.float32)
                 volume[volume < 0] = 0
                 volume = volume / global_norm / volume.shape[1] # Normalize
-                print(f"Max of current volume is {np.max(volume)}")
-                print(f"Mean of current volume is {np.mean(volume)}")
+                # print(f"Max of current volume is {np.max(volume)}")
+                # print(f"Mean of current volume is {np.mean(volume)}")
 
                 # reject volumes that have substantially different norms 
                 if np.max(volume) < 5.0 and np.mean(volume) < 0.5:

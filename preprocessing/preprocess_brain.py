@@ -28,7 +28,7 @@ def create_dataset(csv_path, dicom_directory, output_path, thickness_path, num_i
     # Process the selected DICOM files
     process_dicom_files(os.path.join(output_path, f'{num_instance}_instances_selected.csv'), dicom_directory, output_path)
 
-def process_dicom_files(csv_path, dicom_directory, output_path):
+def process_dicom_files(csv_path, dicom_directory, output_path, global_norm=500):
     # Read the CSV file
     df = pd.read_csv(csv_path)
 
@@ -50,12 +50,19 @@ def process_dicom_files(csv_path, dicom_directory, output_path):
                 # Convert the list of pixel arrays to a 3D numpy array
                 volume = np.stack(pixel_arrays, axis=0)  # Stack along the first axis
 
-                # Normalize the volume
+                # Globally normalize all the volumes
                 volume = volume.astype(np.float32)
-                volume = (volume - np.min(volume)) / (np.max(volume) - np.min(volume))
+                volume[volume < 0] = 0
+                volume = volume / global_norm / volume.shape[1] # Normalize
+                print(f"Max of current volume is {np.max(volume)}")
+                print(f"Mean of current volume is {np.mean(volume)}")
 
-                # Save the normalized volume to a .npy file
-                np.save(os.path.join(output_path, f"{current_study}.npy"), volume)
+                # reject volumes that have substantially different norms 
+                if np.max(volume) < 5.0 and np.mean(volume) < 0.5:
+                    # Save the normalized volume to a .npy file
+                    np.save(os.path.join(output_path, f"{current_study}.npy"), volume)
+                else:
+                    print('Volume rejected')
             except ValueError as ve:
                 print(f"Error processing StudyInstanceUID {current_study}: {ve}")
 
@@ -78,6 +85,6 @@ if __name__ == "__main__":
     parser.add_argument('num_instance', type=int, help='Number of instances to select')
 
     args = parser.parse_args()
-
+    os.system(f'mkdir -p {args.output_path}')
     create_dataset(args.csv_path, args.dicom_directory, args.output_path, args.thickness_path, args.num_instance)
 

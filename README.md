@@ -30,6 +30,9 @@ python -m pip install xdesign
 python -m pip install kornia
 python -m pip install nibabel
 python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+python -m pip install pandas
+python -m pip install pydicom
+python -m pip install tqdm
 ```
 
 Installing MPI in the `tomopy` environment:
@@ -267,18 +270,18 @@ cd $WORKING_DIR
 ```
 Change the permissions of the loop jobs shell script to make it executable on the terminal:
 ```
-chmod +x $CT_NVAE_PATH/slurm/loop_jobs_batches.sh
+chmod +x $CT_NVAE_PATH/slurm/loop_jobs.sh
 ```
 Running Batch Jobs with foam dataset; each job runs on an exclusive GPU node with 4 GPUs:
 ```
-$CT_NVAE_PATH/slurm/loop_jobs_batches.sh $CT_NVAE_PATH foam
+./$CT_NVAE_PATH/slurm/loop_jobs.sh $CT_NVAE_PATH foam
 ```
 
 The default batch_sizes='8'. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
 ```
-batch_sizes="4 8 16 32" $CT_NVAE_PATH/slurm/loop_jobs_batches.sh $CT_NVAE_PATH foam
+batch_sizes="4 8 16 32" ./$CT_NVAE_PATH/slurm/loop_jobs.sh $CT_NVAE_PATH foam
 ```
-The environmental variable 'batch_sizes' can be changed based on your preference for the duration of 'loop_jobs_batches.sh'
+The environmental variable 'batch_sizes' can be changed based on your preference for the duration of 'loop_jobs.sh'
 
 Check job queue status and Job ID with command:
 ```
@@ -323,6 +326,15 @@ After downloading or generating the csv file, you can convert DICOM files to .np
 python $CT_NVAE_PATH/preprocessing/preprocess_brain.py $FINAL_CSV_PATH $SOURCE_DIR $OUTPUT_PATH $THICKNESS $NUM_INSTANCE
 ```
 
+## Changing permissions on NERSC
+
+```
+chmod 775 myfile.txt # For a file
+chmod -R 775 my_folder # For a Folder
+```
+- first 7 means all permission to owner
+- second 7 means all permission to the group
+- third 5 means read and execute permission to everyone else on NERSC
 
 ## Resources:
 
@@ -332,3 +344,6 @@ TODO: Add more resources
 
 [NVAE paper](https://arxiv.org/abs/2007.03898)
 
+[Queues and Charges at NERSC](https://docs.nersc.gov/jobs/policy/)
+
+[preempt queue](https://docs.nersc.gov/jobs/examples/#preemptible-jobs)

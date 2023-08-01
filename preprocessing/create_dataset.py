@@ -32,6 +32,7 @@ def main(args, dataset_type):
     print(f'Total number of sinograms found: {len(sinogram_files)}')
 
     for i in range(len(sinogram_files)):
+        print(f'processing sinogram {i} of {len(sinogram_files)}')
         filepath_sino = sinogram_files[i] # sinogram filepath
         print(f'filepath_sino is {filepath_sino}')
         filepath_gt = ''.join(filepath_sino.split('_sinogram')) # ground truth filepath

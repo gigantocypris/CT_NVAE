@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 from PIL import Image
+from skimage.transform import resize
 from tqdm import tqdm
 
 def image_to_3D_npy(origin_dir, dest_dir):
@@ -17,6 +18,9 @@ def image_to_3D_npy(origin_dir, dest_dir):
 
             # Normalize the pixel values
             img = img / 255.0
+
+            # Resize the image to (1, 256, 256)
+            img = resize(img, (256, 256))
 
             # Reshape the image to have a single channel
             img = img.reshape((1,) + img.shape)

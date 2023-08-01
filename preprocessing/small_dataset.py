@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import random
+import numpy as np
 from tqdm import tqdm
 
 def copy_random_npy_files(input_dir, output_dir, num_files):
@@ -18,6 +19,12 @@ def copy_random_npy_files(input_dir, output_dir, num_files):
     for file in tqdm(selected_files, desc="Copying files"):
         shutil.copy(os.path.join(input_dir, file), os.path.join(output_dir, file))
 
+    # Create theta.npy
+    theta = np.linspace(1, 180, 180)
+
+    # Save theta.npy to the output directory
+    np.save(os.path.join(output_dir, 'theta.npy'), theta)
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
@@ -29,4 +36,3 @@ if __name__ == "__main__":
     num_files = int(sys.argv[3])
 
     copy_random_npy_files(input_dir, output_dir, num_files)
-

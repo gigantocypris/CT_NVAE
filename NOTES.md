@@ -498,3 +498,67 @@ chmod -R 775 my_folder # For a Folder
 - first 7 means all permission to owner
 - second 7 means all permission to the group
 - third 5 means read and execute permission to everyone else on NERSC
+
+## Testing Slurm scripts, August 2, 2023
+
+
+For Foam:
+export NERSC_GPU_ALLOCATION=m3562_g
+
+module load python
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=50
+
+export DATA_TYPE=foam
+export IMAGE_ID=foam_slurm
+export DATASET_ID=foam_slurm
+export NUM_SPARSE_ANGLES=90
+export RANDOM=True
+
+sbatch --time=00:05:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
+Submitted batch job 13133277
+
+For Covid:
+export DATA_TYPE=covid
+export IMAGE_ID=covid_slurm
+export DATASET_ID=covid_slurm
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+
+sbatch --time=00:10:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
+
+Submitted batch job 13131807
+
+For brain:
+export DATA_TYPE=brain
+export IMAGE_ID=brain_slurm
+export DATASET_ID=brain_slurm
+
+sbatch --time=00:10:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
+
+Submitted batch job 13131826
+
+Testing "Training and validating the CT_NVAE":
+export NERSC_GPU_ALLOCATION=m3562_g
+module load python
+conda activate CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+
+cd $WORKING_DIR
+
+salloc -N 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+
+export EXPR_ID=testing_foam_interactive
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+
+export DATASET_ID=foam_ring
+export NUM_GPU=1
+
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $DATASET_ID --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 1 --ada_groups --num_process_per_node $NUM_GPU --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 20

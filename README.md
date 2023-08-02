@@ -159,19 +159,19 @@ module load python
 conda activate tomopy
 ```
 
-Create a working directory `{WORKING_DIR}` (e.g. `$SCRATCH/output_CT_NVAE` on NERSC):
+Create a working directory `<WORKING_DIR>` (e.g. `$SCRATCH/output_CT_NVAE` on NERSC):
 ```
-mkdir {WORKING_DIR}
+mkdir <WORKING_DIR>
 ```
 
 Create an environment variable `WORKING_DIR`
 ```
-export WORKING_DIR={WORKING_DIR}
+export WORKING_DIR=<WORKING_DIR>
 ```
 
-Create an environment variable `CT_NVAE_PATH` where `{CT_NVAE_PATH}` is the path to the CT_NVAE directory and add to `PYTHONPATH`:
+Create an environment variable `CT_NVAE_PATH` where `<CT_NVAE_PATH>` is the path to the CT_NVAE directory and add to `PYTHONPATH`:
 ```
-export CT_NVAE_PATH={CT_NVAE_PATH}
+export CT_NVAE_PATH=<CT_NVAE_PATH>
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 ```
 
@@ -180,9 +180,9 @@ Navigate to the working directory
 cd $WORKING_DIR
 ```
 
-On NERSC, set an environment variable with your allocation `{NERSC_GPU_ALLOCATION}` (e.g. `m3562_g`)) and start an interactive session:
+On NERSC, set an environment variable with your allocation `<NERSC_GPU_ALLOCATION>` (e.g. `m3562_g`)) and start an interactive session:
 ```
-export NERSC_GPU_ALLOCATION={NERSC_GPU_ALLOCATION}
+export NERSC_GPU_ALLOCATION=<NERSC_GPU_ALLOCATION>
 salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
 
@@ -200,6 +200,12 @@ For CT lung scans of COVID patients, set the following environment variable:
 ```
 export DATA_TYPE=covid
 ```
+
+If using NERSC, set an environment variable for the path to the raw data:
+```
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+```
+If not using NERSC, replace with the path to raw data on your computing setup.
 
 Then run the following command:
 ```
@@ -280,10 +286,14 @@ The option `--pnm` is for the Poisson noise multiplier. Essentially, a higher va
 
 ## Using the Slurm scheduler on NERSC
 
-XXX Need to test from here, VG 8/1/2023
-TODO: pass the amount of time as argument to sbatch
-
 To create a larger dataset, it is recommended to use sbatch jobs with the Slurm scheduler.
+
+Create an environment variable with your GPU allocation account:
+```
+export NERSC_GPU_ALLOCATION=<your GPU allocation account>
+```
+
+Finish the setup by running the following commands:
 ```
 module load python
 conda activate tomopy
@@ -294,33 +304,51 @@ cd $WORKING_DIR
 export NUM_EXAMPLES=<number of 3D examples to create for the dataset>
 ```
 
-Prepare the synthetic foam dataset with the following commands:
+Prepare the synthetic foam dataset with the following commands (note that `$IMAGE_ID` and `$DATASET_ID` can be set to any string, the final images will be saved in `$WORKING_DIR/images_$IMAGE_ID` and the dataset will be saved in `$WORKING_DIR/dataset_$DATASET_ID`):
 ```
-cd $WORKING_DIR
 export DATA_TYPE=foam
 export IMAGE_ID=$DATA_TYPE
 export DATASET_ID=$DATA_TYPE
 export NUM_SPARSE_ANGLES=<number of projection angles to use>
 export RANDOM=<boolean indicating whether to use random angles or not>
 
-sbatch $CT_NVAE_PATH/slurm/create_dataset_foam.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
+sbatch --time=00:05:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
 ```
+It takes approximately 5 minutes to create 50 examples. Increase the time limit depending on the values of `$NUM_EXAMPLES`. 
 
-Prepare a dataset of CT lung scans of COVID patients following the directions above but replacing the `$DATA_TYPE`:
+Prepare a dataset of CT lung scans of COVID patients following the directions above but replacing the `$DATA_TYPE` and re-setting `$IMAGE_ID` and `$DATASET_ID`, as well as setting `$COVID_RAW_DATA`:
 ```
-export DATA_TYPE=foam
+export DATA_TYPE=covid
+export IMAGE_ID=$DATA_TYPE
+export DATASET_ID=$DATA_TYPE
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
 ```
+It takes approximately 7 minutes to create 50 examples.
 
-Prepare a dataset of CT brain scans:
+Prepare a dataset of CT brain scans following the directions above but replacing the `$DATA_TYPE` and re-setting `$IMAGE_ID` and `$DATASET_ID`:
 ```
-TODO
+export DATA_TYPE=brain
+export IMAGE_ID=$DATA_TYPE
+export DATASET_ID=$DATA_TYPE
 ```
+It takes approximately 3 minutes to create 50 examples.
 
 ## Training and validating the CT_NVAE
 
 ### Using an interactive node on NERSC
 
-If using NERSC, load Python if not already loaded:
+Set the environment variable `$NERSC_GPU_ALLOCATION` to your GPU allocation account if not already set:
+```
+export NERSC_GPU_ALLOCATION=<your GPU allocation account>
+```
+
+Also set the `$WORKING_DIR` and `$CT_NVAE_PATH` environment variables if not already set (`$CT_NVAE_PATH` points to the CT_NVAE repository):
+```
+export WORKING_DIR=<path to working directory>
+export CT_NVAE_PATH=<path to CT_NVAE repository>
+```
+
+Load Python if not already loaded:
 ```
 module load python
 ```
@@ -336,9 +364,9 @@ cd $WORKING_DIR
 mkdir -p checkpts
 ```
 
-If on NERSC, start an interactive session or see [below](#running-batch-jobs-on-NERSC) for how to run longer batch jobs:
+Start an interactive session or see [below](#Using-the-Slurm-scheduler-on-NERSC) for how to run longer batch jobs:
 ```
-salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+salloc -N 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
 ```
 
 Export the following variables, where `<experiment_description>` is a unique string identifier for the experiment:
@@ -358,23 +386,29 @@ Otherwise:
 export MASTER_ADDR=localhost
 ```
 
-Create an environmental variable `{CT_NVAE_PATH}` pointing to the CT_NVAE code and add to `PYTHONPATH`:
+Add `$CT_NVAE_PATH` to `$PYTHONPATH`:
 ```
-export CT_NVAE_PATH={CT_NVAE_PATH}
-export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
-```
-
-Train with the foam dataset, on a single GPU to test that the code is working:
-```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm 1e1
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 ```
 
-Test a longer example on 4 GPUs:
+To use dataset named `dataset_$DATASET_ID`, first set the environment variable $DATASET_ID:
 ```
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset foam --batch_size 64 --epochs 100 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+export DATASET_ID=<dataset_id>
 ```
 
-The output is saved in `$WORKING_DIR/checkpts/eval_$EXPR_ID`.
+There are 4 GPUs on a NERSC interactive node, set the environment variable `$NUM_GPU` to the number of GPUs you want to use. For example, to use 1 GPU for debugging purposes:
+```
+```
+export NUM_GPU=1
+```
+
+Here is an example training command with 10 epochs:
+```
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $DATASET_ID --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 1 --ada_groups --num_process_per_node $NUM_GPU --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 20
+```
+The output is saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`.
+
+XXX STOPPED HERE
 
 Launch Tensorboard to view results: (TODO: Currently not working on NERSC)
 ```
@@ -382,6 +416,8 @@ tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 ```
 
 To have the CT-NVAE attempt to remove the ring artifact, additionally pass `--model_ring_artifact` to `train.py`.
+
+To continue training from a previously started training run, use the same command with the addition of `--cont_training`. If you use `--epochs 0`, the program will evaluate the validation set with the current model weights.
 
 ### Using the Slurm scheduler on NERSC
 

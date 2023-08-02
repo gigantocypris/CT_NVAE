@@ -58,7 +58,9 @@ def create_covid_example(nib_file_path):
 def main(num_examples, rank, world_size, dest_dir, type):
     os.system('mkdir -p ' + dest_dir)
     if type=='covid':
-        covid_list = np.sort(glob.glob('/global/cfs/cdirs/m3562/users/hkim/real_data/raw/*.nii'))
+        # get from environment variable
+        covid_raw_data = os.environ['COVID_RAW_DATA'] 
+        covid_list = np.sort(glob.glob(covid_raw_data + '/*.nii'))
 
     for example_index in range(num_examples):
         if example_index % int(world_size) == rank: # distribute work across ranks

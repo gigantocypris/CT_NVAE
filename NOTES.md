@@ -488,3 +488,13 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $
 
 # Running train.py (4 GPUs)
 change to `--num_process_per_node 4`
+
+## Changing permissions on NERSC
+
+```
+chmod 775 myfile.txt # For a file
+chmod -R 775 my_folder # For a Folder
+```
+- first 7 means all permission to owner
+- second 7 means all permission to the group
+- third 5 means read and execute permission to everyone else on NERSC

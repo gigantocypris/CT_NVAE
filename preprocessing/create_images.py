@@ -13,6 +13,7 @@ import gzip
 import shutil
 from PIL import Image
 import random
+from skimage.transform import resize
 
 
 def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.2, GAP = 0, Z_SLICES = 32):
@@ -56,26 +57,37 @@ def create_covid3D_example(nib_file_path):
 
     return example, filename
 
-def create_covid2D_example(origin_dir):
+
+def create_covid2D_example(origin_file_path):
     # Get a single 2D example of a covid patient lung scan
     # Return a single 2D slice of the 3D scan with the height of Z_SLICES
-    filename = os.listdir(origin_dir)[0]  # Use the first image in the directory
+    filename = os.path.basename(origin_file_path)  # Get the filename from the path
     if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-        img = Image.open(os.path.join(origin_dir, filename)).convert('L')
-        img = np.array(img)
+        img = Image.open(origin_file_path).convert('L')  # Open the image directly from the path
+        img = np.array(img, dtype=np.float32)
 
-        # Normalize the pixel values
-        img = img / 255.0
+        # Normalize the pixel values using min-max normalization
+        min_val = np.min(img)
+        max_val = np.max(img)
+        img = (img - min_val) / (max_val - min_val)
+
+        # Resize the image to (224, 224)
+        img = resize(img, (224, 224))
 
         # Reshape the image to have a single channel
         img = img.reshape((1,) + img.shape)
 
-        print('exaplme shape is ' + str(img.shape))
+        print('example shape is ' + str(img.shape))
         print('example min is ' + str(np.min(img)))
         print('example max is ' + str(np.max(img)))
         print('example median is ' + str(np.median(img)))
         print('example background is ' + str(img[0,0,0]))
+
+    # Remove the file extension from the filename
+    filename = os.path.splitext(filename)[0]
+
     return img, filename
+
 
 
 def create_brain_example(nib_file_path):
@@ -104,7 +116,6 @@ def main(num_examples, rank, world_size, dest_dir, type):
                 example, filename = create_covid3D_example(covid3D_list[example_index])
             elif type=='covid2D':
                 example, filename = create_covid2D_example(covid2D_list[example_index])
-
             elif type=='brain':
                 continue # TODO
             else:

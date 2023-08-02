@@ -179,7 +179,7 @@ valid_transform_pure = albumentations.Compose([
 ])
 
 class PredictionDatasetPure:
-    def __init__(self, name_list, df_train, df_test, n_test_aug, mode):
+    def __init__(self, ipath,name_list, df_train, df_test, n_test_aug, mode):
         self.name_list = name_list
         if mode == 'val':
             self.df = df_train[df_train['filename'].isin(name_list)]
@@ -187,6 +187,7 @@ class PredictionDatasetPure:
             self.df = df_test[df_test['filename'].isin(name_list)]
         self.n_test_aug = n_test_aug
         self.mode = mode
+        self.ipath = ipath
 
     def __len__(self):
         return len(self.name_list) * self.n_test_aug
@@ -194,12 +195,12 @@ class PredictionDatasetPure:
     def __getitem__(self, idx):
         if self.mode == 'val':
             filename = self.name_list[idx % len(self.name_list)]
-            image_cat = cv2.imread('train_png/' + filename)
+            image_cat = cv2.imread(os.path.join(self.ipath, 'train_png', filename))
             label = torch.FloatTensor(self.df[self.df['filename']==filename].loc[:, 'any':'subdural'].values)
 
         if self.mode == 'test':
             filename = self.name_list[idx % len(self.name_list)]
-            image_cat = cv2.imread('test_png/' + filename)
+            image_cat = cv2.imread(os.path.join(self.ipath, 'test_png', filename))
             image_cat = cv2.resize(image_cat, (256, 256))
             label = torch.FloatTensor([0,0,0,0,0,0])
 
@@ -209,7 +210,7 @@ class PredictionDatasetPure:
         return filename, image_cat, label
 
 class PredictionDatasetAug:
-    def __init__(self, name_list, df_train, df_test, n_test_aug, mode):
+    def __init__(self, ipath,name_list, df_train, df_test, n_test_aug, mode):
         self.name_list = name_list
         if mode == 'val':
             self.df = df_train[df_train['filename'].isin(name_list)]
@@ -217,6 +218,7 @@ class PredictionDatasetAug:
             self.df = df_test[df_test['filename'].isin(name_list)]
         self.n_test_aug = n_test_aug
         self.mode = mode
+        self.ipath = ipath
 
     def __len__(self):
         return len(self.name_list) * self.n_test_aug
@@ -224,12 +226,12 @@ class PredictionDatasetAug:
     def __getitem__(self, idx):
         if self.mode == 'val':
             filename = self.name_list[idx % len(self.name_list)]
-            image_cat = cv2.imread('train_png/' + filename)
+            image_cat = cv2.imread(os.path.join(self.ipath, 'train_png', filename))
             image_cat = cv2.resize(image_cat, (256, 256))
             label = torch.FloatTensor(self.df[self.df['filename']==filename].loc[:, 'any':'subdural'].values)
         if self.mode == 'test':
             filename = self.name_list[idx % len(self.name_list)]
-            image_cat = cv2.imread('test_png/' + filename)
+            image_cat = cv2.imread(os.path.join(self.ipath, 'test_png', filename))
             image_cat = cv2.resize(image_cat, (256, 256))
             label = torch.FloatTensor([0,0,0,0,0,0])
 
@@ -246,10 +248,10 @@ class PredictionDatasetAug:
         
         return filename, image_cat, label
 
-def predict(model, name_list, df_all, df_test, batch_size: int, n_test_aug: int, aug=False, mode='val', fold=0):
+def predict(ipath,model, name_list, df_all, df_test, batch_size: int, n_test_aug: int, aug=False, mode='val', fold=0):
     if aug:
         loader = DataLoader(
-            dataset=PredictionDatasetAug(name_list, df_all, df_test, n_test_aug, mode),
+            dataset=PredictionDatasetAug(ipath,name_list, df_all, df_test, n_test_aug, mode),
             shuffle=False,
             batch_size=batch_size,
             num_workers=16,
@@ -257,7 +259,7 @@ def predict(model, name_list, df_all, df_test, batch_size: int, n_test_aug: int,
         )
     else:
         loader = DataLoader(
-            dataset=PredictionDatasetPure(name_list, df_all, df_test, n_test_aug, mode),
+            dataset=PredictionDatasetPure(ipath,name_list, df_all, df_test, n_test_aug, mode),
             shuffle=False,
             batch_size=batch_size,
             num_workers=16,
@@ -357,7 +359,7 @@ def group_aug(val_p_aug, val_names_aug, val_truth_aug):
     return g_prob.drop('id', 1).values, g_truth['id'].values, g_truth.drop('id', 1).values
 
 
-def predict_all(model_name, image_size):
+def predict_all(model_name, image_size, ipath):
 
     for fold in [0,1,2,3,4]:
 
@@ -390,7 +392,7 @@ def predict_all(model_name, image_size):
         model.eval()
         
         if is_center:
-            val_p, val_names, val_truth = predict(model, c_val, df_all, df_test, batch_size, 1, False, 'val', fold)
+            val_p, val_names, val_truth = predict(ipath,model, c_val, df_all, df_test, batch_size, 1, False, 'val', fold)
             val_predictions, val_image_names, val_truth = group_aug(val_p, val_names, val_truth)
             val_loss, val_loss_sum = weighted_log_loss_numpy(val_predictions, val_truth)
             print('val_loss = ', val_loss, 'val_loss_sum = ', val_loss_sum)
@@ -400,7 +402,7 @@ def predict_all(model_name, image_size):
             df.to_csv(prediction_path + '_val_center.csv')
 
         if is_aug:
-            val_p_aug, val_names_aug, val_truth_aug = predict(model, c_val, df_all, df_test, batch_size, num_aug, True, 'val', fold)
+            val_p_aug, val_names_aug, val_truth_aug = predict(ipath,model, c_val, df_all, df_test, batch_size, num_aug, True, 'val', fold)
             val_predictions_aug, val_image_names_aug, val_truth_aug = group_aug(val_p_aug, val_names_aug, val_truth_aug)
             val_loss_aug, val_loss_sum_aug = weighted_log_loss_numpy(val_predictions_aug, val_truth_aug)
             print('val_loss_aug = ', val_loss_aug, 'val_loss_sum_aug = ', val_loss_sum_aug)
@@ -408,7 +410,7 @@ def predict_all(model_name, image_size):
             df['filename'] = val_image_names_aug
             df.to_csv(prediction_path + '_val_aug_{num_aug}.csv'.format(num_aug=num_aug))
 
-            test_p_aug, test_names_aug, test_truth_aug = predict(model, c_test, df_all, df_test, batch_size, num_aug, True, 'test', fold)
+            test_p_aug, test_names_aug, test_truth_aug = predict(ipath,model, c_test, df_all, df_test, batch_size, num_aug, True, 'test', fold)
             test_predictions_aug, test_image_names_aug, test_truth_aug = group_aug(test_p_aug, test_names_aug, test_truth_aug)
 
             df = pd.DataFrame(data=test_predictions_aug,  columns=['any', 'epidural', 'intraparenchymal', 'intraventricular', 'subarachnoid', 'subdural'])
@@ -481,8 +483,8 @@ def predict_all(model_name, image_size):
     
     
 if __name__ == '__main__':
-    csv_path = '../data/stage1_train_cls.csv'
-    test_csv_path = '../data/stage2_test_cls.csv'
+    csv_path = '/global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/data/stage1_train_cls.csv'
+    test_csv_path = '/global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/data/stage2_test_cls.csv'
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-backbone", "--backbone", type=str, default='DenseNet121_change_avg', help='backbone')
@@ -492,6 +494,8 @@ if __name__ == '__main__':
 
     parser.add_argument("-spth", "--snapshot_path", type=str,
                         default='DenseNet121_change_avg', help='epoch')
+    
+    parser.add_argument("-ipath", "--image_path", type=str, default='/path/to/images', help='path to the images')
 
     args = parser.parse_args()
 
@@ -504,8 +508,10 @@ if __name__ == '__main__':
     print(train_batch_size)
     print(val_batch_size)
 
+    ipath = args.image_path
+
     model_snapshot_path = args.snapshot_path.replace('\n', '').replace('\r', '') + '/'
-    kfold_path = '../data/fold_5_by_study_image/'
+    kfold_path = '/global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/data/fold_5_by_study_image/'
 
     df_test = pd.read_csv(test_csv_path)  
     c_test = list(set(df_test['filename'].values.tolist()))
@@ -517,6 +523,6 @@ if __name__ == '__main__':
 
     backbone = args.backbone
     print(backbone)
-    predict_all(backbone, Image_size)
+    predict_all(backbone, Image_size,ipath)
 
 

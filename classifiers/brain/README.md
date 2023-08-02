@@ -1,16 +1,24 @@
 # 2D CNN Classifier
 The original author's repository is found at https://github.com/SeuTao/RSNA2019_Intracranial-Hemorrhage-Detection
 
+## Setup
+You'll need the following libraries:
+```shell
+pip install pydicom seaborn scikit-metrics pretrainedmodels efficientnet-pytorch albumentations
+```
+
 ## Pretrained models
-Download the following pretrained models and unzip them in `/src/` (I used GLOBUS to accomplish this).
+Pretrained models are in CFS: `/global/cfs/cdirs/m3562/users/lchien/brain_weights`
+
+Note that you can also download the following pretrained models from the web (I used GLOBUS to accomplish this).
 - seresnext101_256*256 [\[seresnext101\]](https://drive.google.com/open?id=18Py5eW1E4hSbTT6658IAjQjJGS28grdx)
 - densenet169_256*256 [\[densenet169\]](https://drive.google.com/open?id=1vCsX12pMZxBmuGGNVnjFFiZ-5u5vD-h6)
 - densenet121_512*512 [\[densenet121\]](https://drive.google.com/open?id=1o0ok-6I2hY1ygSWdZOKmSD84FsEpgDaa)
 
 ## Preprocessing
-![image](https://github.com/SeuTao/RSNA2019_1st_place_solution/blob/master/docs/preprocessing.png)
+CSV files can be found in CFS: `/global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/data/`
 
-Download the CSV files and upzip them `/data/` (I used GLOBUS to accomplish this).
+OR, download the CSV files and upzip them `/data/` (I used GLOBUS to accomplish this).
 
 download [\[data.zip\]](https://drive.google.com/open?id=1buISR_b3HQDU4KeNc_DmvKTYJ1gvj5-3)
 
@@ -25,16 +33,16 @@ download [\[data.zip\]](https://drive.google.com/open?id=1buISR_b3HQDU4KeNc_DmvK
     5. Unzip it in `/data/`
 
 ## Convert dcm to png
-I have already done this step. You can move them from the path below to your `/src/` folder: 
+I have already done this step. You can find them in CFS: 
 ```
 /global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/src/train_png
 /global/cfs/cdirs/m3562/users/lchien/kaggle/2DNet/src/test_png
 ```
-Alternatively, if you need to do this again:
+Alternatively, if you need to generate PNG images again:
 ```
 cd src
-python3 prepare_data.py -dcm_path $PATH_TO_TRAIN_IMAGES -png_path train_png
-python3 prepare_data.py -dcm_path $PATH_TO_TEST_IMAGES -png_path test_png
+python3 prepare_data.py -dcm_path PATH/TO/TRAIN/IMAGES/ -png_path train_png
+python3 prepare_data.py -dcm_path PATH/TO/TEST/IMAGES/ -png_path test_png
 ```
 
 ## Training
@@ -48,7 +56,7 @@ python3 train.py -backbone se_resnext101_32x4d -img_size 256 -tbs 80 -vbs 40 -sa
 ## Testing
 To test models, use the following commands:
 ```
-python3 predict.py -backbone DenseNet121_change_avg -img_size 256 -tbs 4 -vbs 4 -spth DenseNet121_change_avg_512
-python3 predict.py -backbone DenseNet169_change_avg -img_size 256 -tbs 4 -vbs 4 -spth DenseNet169_change_avg_256
-python3 predict.py -backbone se_resnext101_32x4d -img_size 256 -tbs 4 -vbs 4 -spth se_resnext101_32x4d_256
+python3 predict.py -backbone DenseNet121_change_avg -img_size 256 -tbs 4 -vbs 4 -spth $CFS/m3562/users/lchien/brain_weights/DenseNet121_change_avg_512 -ipath $CFS/m3562/users/lchien/kaggle/2DNet/src/
+python3 predict.py -backbone DenseNet169_change_avg -img_size 256 -tbs 4 -vbs 4 -spth $CFS/m3562/users/lchien/brain_weights/DenseNet169_change_avg_256 -ipath $CFS/m3562/users/lchien/kaggle/2DNet/src/
+python3 predict.py -backbone se_resnext101_32x4d -img_size 256 -tbs 4 -vbs 4 -spth $CFS/m3562/users/lchien/brain_weights/se_resnext101_32x4d_256  -ipath $CFS/m3562/users/lchien/kaggle/2DNet/src/
 ```

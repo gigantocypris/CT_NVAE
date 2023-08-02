@@ -5,19 +5,18 @@
 #SBATCH -L SCRATCH       # job requires SCRATCH files
 #SBATCH -A m3562_g       # allocation account
 #SBATCH -C gpu
-#SBATCH -q regular
-#SBATCH -t 06:00:00
+#SBATCH -q debug
+#SBATCH -t 00:10:00
 #SBATCH --gpus-per-node=4
 #SBATCH --ntasks-per-gpu=1
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=gchen4@lbl.gov
 
-export CT_NVAE_PATH=$1
-export WORKING_DIR=$2
-export EXPR_ID=$3
-export BATCH_SIZE=$4
-export DATASET_ID=$5
-export EPOCHS=$6
+export EXPR_ID=$1
+export BATCH_SIZE=$2
+export CT_NVAE_PATH=$3
+export DATA_TYPE=$4
+export EPOCHS=$5
 
 export NUM_LATENT_SCALES=2
 export NUM_GROUPS_PER_SCALE=10
@@ -34,22 +33,22 @@ export NUM_CHANNELS_DEC=4
 export NUM_NF=0
 export PNM=1e1
 
-export DATASET_DIR=$WORKING_DIR/$DATASET_ID
-export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export DATASET_DIR=$SCRATCH/output_brain
+export CHECKPOINT_DIR=$SCRATCH/output_brain/checkpts
 export MASTER_ADDR=$(hostname)
 mkdir -p $CHECKPOINT_DIR
-mkdir -p $CHECKPOINT_DIR/eval-$EXPR_ID
+mkdir $CHECKPOINT_DIR/eval-$EXPR_ID
 
 echo "jobstart $(date)";pwd
 
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID \
-        --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS \
+        --dataset $DATA_TYPE --batch_size $BATCH_SIZE --epochs $EPOCHS \
         --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE \
         --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS \
         --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC \
         --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS \
         --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM \
         --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0 \
-        --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM > $CHECKPOINT_DIR/eval-$EXPR_ID/log_$EXPR_ID.txt
+        --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM &>> $CHECKPOINT_DIR/eval-$EXPR_ID/log_$EXPR_ID.txt
 
 echo "jobend $(date)";pwd

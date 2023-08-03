@@ -10,8 +10,12 @@ import glob
 from computed_tomography.utils import create_sinogram
 
 def main(rank, world_size, dir, theta):
-    file_list = np.sort(glob.glob(dir + '/*[!_sinogram].npy'))
+    file_list = np.sort(glob.glob(dir + '/*.npy'))
     for example_index in range(len(file_list)):
+        if "_label.npy" in file_list[example_index] or "_sinogram.npy" in file_list[example_index]:
+            # Skip processing files ending with "_label.npy" or "_sinogram.npy"
+            continue
+
         if example_index % int(world_size) == rank: # distribute work across ranks
             img_stack = np.load(file_list[example_index])
             proj = create_sinogram(img_stack, theta, pad=True)

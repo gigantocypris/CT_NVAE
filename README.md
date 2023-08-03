@@ -425,7 +425,7 @@ scancel ${JobID1} ${JobID2}
 ## Evaluating the CT-NVAE
 
 ## Evaluating the CT-NVAE with 2D Covid Classifier
-Step0: Immitate the training process of the CT-NVAE to create the reconstructed data. `RECON_PATH` is the path that contains _recon.npy and _label.npy files.
+Step0: Imitate the training process of the CT-NVAE to create the reconstructed data. `RECON_PATH` is the path that contains _recon.npy and _label.npy files.
 ```
 conda deactivate
 module load python

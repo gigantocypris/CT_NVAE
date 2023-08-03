@@ -83,6 +83,7 @@ def create_covid2D_example(origin_file_path):
 
     # Remove the file extension from the filename - so that it's not img1.png.npy
     filename = os.path.splitext(filename)[0]
+    filename = filename.replace(' ', '')
 
     # Search for the path in 'merged.txt' and extract the label
     with open('/global/cfs/cdirs/m3562/users/hkim/2DCovid/SARS/merged.txt', 'r') as f:
@@ -132,6 +133,7 @@ def main(num_examples, rank, world_size, dest_dir, type):
                 filename = 'example_' + str(example_index)
 
             np.save(dest_dir + '/' + filename + '.npy', example)
+    print('Rank ' + str(rank) + ' finished creating ' + str(num_examples) + ' examples of type ' + type)
 
 
 if __name__ == '__main__':

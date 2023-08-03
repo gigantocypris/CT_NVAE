@@ -1,4 +1,4 @@
-# Usage: python $CT_NVAE_PATH/classifiers/COVID/code/test_recon_preprocess.py $RECON_PATH $RECON_TEST_PATH
+# Usage: python $CT_NVAE_PATH/classifiers/COVID/code/test_recon_preprocess.py $RECON_PATH $RECON_PNG_PATH
 
 import os
 import numpy as np

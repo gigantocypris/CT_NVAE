@@ -424,6 +424,39 @@ scancel ${JobID1} ${JobID2}
 
 ## Evaluating the CT-NVAE
 
+## Evaluating the CT-NVAE with 2D Covid Classifier
+Step0: Immitate the training process of the CT-NVAE to create the reconstructed data. `RECON_PATH` is the path that contains _recon.npy and _label.npy files.
+```
+conda deactivate
+module load python
+conda activate tomopy
+export WORKING_DIR=/pscratch/sd/h/hojunek/2DCOVID
+export CT_NVAE_PATH=/global/homes/h/hojunek/CT_NVAE
+export NERSC_GPU_ALLOCATION=m3562_g
+export SLURM_NTASKS=4
+export DATA_TYPE=covid2D
+export IMG_PATH=small_SARS_npy_1k
+export DATASET_PATH=dataset_small_SARS_npy_1k
+cd $WORKING_DIR
+salloc -N 1 --time=60 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=4 --cpus-per-task=32
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 1000 --dest $IMG_PATH --type $DATA_TYPE
+export PREPROCESSED_PATH=/pscratch/sd/h/hojunek/2DCOVID/small_SARS_npy_1k
+export RECON_PATH=/pscratch/sd/h/hojunek/2DCOVID/small_SARS_npy_1k_recon
+python $CT_NVAE_PATH/classifiers/COVID/code/fake_recon.py $PREPROCESSED_PATH $RECON_PATH
+```
+
+Step1: Define the path to convert the reconstructed data to png files. `RECON_PNG_PATH` is the path that contains _recon.png files and `recon_label.txt`.
+```
+export RECON_PNG_PATH=/pscratch/sd/h/hojunek/2DCOVID/small_SARS_npy_1k_test_preprocess
+python $CT_NVAE_PATH/classifiers/COVID/code/test_recon_preprocess.py $RECON_PATH $RECON_PNG_PATH
+```
+
+Step2: Run the 2D classifier to evaluate the reconstructed data.
+```
+python $CT_NVAE_PATH/classifiers/COVID/code/test_recon.py $RECON_PNG_PATH 
+```
+
+
 TODO: visualize with the analysis script
 
 ```

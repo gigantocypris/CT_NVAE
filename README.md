@@ -408,7 +408,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $
 ```
 The output is saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`.
 
-XXX STOPPED HERE
+XXX STOPPED HERE VG 8/2/2023
 
 Launch Tensorboard to view results: (TODO: Currently not working on NERSC)
 ```

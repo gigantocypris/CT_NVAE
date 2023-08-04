@@ -1,16 +1,44 @@
-# XXX TODO
+#!/bin/bash
 
-# from MNIST N_VAE
+#SBATCH -N 1            # Number of nodes
+#SBATCH -J CT_NVAE_CR      # job name
+#SBATCH -L SCRATCH       # job requires SCRATCH files
+#SBATCH -A m3562_g       # allocation account
+#SBATCH -C gpu
+#SBATCH -q debug
+#SBATCH -t 00:04:00
+#SBATCH --gpus-per-node=4
+#SBATCH --ntasks-per-gpu=1
+#SBATCH -o %x-%j.out 
+#SBATCH -e %x-%j.err
+#SBATCH --mail-type=begin,end,fail
+#SBATCH --mail-user=gchen4@lbl.gov
+#SBATCH --time-min=00:04:00
+#SBATCH --comment=00:12:00
+#SBATCH --signal=B:USR1@30 
+#SBATCH --requeue 
+#SBATCH --open-mode=append
 
-export EXPR_ID=UNIQUE_EXPR_ID
-export DATA_DIR=PATH_TO_DATA_DIR
-export CHECKPOINT_DIR=PATH_TO_CHECKPOINT_DIR
-export CODE_DIR=PATH_TO_CODE_DIR
-cd $CODE_DIR
-python train.py --data $DATA_DIR/mnist --root $CHECKPOINT_DIR --save $EXPR_ID --dataset mnist --batch_size 200 \
-        --epochs 400 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 3 --num_preprocess_cells 3 \
-        --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 20 --num_preprocess_blocks 2 \
-        --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 32 --num_channels_dec 32 --num_nf 0 \
-        --ada_groups --num_process_per_node 2 --use_se --res_dist --fast_adamax 
+#for c/r jobs
+module load dmtcp nersc_cr
+start_coordinator
+chmod +x $CT_NVAE_PATH/slurm/train_single_node_preempt_load.sh
 
+#c/r jobs
+if [[ $(restart_count) == 0 ]]; then
 
+    #user setting
+    dmtcp_launch -j $CT_NVAE_PATH/slurm/train_single_node_preempt_load.sh &
+elif [[ $(restart_count) > 0 ]] && [[ -e $CT_WORKING_DIR/dmtcp_restart_script.sh ]]; then
+
+    $CT_WORKING_DIR/dmtcp_restart_script.sh &
+else
+
+    echo "Failed to restart the job, exit"; exit
+fi
+
+# requeueing the job if remaining time >0
+ckpt_command=ckpt_dmtcp    #additional checkpointing right before the job hits the wall limit 
+requeue_job func_trap USR1
+
+wait

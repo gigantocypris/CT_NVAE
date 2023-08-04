@@ -37,7 +37,7 @@ def main(args):
     writer = utils.Writer(args.global_rank, args.save)
 
     # Get data loaders.
-    train_queue, valid_queue = datasets.get_loaders(args)
+    train_queue, valid_queue, test_queue = datasets.get_loaders(args)
     args.num_total_iter = len(train_queue) * args.epochs
     warmup_iters = len(train_queue) * args.warmup_epochs
     swa_start = len(train_queue) * (args.epochs - 1)
@@ -168,6 +168,12 @@ def main(args):
     writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
 
     writer.close()
+
+    # Final test
+    if args.final_test:
+        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True)
+        logging.info('final test nelbo %f', test_nelbo)
+        logging.info('final test neg log p %f', test_neg_log_p)
 
 def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
@@ -454,7 +460,9 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
     parser.add_argument('--truncate', type=int, default=None,
-                        help='if not None, truncate the dataset to this many examples')
+                        help='if not None, truncate the training dataset to this many examples')
+    parser.add_argument('--final_test', action='store_true', default=False,
+                help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
                         help='batch size per GPU')

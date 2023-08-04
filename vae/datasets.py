@@ -75,13 +75,15 @@ def get_loaders_eval(dataset, args):
     # train_transform, valid_transform = _data_transforms_foam(args)
     dataset_dir = os.environ['DATASET_DIR']
 
-    train_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='train'))
-    valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid', truncate=args.truncate))
+    train_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='train', truncate=args.truncate))
+    valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid'))
+    test_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='test'))
 
-    train_sampler, valid_sampler = None, None
+    train_sampler, valid_sampler, test_sampler = None, None, None
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_data)
         valid_sampler = torch.utils.data.distributed.DistributedSampler(valid_data)
+        test_sampler = torch.utils.data.distributed.DistributedSampler(test_data)
 
     train_queue = torch.utils.data.DataLoader(
         train_data, batch_size=args.batch_size,
@@ -93,4 +95,9 @@ def get_loaders_eval(dataset, args):
         shuffle=False,
         sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
 
-    return train_queue, valid_queue
+    test_queue = torch.utils.data.DataLoader(
+        test_data, batch_size=args.batch_size,
+        shuffle=False,
+        sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
+
+    return train_queue, valid_queue, test_queue

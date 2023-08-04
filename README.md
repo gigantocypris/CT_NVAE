@@ -398,7 +398,6 @@ export DATASET_ID=<dataset_id>
 
 There are 4 GPUs on a NERSC interactive node, set the environment variable `$NUM_GPU` to the number of GPUs you want to use. For example, to use 1 GPU for debugging purposes:
 ```
-```
 export NUM_GPU=1
 ```
 
@@ -406,71 +405,137 @@ Here is an example training command with 10 epochs:
 ```
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $DATASET_ID --batch_size 64 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 1 --ada_groups --num_process_per_node $NUM_GPU --use_se --res_dist --fast_adamax --pnm 1e1 --save_interval 20
 ```
-The output is saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`.
+The output is saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`. The final `.npy` files are saved here, as well as `.png` files created at iteration intervals given by `--save interval`. The final `.npy` files are created with the validation dataset, and the `.png` files are created with the training dataset.
 
-XXX STOPPED HERE VG 8/2/2023
-
-Launch Tensorboard to view results: (TODO: Currently not working on NERSC)
+Exit the interactive session and launch TensorBoard to view results (note that TensorBoard will not work on the interactive node, you must use the login node). Reset the `$CHECKPOINT_DIR` and `$EXPR_ID` environment variables if needed:
 ```
+export CHECKPOINT_DIR=checkpts
+export EXPR_ID=<experiment_description>
 tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 ```
 
 To have the CT-NVAE attempt to remove the ring artifact, additionally pass `--model_ring_artifact` to `train.py`.
 
-To continue training from a previously started training run, use the same command with the addition of `--cont_training`. If you use `--epochs 0`, the program will evaluate the validation set with the current model weights.
+To continue training from a previously started training run, use the same command with the addition of `--cont_training`. If you use `--epochs 0`, the program will evaluate the validation set with the current model weights. The option `--final_test` can be used to evaluate the test set with the current model weights.
 
 ### Using the Slurm scheduler on NERSC
 
-XXX TODO write script with the preempt queue
-
-To run batch jobs on NERSC:
+Load Python if not loaded:
 ```
-conda deactivate 
+module load python
+```
+
+If necessary, deactivate the current conda environment:
+```
+conda deactivate
+```
+
+Activate the CT_NVAE environment:
+```
 conda activate CT_NVAE
-export WORKING_DIR=$SCRATCH/output_CT_NVAE
-cd $WORKING_DIR
-```
-Change the permissions of the loop jobs shell script to make it executable on the terminal:
-```
-chmod +x $CT_NVAE_PATH/slurm/loop_jobs.sh
-```
-Running Batch Jobs with foam dataset; each job runs on an exclusive GPU node with 4 GPUs:
-```
-./$CT_NVAE_PATH/slurm/loop_jobs.sh $CT_NVAE_PATH foam
 ```
 
-The default batch_sizes='8'. However, if you want to submit 4 jobs with the batch_size of 4, 8, 16, and 32 respectively:
+Set the `$WORKING_DIR` and `$CT_NVAE_PATH` environment variables if not already set (`$CT_NVAE_PATH` points to the CT_NVAE repository):
 ```
-batch_sizes="4 8 16 32" ./$CT_NVAE_PATH/slurm/loop_jobs.sh $CT_NVAE_PATH foam
+export CT_NVAE_PATH=<path to CT_NVAE repository>
+export WORKING_DIR=<path to working directory>
 ```
-The environmental variable 'batch_sizes' can be changed based on your preference for the duration of 'loop_jobs.sh'
+
+Navigate to the working directory and create the `checkpts` directory`:
+```
+cd $WORKING_DIR
+mkdir -p checkpts
+```
+
+Set the following environment variables:
+```
+export NERSC_GPU_ALLOCATION=<your GPU allocation account>
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname) # if on NERSC
+export MASTER_ADDR=localhost # otherwise
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+```
+
+To use dataset named `dataset_$DATASET_ID`, set the environment variable $DATASET_ID:
+```
+export DATASET_ID=<dataset_id>
+```
+
+Choose the batch size, number of epochs, and save_interval; for example:
+```
+export BATCH_SIZE=8
+export EPOCHS=10
+export SAVE_INTERVAL=20
+```
+
+Run the training script, adjusting the time limit as needed:
+```
+sbatch -A $NERSC_GPU_ALLOCATION -t 00:10:00 $CT_NVAE_PATH/slurm/train_single_node.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL
+```
+The Slurm job id will be printed once the job is submitted, e.g. `Submitted batch job $SLURM_JOB_ID`.
+
+XXX STOPPED HERE
+
+The `$SLURM_JOB_ID.err` and `$SLURM_JOB_ID.out` files will be saved in the working directory. The output is saved in `$WORKING_DIR/checkpts/eval-$SLURM_JOB_ID`. The training and validation losses will be tracked by wandb and associated with the `$SLURM_JOB_ID`. TensorBoard can be used to visualize results on a login node:
+```
+tensorboard --logdir $CHECKPOINT_DIR/eval-$SLURM_JOB_ID/
+```
+
+If you want to loop over an array of values for an input to `train.py`, you can modify and use the `loop_jobs.sh` script. 
+
+The `loop_jobs.sh` script is currently set to loop over batch sizes, with default being a batch size of 8. For example, to run an array of batch sizes; each job runs on an Perlmutter GPU node with 4 GPUs:
+```
+value_array="4 8 16 32" . $CT_NVAE_PATH/slurm/loop_jobs.sh
+```
 
 Check job queue status and Job ID with command:
 ```
 squeue -u $USER
 ```
+
 All jobs can be canceled with command:
 ```
 scancel -u $USER
 ```
+
 Specific jobs can be canceled with command:
 ```
 scancel ${JobID1} ${JobID2}
 ```
 
-## Evaluating the CT-NVAE
+XXX TODO write script with the preempt queue
 
-TODO: visualize with the analysis script
+## Visualizing the results
 
+To visualize the results, use the `analyze_training_results.py` script. 
+
+On NERSC, load Python if not loaded and activate the `tomopy` environment:
 ```
 module load python
 conda activate tomopy
-export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
-export WORKING_DIR=$SCRATCH/output_CT_NVAE
-export CT_NVAE_PATH=$SCRATCH/CT_NVAE
-cd $WORKING_DIR
-python $CT_NVAE_PATH/metrics/analyze_training_results.py 
 ```
+
+Set the environment variables:
+```
+export WORKING_DIR=<path to the working directory>
+export CT_NVAE_PATH=<path to CT_NVAE repository>
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export DATASET_ID=<dataset_id>
+export EXPR_ID=<experiment_description>
+```
+
+Change to the working directory and run the script. The final results are separated by rank, so you must run the script for each rank. For example, to analyze the results for rank 0:
+```
+cd $WORKING_DIR
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --dataset_id $DATASET_ID --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank 0 --original_size 128 --dataset_type valid
+```
+The `--original_size` option is the side length of the original image (for example, 128 for the foam images). The `--dataset_type` option is either `valid` or `test`. Only use the parameter `test` if you have already evaluated the test set with the `--final_test` option in `train.py`.
+
+TODO: What are the sizes for the 3d brain and 3d covid datasets?
+
+Results from this script are saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`.
 
 ## Citation
 

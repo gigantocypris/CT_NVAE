@@ -1,6 +1,6 @@
 #!/bin/bash
-: ${batch_sizes:="8"} 
-for batch_size in $batch_sizes; do
-    echo $batch_size
-    sbatch $CT_NVAE_PATH/slurm/train_single_node.sh batch_size_$batch_size $batch_size $1 $2
+: ${value_array:="8"} 
+for value in $value_array; do
+    echo $value
+    sbatch -A $NERSC_GPU_ALLOCATION -t 00:30:00 $CT_NVAE_PATH/slurm/train_single_node.sh $value $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL
 done

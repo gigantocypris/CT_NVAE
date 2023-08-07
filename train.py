@@ -84,8 +84,11 @@ def main(args):
 
     # if load
     checkpoint_file = os.path.join(args.save, 'checkpoint.pt')
-    if args.cont_training:
+
+    # check if checkpoint file exists
+    if os.path.isfile(checkpoint_file) and args.cont_training:
         logging.info('loading the model.')
+
         checkpoint = torch.load(checkpoint_file, map_location='cpu')
         init_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
@@ -535,8 +538,9 @@ if __name__ == '__main__':
     # physics parameters
     parser.add_argument('--pnm', dest='pnm', type=float, default=1e3,
                         help='poisson noise multiplier, higher value means higher SNR')
-    parser.add_argument('--model_ring_artifact', action='store_true', default=False,
-                    help='This flag is for correcting for a ring artifact.')
+    parser.add_argument('model_ring_artifact', dest='model_ring_artifact', type=bool, 
+                        help='If True, attempt to correct for a ring artifact', default=False)
+
     # NAS
     parser.add_argument('--use_se', action='store_true', default=False,
                         help='This flag enables squeeze and excitation.')

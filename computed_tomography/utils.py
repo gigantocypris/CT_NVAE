@@ -16,6 +16,7 @@ def create_sinogram(img_stack, theta, pad=True):
 
 def add_ring_artifact(proj, ring_artifact_strength=0.15):
     num_proj_pix = proj.shape[2]
+    # truncate normal distribution to be within 2 standard deviations
     ring_artifact = truncnorm.rvs(-2,2,loc=1, scale=ring_artifact_strength, size=num_proj_pix)
     ring_artifact = np.expand_dims(np.expand_dims(ring_artifact, axis=0),axis=0)
     proj = proj*ring_artifact

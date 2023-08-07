@@ -262,18 +262,19 @@ srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --d
 
 ### Training/Validation/Test Splits
 
-Split the dataset into training, validation, and test sets, truncating the dataset to `<n>` examples:
-```
-cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest dataset_foam --train 0.7 --valid 0.2 --test 0.1 -n <n>
-```
-The split datasets are created in the `dataset_foam` folder in the working directory `$WORKING_DIR`.
-
-### Create the dataset
 Export an environment variable `DATASET_ID` to identify the dataset, for example:
 ```
 export DATASET_ID=$DATA_TYPE
 ```
+
+Split the dataset into training, validation, and test sets, truncating the dataset to `<n>` examples:
+```
+cd $WORKING_DIR
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest dataset_$DATASET_ID --train 0.7 --valid 0.2 --test 0.1 -n <n>
+```
+The split datasets are created in the `dataset_foam` folder in the working directory `$WORKING_DIR`.
+
+### Create the dataset
 
 Create the dataset with the following commands, where `<num_sparse_angles>` is the number of angles to use for the sparse sinograms and `<random>` is a boolean indicating whether to use random angles or not:
 ```
@@ -304,15 +305,18 @@ cd $WORKING_DIR
 export NUM_EXAMPLES=<number of 3D examples to create for the dataset>
 ```
 
-Prepare the synthetic foam dataset with the following commands (note that `$IMAGE_ID` and `$DATASET_ID` can be set to any string, the final images will be saved in `$WORKING_DIR/images_$IMAGE_ID` and the dataset will be saved in `$WORKING_DIR/dataset_$DATASET_ID`):
+Prepare the synthetic foam dataset with the following commands (`$IMAGE_ID` and `$DATASET_ID` can be set to any string, the final images will be saved in `$WORKING_DIR/images_$IMAGE_ID` and the dataset will be saved in `$WORKING_DIR/dataset_$DATASET_ID`). Note that `$DO_PART_ONE` creates images and sinograms, `$DO_PART_TWO` creates the dataset. Either can be set to `True` or `False` depending on which part you want to run.
 ```
 export DATA_TYPE=foam
 export IMAGE_ID=$DATA_TYPE
 export DATASET_ID=$DATA_TYPE
 export NUM_SPARSE_ANGLES=<number of projection angles to use>
 export RANDOM=<boolean indicating whether to use random angles or not>
+export RING=<number indicating the strength of the ring artifact between 0 and 0.5, where 0 is no ring artifact>
+export DO_PART_ONE=True
+export DO_PART_TWO=True
 
-sbatch --time=00:05:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM
+sbatch --time=00:05:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $DO_PART_ONE $DO_PART_TWO
 ```
 It takes approximately 5 minutes to create 50 examples. Increase the time limit depending on the values of `$NUM_EXAMPLES`. 
 
@@ -467,15 +471,21 @@ Choose the batch size, number of epochs, and save_interval; for example:
 export BATCH_SIZE=8
 export EPOCHS=10
 export SAVE_INTERVAL=20
+export PNM=1e1
+export RING=False
 ```
 
 Run the training script, adjusting the time limit as needed:
 ```
 sbatch -A $NERSC_GPU_ALLOCATION -t 00:10:00 $CT_NVAE_PATH/slurm/train_single_node.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL
 ```
-The Slurm job id will be printed once the job is submitted, e.g. `Submitted batch job $SLURM_JOB_ID`.
 
-XXX STOPPED HERE
+For longer jobs, you can use the `train_single_node_preempt.sh` script. The job runs for 24 hours, is preemptible after 2 hours, and can be requeued indefinitely; request the total time with the `--comment` option:
+```
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+```
+
+The Slurm job id will be printed once the job is submitted, e.g. `Submitted batch job $SLURM_JOB_ID`.
 
 The `$SLURM_JOB_ID.err` and `$SLURM_JOB_ID.out` files will be saved in the working directory. The output is saved in `$WORKING_DIR/checkpts/eval-$SLURM_JOB_ID`. The training and validation losses will be tracked by wandb and associated with the `$SLURM_JOB_ID`. TensorBoard can be used to visualize results on a login node:
 ```
@@ -504,8 +514,6 @@ Specific jobs can be canceled with command:
 scancel ${JobID1} ${JobID2}
 ```
 
-XXX TODO write script with the preempt queue
-
 ## Visualizing the results
 
 To visualize the results, use the `analyze_training_results.py` script. 
@@ -531,9 +539,7 @@ Change to the working directory and run the script. The final results are separa
 cd $WORKING_DIR
 python $CT_NVAE_PATH/metrics/analyze_training_results.py --dataset_id $DATASET_ID --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank 0 --original_size 128 --dataset_type valid
 ```
-The `--original_size` option is the side length of the original image (for example, 128 for the foam images). The `--dataset_type` option is either `valid` or `test`. Only use the parameter `test` if you have already evaluated the test set with the `--final_test` option in `train.py`.
-
-TODO: What are the sizes for the 3d brain and 3d covid datasets?
+The `--original_size` option is the side length of the original image (for example, 128 for the foam images, 512 for the 3D COVID images, and 512 for the brain images). The `--dataset_type` option is either `valid` or `test`. Only use the parameter `test` if you have already evaluated the test set with the `--final_test` option in `train.py`.
 
 Results from this script are saved in `$WORKING_DIR/checkpts/eval-$EXPR_ID`.
 

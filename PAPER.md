@@ -2,36 +2,26 @@
 
 ## Synthetic Foam regular images
 ### Sweep the number of angles used
-angles: 20, 40, 60
-### Sweep the Poisson noise multiplier
-pnm: 1e1, 1e2, 1e3
-## Sweep the number of z-slices used
+### Sweep the number of examples used
+### Random vs. Not Random
 
-
-## 3D COVID regular
+## 3D COVID
 ### Sweep the number of angles used
-angles: 20, 40, 60
-### Sweep the Poisson noise multiplier
-pnm: 1e1, 1e2, 1e3
-## Sweep the number of z-slices used
+### Sweep the number of examples used
+### Random vs. Not Random
 
-## Synthetic Foam with ring artifact
-### Sweep the magnitude of the ring artifact
-magnitudes: TODO
+## 3D Brain
 ### Sweep the number of angles used
-angles: 20, 40, 60
-## Sweep the number of z-slices used
+### Sweep the number of examples used
+### Random vs. Not Random
 
-## Brain classifer
-Choose pnm, no ring artifact
-### Sweep the number of angles used
-angles: 20, 40, 60
-### Comparison
-Show classification from CT_NVAE reconstruction, classification from ground truth, and classification from traditional reconstruction
 
-## COVID classifier
-Choose pnm, no ring artifact
-### Sweep the number of angles used
-angles: 20, 40, 60
-### Comparison
-Show classification from CT_NVAE reconstruction, classification from ground truth, and classification from traditional reconstruction
+## Ring Artifact
+
+### Synthetic Foam with ring artifact
+#### Sweep the magnitude of the ring artifact
+#### Sweep the number of angles used
+#### Sweep the number of examples used
+
+
+

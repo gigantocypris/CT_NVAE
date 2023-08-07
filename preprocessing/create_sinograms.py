@@ -10,13 +10,32 @@ import glob
 from computed_tomography.utils import create_sinogram
 
 def main(rank, world_size, dir, theta):
-    file_list = np.sort(glob.glob(dir + '/*[!_sinogram].npy'))
-    for example_index in range(len(file_list)):
+    file_list = [f for f in np.sort(glob.glob(dir + '/*.npy')) if not (f.endswith("_label.npy") or f.endswith("_sinogram.npy") or  f.endswith("theta.npy"))]
+    total_files = len(file_list)
+    error_messages = []  # List to store error messages
+    
+    for example_index in range(total_files):
         if example_index % int(world_size) == rank: # distribute work across ranks
             img_stack = np.load(file_list[example_index])
+            
+            # Check if img_stack is a 3D array
+            if len(img_stack.shape) != 3:
+                error_msg = f"[Rank {rank}] Skipped file {file_list[example_index]} due to unexpected shape {img_stack.shape}."
+                error_messages.append(error_msg)
+                continue
+
             proj = create_sinogram(img_stack, theta, pad=True)
             filename = os.path.splitext(os.path.basename(file_list[example_index]))[0]
             np.save(dir + '/' + filename + '_sinogram.npy', proj)
+            # Print progress
+            print(f"[Rank {rank}] Processed file {example_index + 1} of {total_files}")
+    
+    # Print error messages at the end
+    if error_messages:
+        print("\n--- Errors encountered during processing ---")
+        for msg in error_messages:
+            print(msg)
+
 
 
 if __name__ == '__main__':

@@ -375,6 +375,7 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
         all_sparse_sinograms = []
         all_ground_truth = []
         all_theta = []
+        all_object_ids = []   # Create a list to store the object IDs
         rank = dist.get_rank()
     for step, x_full in enumerate(valid_queue):
         x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
@@ -398,6 +399,7 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
                 all_sparse_sinograms.append(sparse_sinogram_raw.cpu().numpy())
                 all_ground_truth.append(ground_truth.cpu().numpy())
                 all_theta.append(theta.cpu().numpy())
+                all_object_ids.append(object_id)  # Append the object_id to our list
 
 
             nelbo = torch.mean(torch.stack(nelbo, dim=1))
@@ -414,6 +416,9 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
         np.save(args.save + '/final_sparse_sinograms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_sparse_sinograms, axis=0))
         np.save(args.save + '/final_ground_truth_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_ground_truth, axis=0))
         np.save(args.save + '/final_theta_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_theta, axis=0))
+        # Pair the object_ids with their reconstructed_objects and save
+        combined_data = list(zip(all_object_ids, all_reconstructed_objects))
+        np.save(args.save + '/ID_recon_rank_' + str(rank) + '.npy', combined_data)  # Saving the combined data
 
 
     if args.distributed:

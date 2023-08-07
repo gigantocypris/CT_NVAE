@@ -33,6 +33,9 @@ def split_data(filenames, train_fraction, valid_fraction, test_fraction):
 
 def copy_paste_files(sinogram_filenames, dest_dir, data_type):
     for src_file in sinogram_filenames:
+        # Explicitly ignore files ending with "_label.npy"
+        if src_file.endswith("_label.npy"):
+            continue
         target_dir = os.path.join(dest_dir, data_type)
         shutil.copy(src_file, target_dir)
         shutil.copy(''.join(src_file.split('_sinogram')), target_dir)

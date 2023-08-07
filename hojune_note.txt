@@ -1,0 +1,106 @@
+#################################################################CREATE DATASET############################################
+export WORKING_DIR=/pscratch/sd/h/hojunek/2DCOVID_final
+export CT_NVAE_PATH=/global/homes/h/hojunek/CT_NVAE
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export NERSC_GPU_ALLOCATION=m3562_g
+export NERSC_CPU_ALLOCATION=m3562
+export SLURM_NTASKS=4
+export DATA_TYPE=covid2D
+export IMG_PATH=SARS_npy
+export DATASET_PATH=dataset_SARS_npy
+
+cd $WORKING_DIR
+
+# Start Interactive Node
+salloc -N 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --ntasks-per-gpu=4 --cpus-per-task=32
+
+# Create images
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n 2482 --dest $IMG_PATH --type $DATA_TYPE
+
+# Create Sinogram
+srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir $IMG_PATH
+
+# Split into train/val/test
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMG_PATH --dest $DATASET_PATH --train 0.7 --valid 0.2 --test 0.1
+
+# Create Dataset
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir $DATASET_PATH --sparse 45 --random False --ring 0
+
+#################################################################TRAIN########################################
+export WORKING_DIR=/pscratch/sd/h/hojunek/2DCOVID_final
+export NERSC_GPU_ALLOCATION=m3562_g
+export EXPR_ID=covid2D_final
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=checkpts
+export MASTER_ADDR=$(hostname)
+export CT_NVAE_PATH=/global/homes/h/hojunek/CT_NVAE
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+echo $WORKING_DIR, $NERSC_GPU_ALLOCATION, $EXPR_ID, $DATASET_DIR, $CHECKPOINT_DIR, $MASTER_ADDR, $CT_NVAE_PATH, $PYTHONPATH
+
+#Running train.py
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $EXPR_ID --dataset $IMG_PATH --batch_size 16 --epochs 10 --num_latent_scales 2 --num_groups_per_scale 10 --num_postprocess_cells 2 --num_preprocess_cells 2 --num_cell_per_cond_enc 2 --num_cell_per_cond_dec 2 --num_latent_per_group 3 --num_preprocess_blocks 2 --num_postprocess_blocks 2 --weight_decay_norm 1e-2 --num_channels_enc 4 --num_channels_dec 4 --num_nf 0 --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm 1e1
+
+The Train.py should now produce "ID_recon_rank#.npy" -> Edited test() within train.py
+    combined_data = list(zip(all_object_ids, all_reconstructed_objects))
+    np.save(args.save + '/ID_recon_rank_' + str(rank) + '.npy', combined_data)
+
+However, it gives this error message:
+
+Experiment dir : checkpts/eval-covid2D_final
+Traceback (most recent call last):
+  File "/global/homes/h/hojunek/CT_NVAE/train.py", line 570, in <module>
+    wandb.init(
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1173, in init
+    raise e
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1150, in init
+    wi.setup(kwargs)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 172, in setup
+    self._wl = wandb_setup.setup(settings=setup_settings)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 327, in setup
+    ret = _setup(settings=settings)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 320, in _setup
+    wl = _WandbSetup(settings=settings)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 303, in __init__
+    _WandbSetup._instance = _WandbSetup__WandbSetup(settings=settings, pid=pid)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 114, in __init__
+    self._setup()
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 250, in _setup
+    self._setup_manager()
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 277, in _setup_manager
+    self._manager = wandb_manager._Manager(settings=self._settings)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/wandb_manager.py", line 145, in __init__
+    self._service.start()
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/service/service.py", line 218, in start
+    self._launch_server()
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/service/service.py", line 212, in _launch_server
+    _sentry.reraise(e)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/analytics/sentry.py", line 146, in reraise
+    raise exc.with_traceback(sys.exc_info()[2])
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/service/service.py", line 210, in _launch_server
+    self._wait_for_ports(fname, proc=internal_proc)
+  File "/global/homes/h/hojunek/.conda/envs/CT_NVAE/lib/python3.9/site-packages/wandb/sdk/service/service.py", line 142, in _wait_for_ports
+    raise ServiceStartTimeoutError(
+wandb.sdk.service.service.ServiceStartTimeoutError: Timed out waiting for wandb service to start after 30.0 seconds. Try increasing the timeout with the `_service_wait` setting.
+
+#################################################################Classifier########################################
+
+The classifier needs three things.
+    1. weights : /pscratch/sd/h/hojunek/2DCOVID/saved/cont/best_checkpoint.pth
+    2. folder containing .png files & A .txt file containing file name & label : /pscratch/sd/h/hojunek/2DCOVID/SARS_npy_test_preprocess
+
+Folder containing .png files & A .txt file are created by these steps
+    # Step 1: rename img111.npy to img111_recon.npy and leave sinogram and label
+    export PREPROCESSED_PATH=/pscratch/sd/h/hojunek/2DCOVID/SARS_npy -> created from create_images.py and create_sinograms.py
+    export RECON_PATH=/pscratch/sd/h/hojunek/2DCOVID/SARS_npy_recon
+    python $CT_NVAE_PATH/classifiers/COVID/code/fake_recon.py $PREPROCESSED_PATH $RECON_PATH
+
+    # Step 2: make recon_label.txt & convert img111_recon.npy to img111_recon.png 
+    export RECON_TEST_PATH=/pscratch/sd/h/hojunek/2DCOVID/SARS_npy_test_preprocess
+    $CT_NVAE_PATH/classifiers/COVID/code/test_recon_preprocess.py
+
+Weights are created by following these steps 
+    # Step 3: Train
+    python $CT_NVAE_PATH/classifiers/COVID/code/recon_main.py --bna True --bnd True --cosine True --cont True
+
+Current problem: we need to update .txt file so that it contains the address for _recon.npy
+My approach: was going to output "ID_recon_rank#.npy" to save ID, then read that ID in original .txt file without using _label.npy

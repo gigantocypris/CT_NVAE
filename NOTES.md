@@ -880,7 +880,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13499451
+Submitted batch job 13502262
 
 # foam ring 0.1
 export RING=True
@@ -891,7 +891,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13499465
+Submitted batch job 13502268
 
 # foam ring 0.3
 export RING=True
@@ -902,7 +902,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13499476
+Submitted batch job 13502271
 
 ## Uniform
 export RING=False
@@ -913,5 +913,4 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-
-Submitted batch job 13500667
+Submitted batch job 13502275

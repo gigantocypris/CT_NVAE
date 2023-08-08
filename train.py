@@ -538,7 +538,7 @@ if __name__ == '__main__':
     # physics parameters
     parser.add_argument('--pnm', dest='pnm', type=float, default=1e3,
                         help='poisson noise multiplier, higher value means higher SNR')
-    parser.add_argument('model_ring_artifact', dest='model_ring_artifact', type=bool, 
+    parser.add_argument('--model_ring_artifact', dest='model_ring_artifact', type=bool, 
                         help='If True, attempt to correct for a ring artifact', default=False)
 
     # NAS

@@ -1,0 +1,179 @@
+wandb_version: 1
+
+root:
+  desc: null
+  value: checkpts
+save:
+  desc: null
+  value: checkpts/eval-covid2D_final
+save_interval:
+  desc: null
+  value: 20
+dataset:
+  desc: null
+  value: SARS_npy
+truncate:
+  desc: null
+  value: null
+final_test:
+  desc: null
+  value: false
+batch_size:
+  desc: null
+  value: 16
+learning_rate:
+  desc: null
+  value: 0.01
+learning_rate_min:
+  desc: null
+  value: 0.0001
+weight_decay:
+  desc: null
+  value: 0.0003
+weight_decay_norm:
+  desc: null
+  value: 0.01
+weight_decay_norm_init:
+  desc: null
+  value: 10.0
+weight_decay_norm_anneal:
+  desc: null
+  value: false
+epochs:
+  desc: null
+  value: 10
+warmup_epochs:
+  desc: null
+  value: 5
+fast_adamax:
+  desc: null
+  value: true
+arch_instance:
+  desc: null
+  value: res_mbconv
+kl_anneal_portion:
+  desc: null
+  value: 0.3
+kl_const_portion:
+  desc: null
+  value: 0.0001
+kl_const_coeff:
+  desc: null
+  value: 0.0001
+num_nf:
+  desc: null
+  value: 0
+num_x_bits:
+  desc: null
+  value: 8
+num_latent_scales:
+  desc: null
+  value: 2
+num_groups_per_scale:
+  desc: null
+  value: 10
+num_latent_per_group:
+  desc: null
+  value: 3
+ada_groups:
+  desc: null
+  value: true
+min_groups_per_scale:
+  desc: null
+  value: 1
+num_channels_enc:
+  desc: null
+  value: 4
+num_preprocess_blocks:
+  desc: null
+  value: 2
+num_preprocess_cells:
+  desc: null
+  value: 2
+num_cell_per_cond_enc:
+  desc: null
+  value: 2
+num_channels_dec:
+  desc: null
+  value: 4
+num_postprocess_blocks:
+  desc: null
+  value: 2
+num_postprocess_cells:
+  desc: null
+  value: 2
+num_cell_per_cond_dec:
+  desc: null
+  value: 2
+num_mixture_dec:
+  desc: null
+  value: 10
+temp_bernoulli:
+  desc: null
+  value: 2.2
+pnm:
+  desc: null
+  value: 10.0
+model_ring_artifact:
+  desc: null
+  value: false
+use_se:
+  desc: null
+  value: true
+res_dist:
+  desc: null
+  value: true
+cont_training:
+  desc: null
+  value: false
+num_proc_node:
+  desc: null
+  value: 1
+node_rank:
+  desc: null
+  value: 0
+local_rank:
+  desc: null
+  value: 0
+global_rank:
+  desc: null
+  value: 0
+num_process_per_node:
+  desc: null
+  value: 4
+master_address:
+  desc: null
+  value: 127.0.0.1
+seed:
+  desc: null
+  value: 1
+use_nersc:
+  desc: null
+  value: false
+_wandb:
+  desc: null
+  value:
+    python_version: 3.9.17
+    cli_version: 0.15.5
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: true
+    start_time: 1691536327.751816
+    t:
+      1:
+      - 1
+      - 55
+      - 79
+      2:
+      - 1
+      - 55
+      - 79
+      3:
+      - 13
+      - 16
+      - 23
+      4: 3.9.17
+      5: 0.15.5
+      8:
+      - 2
+      - 5

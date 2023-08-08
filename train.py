@@ -37,7 +37,7 @@ def main(args):
     writer = utils.Writer(args.global_rank, args.save)
 
     # Get data loaders.
-    train_queue, valid_queue, test_queue = datasets.get_loaders(args)
+    train_queue, valid_queue = datasets.get_loaders(args)
     args.num_total_iter = len(train_queue) * args.epochs
     warmup_iters = len(train_queue) * args.warmup_epochs
     swa_start = len(train_queue) * (args.epochs - 1)
@@ -84,11 +84,8 @@ def main(args):
 
     # if load
     checkpoint_file = os.path.join(args.save, 'checkpoint.pt')
-
-    # check if checkpoint file exists
-    if os.path.isfile(checkpoint_file) and args.cont_training:
+    if args.cont_training:
         logging.info('loading the model.')
-
         checkpoint = torch.load(checkpoint_file, map_location='cpu')
         init_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
@@ -171,12 +168,6 @@ def main(args):
     writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
 
     writer.close()
-
-    # Final test
-    if args.final_test:
-        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True)
-        logging.info('final test nelbo %f', test_nelbo)
-        logging.info('final test neg log p %f', test_neg_log_p)
 
 def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
@@ -384,6 +375,7 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
         all_sparse_sinograms = []
         all_ground_truth = []
         all_theta = []
+        all_object_ids = []   # Create a list to store the object IDs
         rank = dist.get_rank()
     for step, x_full in enumerate(valid_queue):
         x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
@@ -407,6 +399,7 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
                 all_sparse_sinograms.append(sparse_sinogram_raw.cpu().numpy())
                 all_ground_truth.append(ground_truth.cpu().numpy())
                 all_theta.append(theta.cpu().numpy())
+                all_object_ids.append(object_id)  # Append the object_id to our list
 
 
             nelbo = torch.mean(torch.stack(nelbo, dim=1))
@@ -423,6 +416,9 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
         np.save(args.save + '/final_sparse_sinograms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_sparse_sinograms, axis=0))
         np.save(args.save + '/final_ground_truth_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_ground_truth, axis=0))
         np.save(args.save + '/final_theta_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_theta, axis=0))
+        # Pair the object_ids with their reconstructed_objects and save
+        combined_data = list(zip(all_object_ids, all_reconstructed_objects))
+        np.save(args.save + '/ID_recon_rank_' + str(rank) + '.npy', combined_data)  # Saving the combined data
 
 
     if args.distributed:
@@ -463,9 +459,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
     parser.add_argument('--truncate', type=int, default=None,
-                        help='if not None, truncate the training dataset to this many examples')
-    parser.add_argument('--final_test', action='store_true', default=False,
-                help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
+                        help='if not None, truncate the dataset to this many examples')
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
                         help='batch size per GPU')
@@ -538,9 +532,8 @@ if __name__ == '__main__':
     # physics parameters
     parser.add_argument('--pnm', dest='pnm', type=float, default=1e3,
                         help='poisson noise multiplier, higher value means higher SNR')
-    parser.add_argument('--model_ring_artifact', dest='model_ring_artifact', type=bool, 
-                        help='If True, attempt to correct for a ring artifact', default=False)
-
+    parser.add_argument('--model_ring_artifact', action='store_true', default=False,
+                    help='This flag is for correcting for a ring artifact.')
     # NAS
     parser.add_argument('--use_se', action='store_true', default=False,
                         help='This flag enables squeeze and excitation.')
@@ -603,5 +596,3 @@ if __name__ == '__main__':
         print('starting in debug mode')
         args.distributed = True
         init_processes(0, size, main, args)
-
-

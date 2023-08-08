@@ -10,6 +10,8 @@
 #SBATCH --cpus-per-task=32
 #SBATCH -o %j.out
 #SBATCH -e %j.err
+#SBATCH --mail-user=hojune0630@lbl.gov
+#SBATCH --mail-type=begin,end,fail
 
 export BATCH_SIZE=$1
 export CT_NVAE_PATH=$2

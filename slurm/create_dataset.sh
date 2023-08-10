@@ -19,8 +19,9 @@ export DATASET_ID=$5
 export NUM_SPARSE_ANGLES=$6
 export RANDOM_ANGLES=$7
 export RING=$8
-export DO_PART_ONE=$9
-export DO_PART_TWO=${10}
+export ALGORITHM=$9
+export DO_PART_ONE=${10}
+export DO_PART_TWO=${11}
 
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 
@@ -50,7 +51,7 @@ if [ $DO_PART_TWO = True ]; then
     echo "Creating dataset"
     python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_$IMAGE_ID --dest dataset_$DATASET_ID --train 0.7 --valid 0.2 --test 0.1 -n $NUM_EXAMPLES
 
-    python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --ring $RING --pnm 1e3
+    python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --ring $RING --pnm 1e3 --algorithm $ALGORITHM
 else
     echo "Skipping part 2"
 fi

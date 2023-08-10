@@ -46,7 +46,8 @@ def main(args, dataset_type):
         # make sparse sinogram and reconstruct
         sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram = \
             process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 
-                             poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, ring_artifact_strength = args.ring_artifact_strength)
+                             poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, 
+                             ring_artifact_strength = args.ring_artifact_strength, algorithm=args.algorithm)
 
         # append to lists
         x_train_pad = pad_phantom(torch.Tensor(np.expand_dims(x_train.astype(np.float32), axis=-1)))
@@ -94,6 +95,8 @@ if __name__ == '__main__':
     parser.add_argument('--sparse', dest='num_sparse_angles', type=int, help='number of angles to image per sample (dose remains the same)', default=10)
     parser.add_argument('--random', dest='random', type=bool, help='If True, randomly pick angles', default=True)
     parser.add_argument('--ring', dest='ring_artifact_strength', type=float, help='if >0, add ring artifact to sinograms', default=0.0)
+    parser.add_argument('--algorithm', dest='algorithm', type=str, help='algorithm to use for reconstruction', default='gridrec', 
+                        choices=['gridrec', 'sirt', 'tv'])
     args = parser.parse_args()
 
 

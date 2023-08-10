@@ -652,13 +652,13 @@ export PNM=1e1
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
 
-Submitted batch job 13484185
+Submitted batch job 13484185 - intervals in saving too large
 
 Redo with smaller SAVE_INTERVAL:
 export SAVE_INTERVAL=1000
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
 
-Submitted batch job 13486270
+Submitted batch job 13486270 - contrast low, ringing outside of bubble due to low reconstruction pnm
 
 ####  Redo with reconstruction pnm = creation pnm
 export DATASET_ID=foam_slurm
@@ -669,7 +669,7 @@ export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
 
-Submitted batch job 13489962
+Submitted batch job 13489962 - input artifacts preserved
 
 # Creation of datasets, 100 examples each
 
@@ -794,7 +794,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498451
+Submitted batch job 13498451 -- OOM
 
 ## brain
 
@@ -805,7 +805,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498462
+Submitted batch job 13498462 - input artifact preserved, low contrast is lost
 
 ### Submit pre-empt jobs for all the brain and covid 100 example, 45 angle datasets
 
@@ -817,7 +817,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498758
+Submitted batch job 13498758 - OOM
 
 ## brain
 export DATASET_ID=brain_45ang_100ex
@@ -827,7 +827,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498766
+Submitted batch job 13498766 - input artifact preserved
 
 # foam no artifact
 export DATASET_ID=foam_45ang_100ex
@@ -837,7 +837,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498810
+Submitted batch job 13498810 - blurry but reduced artifact
 
 without modeling the artifact:
 # foam ring 0.01
@@ -848,7 +848,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498894
+Submitted batch job 13498894 - strong artifact
 
 # foam ring 0.1
 export DATASET_ID=foam_45ang_100ex_ring_0.1
@@ -858,7 +858,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498904
+Submitted batch job 13498904 - reconstruction basically a blank
 
 # foam ring 0.3
 export DATASET_ID=foam_45ang_100ex_ring_0.3
@@ -868,7 +868,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM
-Submitted batch job 13498914
+Submitted batch job 13498914 - blurry mess but vague circular shape
 
 WITH modeling the artifact: (ADDED THE $RING OPTION)
 # foam ring 0.01
@@ -880,7 +880,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13502262
+Submitted batch job 13502262 - blurry mess but vague circular shape
 
 # foam ring 0.1
 export RING=True
@@ -891,7 +891,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13502268
+Submitted batch job 13502268 - a mess but not bad!
 
 # foam ring 0.3
 export RING=True
@@ -902,7 +902,7 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13502271
+Submitted batch job 13502271 - a mess but some vague circular stuff
 
 ## Uniform
 export RING=False
@@ -913,4 +913,141 @@ export SAVE_INTERVAL=1000
 export PNM=1e3
 
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13502275
+Submitted batch job 13502275 - not great but resembles ground truth
+
+
+# August 8, 2023
+
+SETUP FOR DATASET CREATION:
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=100
+=============================
+
+Foam images in `images_foam_100ex` processed with sirt:
+export DATA_TYPE=foam
+export IMAGE_ID=foam_100ex
+export DATASET_ID=foam_45ang_100ex_sirt
+export NUM_SPARSE_ANGLES=45
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=sirt
+export DO_PART_ONE=False
+export DO_PART_TWO=True
+
+sbatch --time=00:10:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13601242 - SUCCESS
+
+Foam images in `images_foam_100ex` processed with tv:
+export DATASET_ID=foam_45ang_100ex_tv
+export ALGORITHM=tv
+
+sbatch --time=00:10:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13601282 - SUCCESS
+
+Covid images in `images_covid_100ex` processed with sirt:
+export DATA_TYPE=covid
+export IMAGE_ID=covid_100ex
+export DATASET_ID=covid_45ang_100ex_sirt
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+export ALGORITHM=sirt
+
+sbatch --time=01:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13602763 - SUCCESS
+
+Covid images in `images_covid_100ex` processed with tv:
+export DATA_TYPE=covid
+export IMAGE_ID=covid_100ex
+export DATASET_ID=covid_45ang_100ex_tv
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+export ALGORITHM=tv
+
+sbatch --time=01:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13602780 - SUCCESS
+
+Brain images in `images_brain_100ex` processed with sirt:
+export DATA_TYPE=brain
+export IMAGE_ID=brain_100ex
+export DATASET_ID=brain_45ang_100ex_sirt
+export ALGORITHM=sirt
+
+sbatch --time=01:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13602838 - SUCCESS
+
+Brain images in `images_brain_100ex` processed with tv:
+export DATA_TYPE=brain
+export IMAGE_ID=brain_100ex
+export DATASET_ID=brain_45ang_100ex_tv
+export ALGORITHM=tv
+
+sbatch --time=01:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13602843 - SUCCESS
+
+
+## Submit CT_NVAE preempt jobs
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_sirt
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614584 - less artifact but blurry
+
+export DATASET_ID=foam_45ang_100ex_tv
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614602 - heavy artifact
+
+## Covid
+export RING=False
+export DATASET_ID=covid_45ang_100ex_sirt
+export BATCH_SIZE=1
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614647 - OOM
+
+export DATASET_ID=covid_45ang_100ex_tv
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614650 - OOM
+
+## Brain
+export RING=False
+export DATASET_ID=brain_45ang_100ex_sirt
+export BATCH_SIZE=1
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614653 - reconstructions appear to be the wrong image
+
+export DATASET_ID=brain_45ang_100ex_tv
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13614655 - not bad

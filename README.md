@@ -276,10 +276,10 @@ The split datasets are created in the `dataset_foam` folder in the working direc
 
 ### Create the dataset
 
-Create the dataset with the following commands, where `<num_sparse_angles>` is the number of angles to use for the sparse sinograms and `<random>` is a boolean indicating whether to use random angles or not:
+Create the dataset with the following commands, where `<num_sparse_angles>` is the number of angles to use for the sparse sinograms, `<random>` is a boolean indicating whether to use random angles or not, and `<algorithm>` is the algorithm to use for preprocessing the sparse sinograms (choices implemented are `gridrec`, `sirt`, and `tv`):
 ```
 cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_$DATASET_ID --sparse <num_sparse_angles> --random <random> --ring 0 --pnm 1e3
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_$DATASET_ID --sparse <num_sparse_angles> --random <random> --ring 0 --pnm 1e3 --algorithm <algorithm>
 ```
 The dataset is created in the `dataset_$DATASET_ID` folder in the working directory `$WORKING_DIR`.
 
@@ -313,10 +313,11 @@ export DATASET_ID=$DATA_TYPE
 export NUM_SPARSE_ANGLES=<number of projection angles to use>
 export RANDOM=<boolean indicating whether to use random angles or not>
 export RING=<number indicating the strength of the ring artifact between 0 and 0.5, where 0 is no ring artifact>
+export ALGORITHM=<algorithm to use for preprocessing the sparse sinograms, choices implemented are gridrec, sirt, and tv>
 export DO_PART_ONE=True
 export DO_PART_TWO=True
 
-sbatch --time=00:05:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $DO_PART_ONE $DO_PART_TWO
+sbatch --time=00:05:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
 ```
 It takes approximately 5 minutes to create 50 examples. Increase the time limit depending on the values of `$NUM_EXAMPLES`. 
 

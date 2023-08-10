@@ -61,7 +61,8 @@ def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gri
 
 def process_sinogram(input_sinogram, random, num_sparse_angles, theta, 
                      poisson_noise_multiplier=1e3, remove_ring_artifact=False,
-                     ring_artifact_strength=0.3, random_start_ind=True):
+                     ring_artifact_strength=0.3, random_start_ind=True,
+                     algorithm='gridrec'):
     """
     process sinogram to make it artificially sparse and reconstruct with tomopy
     input sinogram is num_angles x num_z x num_proj_pix
@@ -83,7 +84,9 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
 
     
     sparse_sinogram = -np.log(sparse_sinogram_raw) # linearize the sinogram
-    reconstruction = reconstruct_sinogram(sparse_sinogram, theta[sparse_angles], remove_ring_artifact=remove_ring_artifact)
+    reconstruction = reconstruct_sinogram(sparse_sinogram, theta[sparse_angles], 
+                                          remove_ring_artifact=remove_ring_artifact,
+                                          algorithm=algorithm)
 
     
     return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram

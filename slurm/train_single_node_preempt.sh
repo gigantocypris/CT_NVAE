@@ -11,7 +11,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH -o %j.out
 #SBATCH -e %j.err
-#SBATCH --signal=B:USR1@60  # sig_time (60 seconds) should match your checkpoint overhead time
+#SBATCH --signal=B:USR1@120  # sig_time (120 seconds) should match your checkpoint overhead time
 #SBATCH --requeue
 #SBATCH --open-mode=append
 

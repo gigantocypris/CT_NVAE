@@ -1051,3 +1051,140 @@ Submitted batch job 13614653 - reconstructions appear to be the wrong image
 export DATASET_ID=brain_45ang_100ex_tv
 sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 Submitted batch job 13614655 - not bad
+
+## August 9, 2023
+# Submit CT_NVAE jobs
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_tv
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted batch job 13666938 - Pin memory thread exited unexpectedly
+
+Try again 5 times:
+
+Submitted batch job 13721579
+Submitted batch job 13721581
+Submitted batch job 13721595
+Submitted batch job 13721596
+Submitted batch job 13721598
+
+Change to:
+export DATASET_ID=foam_45ang_100ex
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Try 5 times:
+Submitted batch job 13721636
+Submitted batch job 13721639
+Submitted batch job 13721640 - preempt worked once
+Submitted batch job 13721641
+Submitted batch job 13721643 - restarting worked! however the checkpoint only saved at epoch 0
+
+
+Changed to attempt to gracefully exit, trying 5 times:
+export DATASET_ID=foam_45ang_100ex_tv
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted batch job 13737947
+Submitted batch job 13737952
+Submitted batch job 13737957
+Submitted batch job 13737960
+Submitted batch job 13737963
+
+export PNM=1e1
+
+Submitted batch job 13740713
+Submitted batch job 13740717
+Submitted batch job 13740728
+Submitted batch job 13740731
+Submitted batch job 13740732
+
+export PNM=1e2
+
+Submitted batch job 13740749
+Submitted batch job 13740751
+Submitted batch job 13740754
+Submitted batch job 13740756
+Submitted batch job 13740757
+
+10 example COVID:
+SETUP FOR DATASET CREATION:
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=10
+=============================
+
+
+export NUM_SPARSE_ANGLES=45
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=tv
+export DO_PART_ONE=True
+export DO_PART_TWO=True
+export DATA_TYPE=covid
+export IMAGE_ID=covid_10ex
+export DATASET_ID=covid_45ang_10ex_tv
+export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+
+sbatch --time=00:10:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+Submitted batch job 13738130
+
+
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+export RING=False
+export DATASET_ID=covid_45ang_10ex_tv
+export BATCH_SIZE=1
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted 5 jobs:
+Submitted batch job 13740664
+Submitted batch job 13740667
+Submitted batch job 13740668
+Submitted batch job 13740670
+Submitted batch job 13740672

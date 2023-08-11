@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import os
+import signal
 
 import torch.distributed as dist
 from torch.multiprocessing import Process
@@ -25,6 +26,17 @@ import vae.datasets as datasets
 import matplotlib.pyplot as plt
 
 import wandb
+
+# Define a variable to track if a signal is received
+signal_received = False
+
+# Define a signal handler function
+def handle_signal(signum, frame):
+    global signal_received
+    signal_received = True
+
+# Associate the signal handler function with the SIGUSR1 signal
+signal.signal(signal.SIGUSR1, handle_signal)
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -105,6 +117,10 @@ def main(args):
 
     epoch = init_epoch
     for epoch in range(init_epoch, args.epochs):
+        if signal_received:
+            print("Signal received. Exiting loop.")
+            break
+
         # update lrs.
         if args.distributed:
             train_queue.sampler.set_epoch(global_step + args.seed)
@@ -142,41 +158,44 @@ def main(args):
             writer.add_scalar('val/nelbo', valid_nelbo, epoch)
             writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch)
             writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
+            wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
-        save_freq = int(np.ceil(args.epochs / 100))
+        # save_freq = int(np.ceil(args.epochs / 100))
+        save_freq = 1
         if epoch % save_freq == 0 or epoch == (args.epochs - 1):
             if args.global_rank == 0:
                 logging.info('saving the model.')
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
-                                'optimizer': cnn_optimizer.state_dict(), 
-                                'global_step': global_step,
-                                'args': args, 'arch_instance': arch_instance, 
-                                'scheduler': cnn_scheduler.state_dict(),
-                                'grad_scalar': grad_scalar.state_dict()}
+                             'optimizer': cnn_optimizer.state_dict(), 
+                             'global_step': global_step,
+                             'args': args, 'arch_instance': arch_instance, 
+                             'scheduler': cnn_scheduler.state_dict(),
+                             'grad_scalar': grad_scalar.state_dict()}
                 if args.model_ring_artifact:
                     save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
                     save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()
 
                 torch.save(save_dict, checkpoint_file)
 
-        wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
-
-    # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True)
-    logging.info('final valid nelbo %f', valid_nelbo)
-    logging.info('final valid neg log p %f', valid_neg_log_p)
-    writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
-    writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
-    writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
-    writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
+        
+    if not(signal_received):
+        # Final validation
+        valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True)
+        logging.info('final valid nelbo %f', valid_nelbo)
+        logging.info('final valid neg log p %f', valid_neg_log_p)
+        writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
+        writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
+        writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
+        writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
 
     writer.close()
 
-    # Final test
-    if args.final_test:
-        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True)
-        logging.info('final test nelbo %f', test_nelbo)
-        logging.info('final test neg log p %f', test_neg_log_p)
+    if not(signal_received):
+        # Final test
+        if args.final_test:
+            test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True)
+            logging.info('final test nelbo %f', test_nelbo)
+            logging.info('final test neg log p %f', test_neg_log_p)
 
 def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,

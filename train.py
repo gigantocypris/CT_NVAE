@@ -126,7 +126,8 @@ def main(args):
 
         # Logging.
         logging.info('epoch %d', epoch)
-        args.pnm_implement = (args.pnm-1)*(epoch/100) + 1
+        pnm_start = 1e1
+        args.pnm_implement = (args.pnm-pnm_start)*(epoch/100) + pnm_start
         logging.info('pnm_implement %d', args.pnm_implement)
 
         # Training.
@@ -224,7 +225,7 @@ def process_decoder_output(x, args, model, model_ring, theta,
 
     theta_degrees = theta*180/np.pi
     sino_raw_dist, phantom = model.decoder_output(logits, logits_ring, temperature, theta_degrees=theta_degrees.half(), 
-                                                  poisson_noise_multiplier=args.pnm, pad=False, normalizer=x_size, 
+                                                  poisson_noise_multiplier=args.pnm_implement, pad=False, normalizer=x_size, 
                                                   model_ring_artifact=args.model_ring_artifact) 
     recon_loss = utils.reconstruction_loss(sino_raw_dist, sparse_sinogram_raw, args.dataset, crop=model.crop_output)
     return(logits, log_q, log_p, kl_all, kl_diag,

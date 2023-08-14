@@ -13,7 +13,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH -o %j.out
 #SBATCH -e %j.err
-#SBATCH --signal=SIGINT@60
+#SBATCH --signal=USR1@60
 #SBATCH --requeue
 #SBATCH --open-mode=append
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import signal
 import time
 import sys
@@ -14,8 +13,8 @@ def handle_signal(signum, frame):
     signal_received = True
 
 # Associate the signal handler function with the USR1 signal
-# signal.signal(signal.SIGUSR1, handle_signal)
-signal.signal(signal.SIGINT, handle_signal)
+signal.signal(signal.SIGUSR1, handle_signal)
+# signal.signal(signal.SIGINT, handle_signal)
 
 if __name__ == '__main__':
     i=0
@@ -27,6 +26,6 @@ if __name__ == '__main__':
         i+=1
 
         if signal_received:
-            print("Signal received, checkpointing.")
+            print("Signal received, can checkpoint here.")
             sys.stdout.flush()
             sys.exit(1)

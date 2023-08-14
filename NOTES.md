@@ -1220,10 +1220,23 @@ Submitted batch job 13891027
 
 NERSC example: https://gitlab.com/NERSC/checkpoint-on-signal-example
 
-switched from python to exec:
+switched from python to exec: didn't work
+switched to USR1 signal: didn't work
 
-Submitted batch job 13891122
+filed a helpdesk ticket at NERSC
 
-13891241
+## test_large_tomopy_reconstruction.py
 
-Submitted batch job 13891265
+SETUP:
+================================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+================================
+
+python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.py

@@ -38,7 +38,6 @@ def handle_signal(signum, frame):
 
 # Associate the signal handler function with the USR1 signal
 signal.signal(signal.SIGUSR1, handle_signal)
-# signal.signal(signal.SIGINT, handle_signal)
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -368,7 +367,6 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             sparse_sinogram_raw = sparse_sinogram_raw[:,None,:,:]
             sparse_sinogram_tiled = utils.tile_image(sparse_sinogram_raw, n)  
             in_out_tiled = torch.cat((sparse_sinogram_tiled, output_sinogram_raw), dim=2)
-            # breakpoint()   
             writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
             plt.figure()
             plt.imshow(in_out_tiled[0].detach().cpu().numpy())

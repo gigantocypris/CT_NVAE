@@ -18,5 +18,5 @@
 #SBATCH --open-mode=append
 
 echo "jobstart $(date)";pwd
-python $SCRATCH/CT_NVAE/experimental/test_signal_interrupt.py
+srun python $SCRATCH/CT_NVAE/experimental/test_signal_interrupt.py
 echo "jobend $(date)";pwd

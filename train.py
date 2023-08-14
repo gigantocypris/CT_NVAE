@@ -13,6 +13,7 @@ import torch.nn as nn
 import numpy as np
 import os
 import signal
+import time
 
 import torch.distributed as dist
 from torch.multiprocessing import Process
@@ -27,14 +28,12 @@ import matplotlib.pyplot as plt
 
 import wandb
 
-# Define a variable to track if a signal is received
-signal_received = False
 
 # Define a signal handler function
 def handle_signal(signum, frame):
     print('Signal handler called with signal', signum)
-    global signal_received
-    signal_received = True
+    # Sleep for two minutes (double the checkpoint time)
+    time.sleep(120)
 
 # Associate the signal handler function with the USR1 signal
 signal.signal(signal.SIGUSR1, handle_signal)
@@ -127,6 +126,8 @@ def main(args):
 
         # Logging.
         logging.info('epoch %d', epoch)
+        args.pnm_implement = (args.pnm-1)*(epoch/100) + 1
+        logging.info('pnm_implement %d', args.pnm_implement)
 
         # Training.
         train_nelbo, global_step = train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring,
@@ -161,10 +162,7 @@ def main(args):
         # save_freq = int(np.ceil(args.epochs / 100))
         save_freq = 20
 
-        if signal_received:
-            print("Signal received. Saving checkpoint.")
-
-        if epoch % save_freq == 0 or epoch == (args.epochs - 1) or signal_received:
+        if epoch % save_freq == 0 or epoch == (args.epochs - 1):
             if args.global_rank == 0:
                 logging.info('saving the model.')
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
@@ -298,17 +296,11 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
         grad_scalar.scale(total_loss).backward()
         utils.average_gradients(model.parameters(), args.distributed)
         if args.model_ring_artifact:
-            # grad_scalar.scale(loss_ring).backward()
             utils.average_gradients(model_ring.parameters(), args.distributed)
             
         grad_scalar.step(cnn_optimizer)
         if args.model_ring_artifact:
             grad_scalar.step(cnn_optimizer_ring)
-
-        # if args.model_ring_artifact:
-        #     # grad_scalar.scale(loss_ring).backward()
-        #     utils.average_gradients(model_ring.parameters(), args.distributed)
-        #     grad_scalar.step(cnn_optimizer_ring)
 
         grad_scalar.update()
         nelbo.update(loss.data, 1)

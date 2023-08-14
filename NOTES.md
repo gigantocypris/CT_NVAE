@@ -1240,3 +1240,59 @@ export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 ================================
 
 python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.py
+
+
+Testing signal interrupt with the preempt queue, 10 hour job:
+module load python
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+
+sbatch $CT_NVAE_PATH/experimental/signal_interrupt.sh 
+
+Submitted batch job 13896375
+
+# Testing CT_NVAE with preempt
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_tv
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e2
+
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted batch job 13896436
+Submitted batch job 13896459
+Submitted batch job 13896465
+Submitted batch job 13896486
+Submitted batch job 13896490
+
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted batch job 13896931
+
+export BATCH_SIZE=16
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13897171
+
+export BATCH_SIZE=32
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13897179

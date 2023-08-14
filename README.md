@@ -481,9 +481,9 @@ Run the training script, adjusting the time limit as needed:
 sbatch -A $NERSC_GPU_ALLOCATION -t 00:10:00 $CT_NVAE_PATH/slurm/train_single_node.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL
 ```
 
-For longer jobs, you can use the `train_single_node_preempt.sh` script. The job runs for 24 hours, is preemptible after 2 hours, and can be requeued indefinitely; request the total time with the `--comment` option:
+For longer jobs, you can use the `train_single_node_preempt.sh` script. The job runs for 24 hours, is preemptible after 2 hours, and will be requeued after preemption:
 ```
-sbatch -A $NERSC_GPU_ALLOCATION --comment 96:00:00 $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 ```
 
 The Slurm job id will be printed once the job is submitted, e.g. `Submitted batch job $SLURM_JOB_ID`.

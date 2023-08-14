@@ -14,9 +14,10 @@ def handle_signal(signum, frame):
 
 # Associate the signal handler function with the USR1 signal
 signal.signal(signal.SIGUSR1, handle_signal)
-# signal.signal(signal.SIGINT, handle_signal)
 
 if __name__ == '__main__':
+    print("Started script")
+    sys.stdout.flush()
     i=0
     sleep_time = 1
     while True:
@@ -28,4 +29,4 @@ if __name__ == '__main__':
         if signal_received:
             print("Signal received, can checkpoint here.")
             sys.stdout.flush()
-            sys.exit(1)
+            time.sleep(120) # sleep for double the checkpoint time

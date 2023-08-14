@@ -4,55 +4,29 @@ import time
 import sys
 import os
 
-class InterruptHandler(object):
-    def __init__(self, sig=signal.SIGINT):
-        self.sig = sig
+# Define a variable to track if a signal is received
+signal_received = False
 
-    def __enter__(self):
-        self.interrupted = False
-        self.released = False
-        self.original_handler = signal.getsignal(self.sig)
-        def handler(signum, frame):
-            print("Got SIGINT", flush=True)
-            self.release()
-            self.interrupted = True
-        signal.signal(self.sig, handler)
-        return self
+# Define a signal handler function
+def handle_signal(signum, frame):
+    print('Signal handler called with signal', signum)
+    global signal_received
+    signal_received = True
 
-    def __exit__(self, type, value, tb):
-        self.release()
+# Associate the signal handler function with the USR1 signal
+# signal.signal(signal.SIGUSR1, handle_signal)
+signal.signal(signal.SIGINT, handle_signal)
 
-    def release(self):
-        if self.released:
-            return False
-        signal.signal(self.sig, self.original_handler)
-        self.released = True
-        return True
+if __name__ == '__main__':
+    i=0
+    sleep_time = 1
+    while True:
+        print(f"Sleeping for {i} seconds")
+        sys.stdout.flush()
+        time.sleep(sleep_time)
+        i+=1
 
-def try_restart(i):
-    try:
-        with open("example.checkpoint", "r") as f:
-            i = int(f.readline())
-            print(f"Restarting from {i}")
-            return i
-    except:
-        return i
-
-def checkpoint(i):
-    with open("example.checkpoint", "w") as f:
-        print("checkpointing...", end="")
-        f.write(str(i))
-        print("done")
-    
-def main():
-    with InterruptHandler() as h:    
-        for i in range(try_restart(0), 300):
-            print(f"iteration = {i}", flush=True)
-            time.sleep(5)
-            if h.interrupted:
-                checkpoint(i)
-                sys.exit(0)
-        sys.exit(0)
-
-if __name__ == "__main__":
-    main()
+        if signal_received:
+            print("Signal received, checkpointing.")
+            sys.stdout.flush()
+            sys.exit(1)

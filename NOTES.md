@@ -1188,3 +1188,42 @@ Submitted batch job 13740667
 Submitted batch job 13740668
 Submitted batch job 13740670
 Submitted batch job 13740672
+
+## August 11, 2023
+Try preempt script with smaller time:
+
+Submitted batch job 13765626
+
+## August 14, 2023
+
+Figuring out preempt:
+
+
+module load python
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+
+sbatch $CT_NVAE_PATH/experimental/signal_interrupt.sh 
+
+Submitted batch job 13890543
+Submitted batch job 13890797
+
+Removed #SBATCH --signal=SIGINT@60
+Submitted batch job 13890843
+
+Replaced #SBATCH --signal=SIGINT@60
+13890898
+
+Had to add "sys.stdout.flush()" to get output to print to file
+Submitted batch job 13891027
+
+NERSC example: https://gitlab.com/NERSC/checkpoint-on-signal-example
+
+switched from python to exec:
+
+Submitted batch job 13891122
+
+13891241
+
+Submitted batch job 13891265

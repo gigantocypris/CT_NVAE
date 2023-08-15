@@ -37,6 +37,9 @@ if [ $DO_PART_ONE = True ]; then
         export THICKNESS=/global/cfs/cdirs/m3562/users/hkim/brain_data/instance_thickness.csv
         python $CT_NVAE_PATH/preprocessing/preprocess_brain.py $CSV_PATH $DCM_PATH images_$IMAGE_ID $THICKNESS $NUM_EXAMPLES
     else
+        if [ $DATA_TYPE = "covid" ]; then
+            export COVID_RAW_DATA=/global/cfs/cdirs/m3562/users/hkim/real_data/raw
+        fi
         srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n $NUM_EXAMPLES --dest images_$IMAGE_ID --type $DATA_TYPE
     fi
 

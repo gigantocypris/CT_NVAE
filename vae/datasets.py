@@ -18,6 +18,38 @@ def get_loaders(args):
     """Get data loaders for required dataset."""
     return get_loaders_eval(args.dataset, args)
 
+class H5_Dataset(Dataset):
+    # XX TODO
+    def __init__(self, h5_filename):
+        self.sparse_recons = reconstruction[:,None,:,:]
+        self.sparse_sino = sparse_sinogram
+        self.sparse_sino_raw  = sparse_sinogram_raw
+        self.object_ids = object_ids
+        self.ground_truth = ground_truth
+        self.masks = mask
+        self.theta = theta
+        self.x_size = x_size
+        self.y_size = y_size
+        self.num_proj_pix = num_proj_pix
+        self.index = [i for i in range(len(self.sparse_recons))]
+
+    def __getitem__(self, index):
+        # d = self.transform(self.sparse_recons[index])
+        sparse_reconstruction = torch.from_numpy(self.sparse_recons[index]).float()
+        sparse_sinogram = torch.from_numpy(self.sparse_sino[index]).float()
+        angles = torch.from_numpy(self.theta[self.masks[index]]).float()
+        x_size = torch.from_numpy(self.x_size).float()
+        y_size = torch.from_numpy(self.y_size).float()
+        num_proj_pix = torch.from_numpy(self.num_proj_pix).float()
+        ground_truth = torch.from_numpy(self.ground_truth[index]).float()
+        sparse_sinogram_raw = torch.from_numpy(self.sparse_sino_raw[index]).float()
+        object_id = torch.from_numpy(self.object_ids[index]).float()
+        return (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
+                angles, x_size, y_size, num_proj_pix, ground_truth)
+
+    def __len__(self):
+        return len(self.sparse_recons)
+
 class CT_Dataset(Dataset):
     def __init__(self, ground_truth, reconstruction, sparse_sinogram, sparse_sinogram_raw,\
                  object_ids, mask, x_size, y_size, num_proj_pix, theta):

@@ -35,6 +35,7 @@ python -m pip install torch torchvision torchaudio --index-url https://download.
 python -m pip install pandas
 python -m pip install pydicom
 python -m pip install tqdm
+python -m pip install h5py
 ```
 
 The following packages need to be installed if you are downloading and preprocessing the CT brain data on your own computing setup:

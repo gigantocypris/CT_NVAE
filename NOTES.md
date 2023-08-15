@@ -1296,3 +1296,48 @@ Submitted batch job 13897171
 export BATCH_SIZE=32
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 Submitted batch job 13897179
+
+PNM annealing:
+export PNM=1e3
+export BATCH_SIZE=8
+
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+Submitted batch job 13897336
+Submitted batch job 13897338
+Submitted batch job 13897342
+
+
+export BATCH_SIZE=16
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13897505
+
+# Testing create_dataset_h5.py
+
+SETUP
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=100
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+Foam images in `images_foam_100ex` processed with gridrec:
+export DATA_TYPE=foam
+export IMAGE_ID=foam_100ex
+export DATASET_ID=foam_45ang_100ex_h5
+export NUM_SPARSE_ANGLES=45
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+
+
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_$IMAGE_ID --dest dataset_$DATASET_ID --train 0.7 --valid 0.2 --test 0.1 -n $NUM_EXAMPLES
+
+python $CT_NVAE_PATH/preprocessing/create_dataset_h5.py --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --ring $RING --pnm 1e3 --algorithm $ALGORITHM
+

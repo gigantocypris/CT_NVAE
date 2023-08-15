@@ -127,7 +127,8 @@ def main(args):
         # Logging.
         logging.info('epoch %d', epoch)
         pnm_start = 1e1
-        args.pnm_implement = (args.pnm-pnm_start)*(epoch/100) + pnm_start
+        pnm_warmup_epochs = 100
+        args.pnm_implement = (args.pnm-pnm_start)*(epoch/pnm_warmup_epochs) + pnm_start
         logging.info('pnm_implement %d', args.pnm_implement)
 
         # Training.

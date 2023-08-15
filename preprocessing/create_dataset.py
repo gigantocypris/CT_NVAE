@@ -49,11 +49,11 @@ def main(args, dataset_type):
                              poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, 
                              ring_artifact_strength = args.ring_artifact_strength, algorithm=args.algorithm)
 
-        # append to lists
         x_train_pad = pad_phantom(torch.Tensor(np.expand_dims(x_train.astype(np.float32), axis=-1)))
         x_train_pad = np.squeeze(x_train_pad.numpy(),axis=-1)
-        x_train_imgs.append(x_train_pad)
 
+        # append to lists
+        x_train_imgs.append(x_train_pad)
         x_train_sinograms.append(x_train_sinogram)
         all_mask_inds.append(np.repeat(np.expand_dims(sparse_angles,axis=0),x_train.shape[0],axis=0))
         all_reconstructed_objects.append(reconstruction)

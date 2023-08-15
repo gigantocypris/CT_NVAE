@@ -130,6 +130,6 @@ def get_loaders_eval(dataset, args):
     test_queue = torch.utils.data.DataLoader(
         test_data, batch_size=args.batch_size,
         shuffle=False,
-        sampler=valid_sampler, pin_memory=True, num_workers=1, drop_last=False)
+        sampler=test_sampler, pin_memory=True, num_workers=1, drop_last=False)
 
     return train_queue, valid_queue, test_queue

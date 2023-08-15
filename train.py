@@ -132,7 +132,7 @@ def main(args):
         logging.info('pnm_implement %d', args.pnm_implement)
 
         # Training.
-        train_nelbo, global_step = train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring,
+        train_nelbo, global_step = train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring,
                                          grad_scalar, global_step, warmup_iters, writer, logging,
                                         )
         
@@ -182,7 +182,7 @@ def main(args):
         
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True, rank=args.global_rank)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -194,7 +194,7 @@ def main(args):
 
     # Final test
     if args.final_test:
-        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True)
+        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True, rank=args.global_rank)
         logging.info('final test nelbo %f', test_nelbo)
         logging.info('final test neg log p %f', test_neg_log_p)
 
@@ -254,7 +254,7 @@ def calculate_loss(args, global_step, kl_all, alpha_i, recon_loss, model):
     loss += norm_loss * wdn_coeff + bn_loss * wdn_coeff
     return loss, norm_loss, bn_loss, wdn_coeff, kl_coeff, kl_coeffs, kl_vals
 
-def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, grad_scalar, 
+def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, grad_scalar, 
           global_step, warmup_iters, writer, logging,
           ):
 
@@ -342,7 +342,9 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             writer.add_image('input image', x_tiled, global_step)
             plt.figure()
             plt.imshow(x_tiled[0].detach().cpu().numpy())
-            plt.savefig(args.save + '/input_image_' + str(global_step)+'.png')
+            save_filepath = args.save + '/input_image_rank_' + str(args.global_rank) + '_' + str(global_step)+'.png'
+            print('saving image: ' + save_filepath)
+            plt.savefig(save_filepath)
 
             ground_truth = ground_truth[:n*n,None]
             ground_truth_tiled = utils.tile_image(ground_truth, n)
@@ -350,7 +352,9 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             plt.figure()
             plt.imshow(ground_truth_tiled[0].detach().cpu().numpy())
             plt.colorbar()
-            plt.savefig(args.save + '/ground_truth_' + str(global_step)+'.png')
+            save_filepath = args.save + '/ground_truth_rank_' + str(args.global_rank) + '_'  + str(global_step)+'.png'
+            print('saving image: ' + save_filepath)
+            plt.savefig(save_filepath)
 
             output_sinogram_raw = sino_raw_dist.mean if isinstance(sino_raw_dist, torch.distributions.bernoulli.Bernoulli) else sino_raw_dist.sample()
             output_sinogram_raw = output_sinogram_raw[:n*n]
@@ -364,7 +368,9 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             writer.add_image('sinogram reconstruction', in_out_tiled, global_step)
             plt.figure()
             plt.imshow(in_out_tiled[0].detach().cpu().numpy())
-            plt.savefig(args.save + '/sinogram_reconstruction_' + str(global_step)+'.png')
+            save_filepath = args.save + '/sinogram_reconstruction_rank_' + str(args.global_rank) + '_'  + str(global_step)+'.png'
+            print('saving image: ' + save_filepath)
+            plt.savefig(save_filepath)
 
             phantom_sample = phantom
             phantom_sample = phantom_sample[:n*n]
@@ -375,10 +381,10 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
             writer.add_image('phantom_reconstruction', phantom_tiled, global_step)
             plt.figure()
             plt.imshow(phantom_tiled[0].detach().cpu().numpy())
-            plt.savefig(args.save + '/phantom_reconstruction_' + str(global_step)+'.png')
+            save_filepath = args.save + '/phantom_reconstruction_rank_' + str(args.global_rank) + '_' + str(global_step)+'.png'
+            print('saving image: ' + save_filepath)
+            plt.savefig(save_filepath)
             plt.close('all')
-
-
 
         global_step += 1
 
@@ -386,7 +392,7 @@ def train(train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_ring, gra
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_type='', save_images=False):
+def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_type='', save_images=False, rank=None):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
@@ -397,7 +403,7 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
         all_sparse_sinograms = []
         all_ground_truth = []
         all_theta = []
-        rank = dist.get_rank()
+        # rank = dist.get_rank()
     for step, x_full in enumerate(valid_queue):
         x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
@@ -564,8 +570,8 @@ if __name__ == '__main__':
     # DDP
     parser.add_argument('--num_proc_node', type=int, default=1,
                         help='The number of nodes in multi node env.')
-    parser.add_argument('--node_rank', type=int, default=0,
-                        help='The index of node.')
+    # parser.add_argument('--node_rank', type=int, default=0,
+    #                     help='The index of node.')
     parser.add_argument('--local_rank', type=int, default=0,
                         help='rank of process in the node')
     parser.add_argument('--global_rank', type=int, default=0,
@@ -582,6 +588,9 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     args.save = args.root + '/eval-' + args.save
+
+    args.node_rank = int(os.environ['SLURM_PROCID'])
+    print('node rank is: ' + str(args.node_rank))
     utils.create_exp_dir(args.save)
 
     size = args.num_process_per_node

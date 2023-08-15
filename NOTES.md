@@ -1253,6 +1253,7 @@ sbatch $CT_NVAE_PATH/experimental/signal_interrupt.sh
 Submitted batch job 13896375
 
 # Testing CT_NVAE with preempt
+Switched to srun
 
 SETUP
 =============================
@@ -1279,11 +1280,15 @@ export PNM=1e2
 
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 
-Submitted batch job 13896436
+Submitted batch job 13896436 - images don't match input and output
 Submitted batch job 13896459
-Submitted batch job 13896465
+Submitted batch job 13896465 - images don't match
 Submitted batch job 13896486
 Submitted batch job 13896490
+
+export CHECKPOINT_DIR=checkpts
+export EXPR_ID=13896436
+tensorboard --logdir $CHECKPOINT_DIR/eval-$EXPR_ID/
 
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 
@@ -1295,7 +1300,7 @@ Submitted batch job 13897171
 
 export BATCH_SIZE=32
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
-Submitted batch job 13897179
+Submitted batch job 13897179 - Out of memory
 
 PNM annealing:
 export PNM=1e3
@@ -1341,3 +1346,76 @@ python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_$IMAGE_ID --des
 
 python $CT_NVAE_PATH/preprocessing/create_dataset_h5.py --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --ring $RING --pnm 1e3 --algorithm $ALGORITHM
 
+## August 15, 2023
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_tv
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+
+
+128 cpus:
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt_change_cpu.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+13945276
+13945288
+13945293
+13945294
+13945296
+
+1 cpu:
+13945314
+13945316
+13945319
+13945320
+13945321
+
+Interactive node: For some reason can't get srun to work on interactive node
+
+Try 2 nodes:
+
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+13945406
+13945407
+13945414 - did it start properly?
+13945416
+13945418
+13945420 - did it start properly?
+
+Changed node_rank
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+
+13946269
+13946270
+13946271
+13946277
+13946278
+
+Looks like multinode training is working!
+
+Fixed cpus_per_task and increased to 4 nodes:
+13946742
+13946744
+13946747
+13946749
+13946751

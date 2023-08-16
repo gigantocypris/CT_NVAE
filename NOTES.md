@@ -1376,7 +1376,8 @@ export PNM=1e3
 128 cpus:
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_single_node_preempt_change_cpu.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
 
-13945276
+all getting lots of iters
+13945276 - gets worse at end
 13945288
 13945293
 13945294
@@ -1397,10 +1398,10 @@ sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh 
 
 13945406
 13945407
-13945414 - did it start properly?
+13945414
 13945416
 13945418
-13945420 - did it start properly?
+13945420
 
 Changed node_rank
 sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
@@ -1411,7 +1412,7 @@ sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh 
 13946277
 13946278
 
-Looks like multinode training is working!
+Looks like multinode training is working! (note: not really, see August 16)
 
 Fixed cpus_per_task and increased to 4 nodes:
 13946742
@@ -1419,3 +1420,39 @@ Fixed cpus_per_task and increased to 4 nodes:
 13946747
 13946749
 13946751
+
+# August 16, 2023
+
+added --num_proc_node=4 to train_multi_node_preempt.sh
+NOTE: 3 places to change number of nodes, automate this
+
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+Submitted batch job 13973637
+Submitted batch job 13973640
+Submitted batch job 13973641
+Submitted batch job 13973642
+Submitted batch job 13973643

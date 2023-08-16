@@ -126,9 +126,9 @@ def main(args):
 
         # Logging.
         logging.info('epoch %d', epoch)
-        pnm_start = 1e1
-        pnm_warmup_epochs = 100
-        args.pnm_implement = (args.pnm-pnm_start)*(epoch/pnm_warmup_epochs) + pnm_start
+        steepness = -np.log((1-args.pnm_fraction)/args.pnm_fraction)/args.pnm_warmup_epochs
+        args.pnm_implement = (args.pnm-args.pnm_start+0.5) / (1 + np.exp(-steepness*epoch))+args.pnm_start - 0.5
+
         logging.info('pnm_implement %d', args.pnm_implement)
 
         # Training.
@@ -557,6 +557,12 @@ if __name__ == '__main__':
     # physics parameters
     parser.add_argument('--pnm', dest='pnm', type=float, default=1e3,
                         help='poisson noise multiplier, higher value means higher SNR')
+    parser.add_argument('--pnm_start', dest='pnm_start', type=float, default=1e1,
+                        help='starting value for poisson noise multiplier')
+    parser.add_argument('--pnm_warmup_epochs', dest='pnm_warmup_epochs', type=float, default=10000,
+                        help='number of epochs before pnm reaches pnm_fraction of the final value')
+    parser.add_argument('--pnm_fraction', dest='pnm_fraction', type=float, default=0.9,
+                        help='we reach this fraction of the final pnm value at the end of pnm_warmup_epochs')
     parser.add_argument('--model_ring_artifact', dest='model_ring_artifact', type=bool, 
                         help='If True, attempt to correct for a ring artifact', default=False)
 

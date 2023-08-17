@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get command line args')
     parser.add_argument('--dir', dest = 'dir', type=str, help='where the numpy object files are saved')
     args = parser.parse_args()
-    theta = np.linspace(0, 2*np.pi, 180, endpoint=False)
+    theta = np.linspace(0, np.pi, 180, endpoint=False)
 
     comm = MPI.COMM_WORLD
     world_size = os.environ['SLURM_NTASKS']

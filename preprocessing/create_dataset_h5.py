@@ -28,9 +28,8 @@ def main(args, dataset_type):
     h5_filename = args.dir + '/' + dataset_type + '.h5'
 
     with h5py.File(h5_filename, 'w') as h5_file:
+        total_slices = 0
         for i in range(len(sinogram_files)):
-            object_group = h5_file.create_group(f'object_{i}')
-
             print(f'processing sinogram {i} of {len(sinogram_files)}')
             filepath_sino = sinogram_files[i] # sinogram filepath
             print(f'filepath_sino is {filepath_sino}')
@@ -56,14 +55,17 @@ def main(args, dataset_type):
             sparse_sinogram_raw = np.transpose(sparse_sinogram_raw,axes=[1,0,2])
             object_id_3d = np.repeat(np.expand_dims(np.sum(reconstruction,axis=0),axis=0),x_train.shape[0],axis=0)
 
-            # save to h5 file
-            object_group.create_dataset('x_train_img', data=x_train_pad)
-            object_group.create_dataset('x_train_sinogram', data=x_train_sinogram)
-            object_group.create_dataset('mask_inds', data=mask_inds)
-            object_group.create_dataset('reconstructed_object', data=reconstruction)
-            object_group.create_dataset('sparse_sinogram', data=sparse_sinogram)
-            object_group.create_dataset('sparse_sinogram_raw', data=sparse_sinogram_raw)
-            object_group.create_dataset('object_id_3d', data=object_id_3d)
+            # save each slice to h5 file
+            for slice_ind in range(x_train_pad.shape[0]):
+                slice_group = h5_file.create_group(f'slice_{total_slices}')
+                slice_group.create_dataset('x_train_img', data=x_train_pad[slice_ind])
+                slice_group.create_dataset('x_train_sinogram', data=x_train_sinogram[slice_ind])
+                slice_group.create_dataset('mask_inds', data=mask_inds[slice_ind])
+                slice_group.create_dataset('reconstructed_object', data=reconstruction[slice_ind])
+                slice_group.create_dataset('sparse_sinogram', data=sparse_sinogram[slice_ind])
+                slice_group.create_dataset('sparse_sinogram_raw', data=sparse_sinogram_raw[slice_ind])
+                slice_group.create_dataset('object_id_3d', data=object_id_3d[slice_ind])
+                total_slices += 1
 
         num_proj_pix = x_train_sinogram.shape[-1]
         x_size = x_train_pad.shape[1]
@@ -72,6 +74,9 @@ def main(args, dataset_type):
         h5_file.create_dataset('num_proj_pix', data=num_proj_pix)
         h5_file.create_dataset('x_size', data=x_size)
         h5_file.create_dataset('y_size', data=y_size)
+        h5_file.create_dataset('total_slices', data=total_slices)
+        h5_file.create_dataset('total_objects', data=len(sinogram_files))
+        np.save(args.dir + '/' + dataset_type + '_num_proj_pix.npy', num_proj_pix)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get command line args')

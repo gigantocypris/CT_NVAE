@@ -127,7 +127,7 @@ def main(args):
         # Logging.
         logging.info('epoch %d', epoch)
         steepness = -np.log((1-args.pnm_fraction)/args.pnm_fraction)/args.pnm_warmup_epochs
-        args.pnm_implement = (args.pnm-args.pnm_start+0.5) / (1 + np.exp(-steepness*epoch))+args.pnm_start - 0.5
+        args.pnm_implement = (args.pnm-args.pnm_start) / (1 + np.exp(-steepness*epoch))+ - (args.pnm-args.pnm_start)/2 + args.pnm_start
 
         logging.info('pnm_implement %d', args.pnm_implement)
 
@@ -159,7 +159,8 @@ def main(args):
             writer.add_scalar('val/nelbo', valid_nelbo, epoch)
             writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch)
             writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
-            wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
+            if args.log_wandb:
+                wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
         # save_freq = int(np.ceil(args.epochs / 100))
         save_freq = 20
@@ -455,7 +456,8 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
 def init_processes(rank, size, fn, args):
     """ Initialize the distributed environment. """
     if args.use_nersc:
-        os.environ['MASTER_PORT'] = '29500'
+        # os.environ['MASTER_PORT'] = '29500'
+        pass
     else:
         os.environ['MASTER_ADDR'] = args.master_address
         os.environ['MASTER_PORT'] = '6020'
@@ -478,11 +480,15 @@ if __name__ == '__main__':
                         help='id used for storing intermediate results')
     parser.add_argument('--save_interval', type=int, default=20,
                         help='training iterations between saving images of results')
+    parser.add_argument('--log_wandb', dest='log_wandb', type=bool, 
+                        help='If True, log results to wandb', default=False)
     # data
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
     parser.add_argument('--truncate', type=int, default=None,
                         help='if not None, truncate the training dataset to this many examples')
+    parser.add_argument('--use_h5', dest='use_h5', type=bool, 
+                        help='If True, load relevant data from h5 file at every iteration', default=False)
     parser.add_argument('--final_test', action='store_true', default=False,
                 help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
     # optimization
@@ -601,14 +607,15 @@ if __name__ == '__main__':
 
     size = args.num_process_per_node
 
-    # start a new wandb run to track this script
-    wandb.init(
-        # set the wandb project where this run will be logged
-        project="CT_NVAE",
-        name=args.save,
-        # track hyperparameters and run metadata
-        config=args
-    )
+    if args.log_wandb:
+        # start a new wandb run to track this script
+        wandb.init(
+            # set the wandb project where this run will be logged
+            project="CT_NVAE",
+            name=args.save,
+            # track hyperparameters and run metadata
+            config=args
+        )
 
 
     if size > 1:

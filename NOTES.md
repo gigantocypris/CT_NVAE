@@ -1436,10 +1436,6 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
 mkdir -p checkpts
 export NERSC_GPU_ALLOCATION=m3562_g
-export DATASET_DIR=$WORKING_DIR
-export CHECKPOINT_DIR=$WORKING_DIR/checkpts
-export MASTER_ADDR=$(hostname)
-export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 =============================
 
 ## Foam
@@ -1449,10 +1445,172 @@ export BATCH_SIZE=8
 export EPOCHS=100000
 export SAVE_INTERVAL=1000
 export PNM=1e3
+export NUM_NODES=4
+export USE_H5=False
 
-sbatch -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING
+sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
+
 Submitted batch job 13973637
 Submitted batch job 13973640
 Submitted batch job 13973641
 Submitted batch job 13973642
 Submitted batch job 13973643
+
+# August 17, 2023
+
+wandb error, trying the above again:
+
+14003850
+14003852
+14003855
+14003856
+14003857
+
+error again with parallelization, trying again:
+14006332
+14006336
+14006338
+14006342
+14006344
+
+rolling back
+14006725
+
+
+moving master addr into the script
+14006842
+
+commented out MASTER_PORT
+14007246
+
+
+removed master_addr from inside script
+14007294
+
+Switch workflow to specifying the number of nodes (1 task per node):
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export NUM_NODES=1
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex
+export USE_H5=False
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
+
+export NUM_NODES=1
+Submitted batch job 14003960
+Submitted batch job 14003961
+Submitted batch job 14003963
+Submitted batch job 14003964
+Submitted batch job 14003966
+
+Remake foam h5 dataset:
+
+SETUP
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=100
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+=============================
+
+Foam images in `images_foam_100ex` processed with gridrec:
+export DATA_TYPE=foam
+export IMAGE_ID=foam_100ex
+export DATASET_ID=foam_45ang_100ex_h5
+export NUM_SPARSE_ANGLES=45
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+
+
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_$IMAGE_ID --dest dataset_$DATASET_ID --train 0.7 --valid 0.2 --test 0.1 -n $NUM_EXAMPLES
+
+python $CT_NVAE_PATH/preprocessing/create_dataset_h5.py --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --ring $RING --pnm 1e3 --algorithm $ALGORITHM
+
+
+salloc -N 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task 128
+
+
+## Using H5 loading
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export NUM_NODES=1
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_h5
+export USE_H5=True
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+
+sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
+
+# Do a Timing Comparison using H5 and using numpy
+h5 is about the same
+
+# working on getting multinode training to work
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_h5
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+export NUM_NODES=1
+export USE_H5=True
+
+sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
+
+Submitted batch job 14013028

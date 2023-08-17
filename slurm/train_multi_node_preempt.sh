@@ -7,6 +7,7 @@
 #SBATCH -q preempt
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=128
+#SBATCH --gpus-per-node=4
 #SBATCH -o %j.out
 #SBATCH -e %j.err
 #SBATCH --signal=B:USR1@60  # sig_time should match your checkpoint overhead time

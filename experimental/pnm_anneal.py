@@ -8,7 +8,7 @@ pnm_warmup_epochs = 10000
 pnm_start = 1e1
 pnm = 1e3
 steepness = -np.log((1-pnm_fraction)/pnm_fraction)/pnm_warmup_epochs
-pnm_implement = (pnm-pnm_start+0.5) /( 1 + np.exp(-steepness*epoch))+pnm_start - 0.5
+pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(pnm-pnm_start) + pnm_start
 
 plt.figure()
 plt.plot(epoch, pnm_implement)

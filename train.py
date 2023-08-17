@@ -127,7 +127,7 @@ def main(args):
         # Logging.
         logging.info('epoch %d', epoch)
         steepness = -np.log((1-args.pnm_fraction)/args.pnm_fraction)/args.pnm_warmup_epochs
-        args.pnm_implement = (args.pnm-args.pnm_start) / (1 + np.exp(-steepness*epoch))+ - (args.pnm-args.pnm_start)/2 + args.pnm_start
+        args.pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(args.pnm-args.pnm_start) + args.pnm_start
 
         logging.info('pnm_implement %d', args.pnm_implement)
 
@@ -451,18 +451,26 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
     logging.info('val, step: %d, NELBO: %f, neg Log p %f', step, nelbo_avg.avg, neg_log_p_avg.avg)
     return neg_log_p_avg.avg, nelbo_avg.avg
 
-
+def _get_sync_file():
+    """Logic for naming sync file using slurm env variables"""
+    sync_file_dir = '%s/pytorch-sync-files' % os.environ['SCRATCH']
+    os.makedirs(sync_file_dir, exist_ok=True)
+    sync_file = 'file://%s/pytorch_sync.%s.%s' % (
+        sync_file_dir, os.environ['SLURM_JOB_ID'], os.environ['SLURM_STEP_ID'])
+    return sync_file
 
 def init_processes(rank, size, fn, args):
     """ Initialize the distributed environment. """
     if args.use_nersc:
-        # os.environ['MASTER_PORT'] = '29500'
-        pass
+        os.environ['MASTER_PORT'] = '29500'
     else:
         os.environ['MASTER_ADDR'] = args.master_address
         os.environ['MASTER_PORT'] = '6020'
     torch.cuda.set_device(args.local_rank)
-    dist.init_process_group(backend='nccl', init_method='env://', rank=rank, world_size=size)
+    # dist.init_process_group(backend='nccl', init_method='env://', rank=rank, world_size=size)
+
+    sync_file = _get_sync_file()
+    dist.init_process_group(backend='nccl', init_method=sync_file, rank=rank, world_size=size)
     fn(args)
     cleanup()
 
@@ -565,7 +573,7 @@ if __name__ == '__main__':
                         help='poisson noise multiplier, higher value means higher SNR')
     parser.add_argument('--pnm_start', dest='pnm_start', type=float, default=1e1,
                         help='starting value for poisson noise multiplier')
-    parser.add_argument('--pnm_warmup_epochs', dest='pnm_warmup_epochs', type=float, default=10000,
+    parser.add_argument('--pnm_warmup_epochs', dest='pnm_warmup_epochs', type=float, default=400,
                         help='number of epochs before pnm reaches pnm_fraction of the final value')
     parser.add_argument('--pnm_fraction', dest='pnm_fraction', type=float, default=0.9,
                         help='we reach this fraction of the final pnm value at the end of pnm_warmup_epochs')

@@ -1646,7 +1646,7 @@ Submitted batch job 14014939
 export BATCH_SIZE=16
 export NUM_NODES=3
 sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
-Submitted batch job 14014955
+Submitted batch job 14014955 - looks good except still has speckle artifact
 
 export BATCH_SIZE=16
 export NUM_NODES=4
@@ -1663,4 +1663,197 @@ More nodes:
 export BATCH_SIZE=16
 export NUM_NODES=16
 sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
-Submitted batch job 14019884
+Submitted batch job 14019884 - completely blank result, try again
+
+
+# August 18, 2023
+
+Fixed boolean command line args:
+
+SETUP
+=============================
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+mkdir -p checkpts
+export NERSC_GPU_ALLOCATION=m3562_g
+=============================
+
+## Foam
+export RING=False
+export DATASET_ID=foam_45ang_100ex_h5
+export BATCH_SIZE=8
+export EPOCHS=100000
+export SAVE_INTERVAL=1000
+export PNM=1e3
+export NUM_NODES=3
+export USE_H5=True
+
+sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
+
+Submitted batch job 14049425
+Submitted batch job 14049427
+Submitted batch job 14049430
+
+# Full Dataset Creation with H5
+
+SETUP
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=1000
+=============================
+
+export NUM_SPARSE_ANGLES=10
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+export DO_PART_ONE=True
+export DO_PART_TWO=True
+export DATA_TYPE=foam
+export IMAGE_ID=foam_1000ex
+export DATASET_ID=foam_10ang_1000ex
+
+sbatch --time=01:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+
+Submitted batch job 14051567
+
+
+# Debugging preempt
+
+sbatch $CT_NVAE_PATH/experimental/signal_interrupt.sh
+Submitted batch job 14051613
+
+
+Sweep number of angles script:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
+
+
+
+RUN ME:
+
+Training on the dataset sweep
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh
+
+Ran 2x:
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to create foam_10ang_1000ex
+Submitted batch job 14060762
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create foam_20ang_1000ex
+Submitted batch job 14060770
+Current NUM_SPARSE_ANGLES: 30
+Submitting job to create foam_30ang_1000ex
+Submitted batch job 14060772
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create foam_40ang_1000ex
+Submitted batch job 14060775
+Current NUM_SPARSE_ANGLES: 50
+Submitting job to create foam_50ang_1000ex
+Submitted batch job 14060777
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create foam_60ang_1000ex
+Submitted batch job 14060778
+Current NUM_SPARSE_ANGLES: 70
+Submitting job to create foam_70ang_1000ex
+Submitted batch job 14060779
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create foam_80ang_1000ex
+Submitted batch job 14060780
+Current NUM_SPARSE_ANGLES: 90
+Submitting job to create foam_90ang_1000ex
+Submitted batch job 14060781
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create foam_100ang_1000ex
+Submitted batch job 14060782
+Current NUM_SPARSE_ANGLES: 110
+Submitting job to create foam_110ang_1000ex
+Submitted batch job 14060794
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create foam_120ang_1000ex
+Submitted batch job 14060795
+Current NUM_SPARSE_ANGLES: 130
+Submitting job to create foam_130ang_1000ex
+Submitted batch job 14060811
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create foam_140ang_1000ex
+Submitted batch job 14060812
+Current NUM_SPARSE_ANGLES: 150
+Submitting job to create foam_150ang_1000ex
+Submitted batch job 14060813
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create foam_160ang_1000ex
+Submitted batch job 14060815
+Current NUM_SPARSE_ANGLES: 170
+Submitting job to create foam_170ang_1000ex
+Submitted batch job 14060816
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create foam_180ang_1000ex
+Submitted batch job 14060817
+
+
+====
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to train with foam_10ang_1000ex
+Submitted batch job 14060826
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to train with foam_20ang_1000ex
+Submitted batch job 14060827
+Current NUM_SPARSE_ANGLES: 30
+Submitting job to train with foam_30ang_1000ex
+Submitted batch job 14060828
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to train with foam_40ang_1000ex
+Submitted batch job 14060829
+Current NUM_SPARSE_ANGLES: 50
+Submitting job to train with foam_50ang_1000ex
+Submitted batch job 14060830
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to train with foam_60ang_1000ex
+Submitted batch job 14060831
+Current NUM_SPARSE_ANGLES: 70
+Submitting job to train with foam_70ang_1000ex
+Submitted batch job 14060833
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to train with foam_80ang_1000ex
+Submitted batch job 14060834
+Current NUM_SPARSE_ANGLES: 90
+Submitting job to train with foam_90ang_1000ex
+Submitted batch job 14060838
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to train with foam_100ang_1000ex
+Submitted batch job 14060839
+Current NUM_SPARSE_ANGLES: 110
+Submitting job to train with foam_110ang_1000ex
+Submitted batch job 14060840
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to train with foam_120ang_1000ex
+Submitted batch job 14060843
+Current NUM_SPARSE_ANGLES: 130
+Submitting job to train with foam_130ang_1000ex
+Submitted batch job 14060845
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to train with foam_140ang_1000ex
+Submitted batch job 14060846
+Current NUM_SPARSE_ANGLES: 150
+Submitting job to train with foam_150ang_1000ex
+Submitted batch job 14060848
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to train with foam_160ang_1000ex
+Submitted batch job 14060849
+Current NUM_SPARSE_ANGLES: 170
+Submitting job to train with foam_170ang_1000ex
+Submitted batch job 14060850
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to train with foam_180ang_1000ex
+Submitted batch job 14060851

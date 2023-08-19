@@ -3,14 +3,12 @@ import time
 import sys
 import os
 
-# Define a variable to track if a signal is received
-signal_received = False
-
 # Define a signal handler function
 def handle_signal(signum, frame):
     print('Signal handler called with signal', signum)
-    global signal_received
-    signal_received = True
+    # Sleep for two minutes (double the checkpoint time)
+    time.sleep(120)
+
 
 # Associate the signal handler function with the USR1 signal
 signal.signal(signal.SIGUSR1, handle_signal)
@@ -25,8 +23,3 @@ if __name__ == '__main__':
         sys.stdout.flush()
         time.sleep(sleep_time)
         i+=1
-
-        if signal_received:
-            print("Signal received, can checkpoint here.")
-            sys.stdout.flush()
-            time.sleep(120) # sleep for double the checkpoint time

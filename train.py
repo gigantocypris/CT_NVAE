@@ -488,15 +488,15 @@ if __name__ == '__main__':
                         help='id used for storing intermediate results')
     parser.add_argument('--save_interval', type=int, default=20,
                         help='training iterations between saving images of results')
-    parser.add_argument('--log_wandb', dest='log_wandb', type=bool, 
-                        help='If True, log results to wandb', default=False)
+    parser.add_argument('--log_wandb', action='store_true', default=False,
+                        help='If this flag is passed, log results to wandb')
     # data
     parser.add_argument('--dataset', type=str, default='foam',
                         help='dataset type to use, dataset should be in format dataset_type')
     parser.add_argument('--truncate', type=int, default=None,
                         help='if not None, truncate the training dataset to this many examples')
-    parser.add_argument('--use_h5', dest='use_h5', type=bool, 
-                        help='If True, load relevant data from h5 file at every iteration', default=False)
+    parser.add_argument('--use_h5', dest='use_h5', type=lambda x: x.lower() == 'true',
+                    help='If True, load relevant data from h5 file at every iteration',default=False)
     parser.add_argument('--final_test', action='store_true', default=False,
                 help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
     # optimization
@@ -573,13 +573,13 @@ if __name__ == '__main__':
                         help='poisson noise multiplier, higher value means higher SNR')
     parser.add_argument('--pnm_start', dest='pnm_start', type=float, default=1e1,
                         help='starting value for poisson noise multiplier')
-    parser.add_argument('--pnm_warmup_epochs', dest='pnm_warmup_epochs', type=float, default=400,
+    parser.add_argument('--pnm_warmup_epochs', dest='pnm_warmup_epochs', type=float, default=10000,
                         help='number of epochs before pnm reaches pnm_fraction of the final value')
     parser.add_argument('--pnm_fraction', dest='pnm_fraction', type=float, default=0.9,
                         help='we reach this fraction of the final pnm value at the end of pnm_warmup_epochs')
-    parser.add_argument('--model_ring_artifact', dest='model_ring_artifact', type=bool, 
-                        help='If True, attempt to correct for a ring artifact', default=False)
-
+    parser.add_argument('--model_ring_artifact', dest='model_ring_artifact', type=lambda x: x.lower() == 'true',
+                    help='If True, attempt to correct for a ring artifact', default=False)
+    
     # NAS
     parser.add_argument('--use_se', action='store_true', default=False,
                         help='This flag enables squeeze and excitation.')

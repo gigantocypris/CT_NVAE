@@ -12,11 +12,11 @@ import glob
 import gzip
 import shutil
 
-def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.2, GAP = 0, Z_SLICES = 32):
+def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.1, GAP = 0, POROSITY=0.5, Z_SLICES = 32):
     """Creates a single 3D example of a foam phantom"""
     example = []
     for z_index in range(Z_SLICES):
-        phantom = xd.Foam(size_range=[SIZE_UPPER, SIZE_LOWER], gap=GAP, porosity=np.random.rand())
+        phantom = xd.Foam(size_range=[SIZE_UPPER, SIZE_LOWER], gap=GAP, porosity=POROSITY)
         discrete = xd.discrete_phantom(phantom, N_PIXEL)
         example.append(discrete)
     example = np.stack(example, axis=0) # shape is Z_SLICES x N_PIXEL x N_PIXEL

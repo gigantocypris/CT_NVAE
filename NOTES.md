@@ -1857,3 +1857,6 @@ Submitted batch job 14060850
 Current NUM_SPARSE_ANGLES: 180
 Submitting job to train with foam_180ang_1000ex
 Submitted batch job 14060851
+
+How to count all jobs running and pending:
+squeue -u vidyagan -h -t pending,running -r | wc -l

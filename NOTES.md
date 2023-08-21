@@ -1693,9 +1693,9 @@ export USE_H5=True
 
 sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5
 
-Submitted batch job 14049425
-Submitted batch job 14049427
-Submitted batch job 14049430
+Submitted batch job 14049425 - looks good except still has speckle artifact
+Submitted batch job 14049427 - looks good, a little blurring, still has speckle artifact
+Submitted batch job 14049430 - same as above
 
 # Full Dataset Creation with H5
 
@@ -1745,6 +1745,7 @@ Training on the dataset sweep
 
 Ran 2x:
 
+(actually training below, there is a typo)
 Current NUM_SPARSE_ANGLES: 10
 Submitting job to create foam_10ang_1000ex
 Submitted batch job 14060762
@@ -1774,10 +1775,10 @@ Submitting job to create foam_90ang_1000ex
 Submitted batch job 14060781
 Current NUM_SPARSE_ANGLES: 100
 Submitting job to create foam_100ang_1000ex
-Submitted batch job 14060782
+Submitted batch job 14060782 -- doesn't look like it has the speckle artifact
 Current NUM_SPARSE_ANGLES: 110
 Submitting job to create foam_110ang_1000ex
-Submitted batch job 14060794
+Submitted batch job 14060794 - back to speckle artifact
 Current NUM_SPARSE_ANGLES: 120
 Submitting job to create foam_120ang_1000ex
 Submitted batch job 14060795
@@ -1814,7 +1815,7 @@ Submitting job to train with foam_30ang_1000ex
 Submitted batch job 14060828
 Current NUM_SPARSE_ANGLES: 40
 Submitting job to train with foam_40ang_1000ex
-Submitted batch job 14060829
+Submitted batch job 14060829 - In the middle, this is an almost perfect reconstruction
 Current NUM_SPARSE_ANGLES: 50
 Submitting job to train with foam_50ang_1000ex
 Submitted batch job 14060830
@@ -1829,7 +1830,7 @@ Submitting job to train with foam_80ang_1000ex
 Submitted batch job 14060834
 Current NUM_SPARSE_ANGLES: 90
 Submitting job to train with foam_90ang_1000ex
-Submitted batch job 14060838
+Submitted batch job 14060838 - In the middle, this is an almost perfect reconstruction
 Current NUM_SPARSE_ANGLES: 100
 Submitting job to train with foam_100ang_1000ex
 Submitted batch job 14060839
@@ -1860,3 +1861,79 @@ Submitted batch job 14060851
 
 How to count all jobs running and pending:
 squeue -u vidyagan -h -t pending,running -r | wc -l
+
+# August 21, 2023
+
+When the algorithm is doing well, suddenly the figure of merit gets terrible, changing sign
+What are possible causes of this instability?
+Final distribution too peaky
+log or sqrt operations
+Can increase regularization
+annealing of pnm -- turn off the annealing and see if it still happens
+catch when this happens, roll back to the last checkpoint, add a tiny bit of noise and continue training
+
+Noise artifact:
+
+Is there too much noise in the initial measurements?
+Might want to reduce noise to see the different between low dose, many measurements, and high dose, few measurements
+understand the halo
+
+
+Redo the sweep, saving the model at the best iteration:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to train with foam_10ang_1000ex
+Submitted batch job 14203298
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to train with foam_20ang_1000ex
+Submitted batch job 14203301
+Current NUM_SPARSE_ANGLES: 30
+Submitting job to train with foam_30ang_1000ex
+Submitted batch job 14203303
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to train with foam_40ang_1000ex
+Submitted batch job 14203305
+Current NUM_SPARSE_ANGLES: 50
+Submitting job to train with foam_50ang_1000ex
+Submitted batch job 14203307
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to train with foam_60ang_1000ex
+Submitted batch job 14203309
+Current NUM_SPARSE_ANGLES: 70
+Submitting job to train with foam_70ang_1000ex
+Submitted batch job 14203310
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to train with foam_80ang_1000ex
+Submitted batch job 14203311
+Current NUM_SPARSE_ANGLES: 90
+Submitting job to train with foam_90ang_1000ex
+Submitted batch job 14203312
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to train with foam_100ang_1000ex
+Submitted batch job 14203313
+Current NUM_SPARSE_ANGLES: 110
+Submitting job to train with foam_110ang_1000ex
+Submitted batch job 14203314
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to train with foam_120ang_1000ex
+Submitted batch job 14203315
+Current NUM_SPARSE_ANGLES: 130
+Submitting job to train with foam_130ang_1000ex
+Submitted batch job 14203316
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to train with foam_140ang_1000ex
+Submitted batch job 14203317
+Current NUM_SPARSE_ANGLES: 150
+Submitting job to train with foam_150ang_1000ex
+Submitted batch job 14203318
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to train with foam_160ang_1000ex
+Submitted batch job 14203319
+Current NUM_SPARSE_ANGLES: 170
+Submitting job to train with foam_170ang_1000ex
+Submitted batch job 14203323
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to train with foam_180ang_1000ex
+Submitted batch job 14203325

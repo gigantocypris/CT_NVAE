@@ -65,6 +65,8 @@ def main(args):
     else:
         model_ring = None
 
+    min_train_nelbo = 1e9
+
     logging.info('args = %s', args)
     logging.info('param size = %fM ', utils.count_parameters_in_M(model))
     logging.info('groups per scale: %s, total_groups: %d', model.groups_per_scale, sum(model.groups_per_scale))
@@ -162,12 +164,10 @@ def main(args):
             if args.log_wandb:
                 wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
-        # save_freq = int(np.ceil(args.epochs / 100))
-        save_freq = 20
-
-        if epoch % save_freq == 0 or epoch == (args.epochs - 1):
+        if min_train_nelbo > train_nelbo:
             if args.global_rank == 0:
                 logging.info('saving the model.')
+                min_train_nelbo = train_nelbo
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
                              'optimizer': cnn_optimizer.state_dict(), 
                              'global_step': global_step,

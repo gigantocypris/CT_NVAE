@@ -1884,7 +1884,7 @@ Redo the sweep, saving the model at the best iteration:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh
 
 Current NUM_SPARSE_ANGLES: 10
-Submitting job to train with foam_10ang_1000ex
+Submitting job to train with foam_10ang_10e00ex
 Submitted batch job 14203298
 Current NUM_SPARSE_ANGLES: 20
 Submitting job to train with foam_20ang_1000ex
@@ -1937,3 +1937,106 @@ Submitted batch job 14203323
 Current NUM_SPARSE_ANGLES: 180
 Submitting job to train with foam_180ang_1000ex
 Submitted batch job 14203325
+
+# August 22, 2023
+cancel all jobs from a user
+scancel -u <username>
+
+Pipe script to an output log:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh >> output_aug_22_2023.txt
+Canceled after submitting 1 copy of each job
+
+
+Create the original covid image set:
+
+SETUP
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=650
+=============================
+
+export NUM_SPARSE_ANGLES=10
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+export DO_PART_ONE=True
+export DO_PART_TWO=False
+export DATA_TYPE=covid
+export IMAGE_ID=covid_650ex
+export DATASET_ID=covid_10ang_650ex
+
+sbatch --time=02:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+
+Submitted batch job 14248647
+FINISHED
+
+Making covid datasets: RUNNING
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to create covid_10ang_1000ex
+Submitted batch job 14262363
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create covid_20ang_1000ex
+Submitted batch job 14262365
+Current NUM_SPARSE_ANGLES: 30
+Submitting job to create covid_30ang_1000ex
+Submitted batch job 14262367
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create covid_40ang_1000ex
+Submitted batch job 14262371
+Current NUM_SPARSE_ANGLES: 50
+Submitting job to create covid_50ang_1000ex
+Submitted batch job 14262375
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create covid_60ang_1000ex
+Submitted batch job 14262377
+Current NUM_SPARSE_ANGLES: 70
+Submitting job to create covid_70ang_1000ex
+Submitted batch job 14262379
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create covid_80ang_1000ex
+Submitted batch job 14262381
+Current NUM_SPARSE_ANGLES: 90
+Submitting job to create covid_90ang_1000ex
+Submitted batch job 14262384
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create covid_100ang_1000ex
+Submitted batch job 14262387
+Current NUM_SPARSE_ANGLES: 110
+Submitting job to create covid_110ang_1000ex
+Submitted batch job 14262391
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create covid_120ang_1000ex
+Submitted batch job 14262397
+Current NUM_SPARSE_ANGLES: 130
+Submitting job to create covid_130ang_1000ex
+Submitted batch job 14262398
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create covid_140ang_1000ex
+Submitted batch job 14262399
+Current NUM_SPARSE_ANGLES: 150
+Submitting job to create covid_150ang_1000ex
+Submitted batch job 14262400
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create covid_160ang_1000ex
+Submitted batch job 14262401
+Current NUM_SPARSE_ANGLES: 170
+Submitting job to create covid_170ang_1000ex
+Submitted batch job 14262402
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create covid_180ang_1000ex
+Submitted batch job 14262404
+
+Update foam training sweep script to have correct DATASET_ID.
+Running:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh >> output_aug_22_2023_v2.txt
+
+
+TODO: Create the brain dataset

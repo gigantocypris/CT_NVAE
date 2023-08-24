@@ -2059,7 +2059,7 @@ Renamed all the covid datasets to 650ex and removed 10,30,50,70,90,110,130,150,1
 Training for the covid dataset:
 on NoMachine:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh >> output_aug_23_2023.txt
-RUNNING
+ERROR --> DEBUG ME
 
 Create the brain images:
 =============================
@@ -2089,7 +2089,7 @@ Submitted batch job 14312064 - SUCCESS
 
 Create the brain datasets:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
-RUNNING
+DONE
 
 Current NUM_SPARSE_ANGLES: 20
 Submitting job to create brain_20ang_1000ex
@@ -2124,7 +2124,7 @@ Create ring artifacts dataset:
 For foam images:
 
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
-RUNNING
+DONE
 
 Current NUM_SPARSE_ANGLES: 20
 Submitting job to create foam_20ang_1000ex_0.01ring

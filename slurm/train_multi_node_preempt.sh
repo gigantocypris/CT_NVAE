@@ -39,23 +39,42 @@ export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 
 echo $MASTER_ADDR
 
-export NUM_LATENT_SCALES=2
-export NUM_GROUPS_PER_SCALE=10
-export NUM_POSTPROCESS_CELLS=3
-export NUM_PREPROCESS_CELLS=3
+# Parameters for the foam dataset
+# export NUM_LATENT_SCALES=2
+# export NUM_GROUPS_PER_SCALE=10
+# export NUM_POSTPROCESS_CELLS=3
+# export NUM_PREPROCESS_CELLS=3
+# export NUM_CELL_PER_COND_ENC=2
+# export NUM_CELL_PER_COND_DEC=2
+# export NUM_LATENT_PER_GROUP=20
+# export NUM_PREPROCESS_BLOCKS=2
+# export NUM_POSTPROCESS_BLOCKS=2
+# export WEIGHT_DECAY_NORM=1e-2
+# export NUM_CHANNELS_ENC=32
+# export NUM_CHANNELS_DEC=32
+# export NUM_NF=0
+# export MIN_GROUPS_PER_SCALE=1
+# export WEIGHT_DECAY_NORM_INIT=0
+
+export NUM_LATENT_SCALES=5
+export NUM_GROUPS_PER_SCALE=16
+export NUM_POSTPROCESS_CELLS=2
+export NUM_PREPROCESS_CELLS=2
 export NUM_CELL_PER_COND_ENC=2
 export NUM_CELL_PER_COND_DEC=2
 export NUM_LATENT_PER_GROUP=20
-export NUM_PREPROCESS_BLOCKS=2
-export NUM_POSTPROCESS_BLOCKS=2
+export NUM_PREPROCESS_BLOCKS=1
+export NUM_POSTPROCESS_BLOCKS=1
 export WEIGHT_DECAY_NORM=1e-2
-export NUM_CHANNELS_ENC=32
-export NUM_CHANNELS_DEC=32
-export NUM_NF=0
+export NUM_CHANNELS_ENC=30
+export NUM_CHANNELS_DEC=30
+export NUM_NF=2
+export MIN_GROUPS_PER_SCALE=4
+export WEIGHT_DECAY_NORM_INIT=1.
 
 echo "jobstart $(date)";pwd
 
-srun --cpus-per-task=128 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5
+srun --cpus-per-task=128 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal --weight_decay_norm_init 1.
 
 echo "jobend $(date)";pwd
 

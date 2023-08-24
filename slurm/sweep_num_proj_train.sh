@@ -2,16 +2,16 @@
 
 # Inputs
 export RING=False
-export BATCH_SIZE=16
+export BATCH_SIZE=1
 export EPOCHS=100000
 export SAVE_INTERVAL=1000
 export PNM=1e3
-export NUM_NODES=3
+export NUM_NODES=10
 export USE_H5=True
 export SAVE_NAME=False
 
 
-NUM_SPARSE_ANGLES_ARRAY=( {10..180..10} )
+NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
 export MAX_SUBMISSIONS=10 # Max number of submission events
 export SLEEP_TIME=300 # seconds
 # See DATASET_ID below
@@ -45,7 +45,7 @@ DATASET_ID_ARRAY=()
 # loop over datasets
 for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     echo "Current NUM_SPARSE_ANGLES: $NUM_SPARSE_ANGLES"
-    export DATASET_ID=foam_${NUM_SPARSE_ANGLES}ang_1000ex
+    export DATASET_ID=covid_${NUM_SPARSE_ANGLES}ang_650ex
     echo "Submitting job to train with $DATASET_ID"
     JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME | awk '{print $4}')
     JOB_ID_ARRAY+=("$JOB_ID")
@@ -75,10 +75,9 @@ while [[ ${#JOB_ID_ARRAY[@]} -gt 0 ]]; do
         # Resubmit if stopped and submission events remaining
         if [[ -z $JOB_STATUS && $JOB_ID_SUBMITS_LEFT -gt 0 ]]; then
             echo "Job $JOB_ID stopped, original job is $JOB_ID_ORIGINAL. Resubmitting with $JOB_ID_SUBMITS_LEFT submits left..."
-            JOB_ID_SUBMITS_LEFT=$((MAX_SUBMISSIONS - 1))
             JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIGINAL | awk '{print $4}')
             JOB_ID_ARRAY[$i]="$JOB_ID"
-            JOB_ID_SUBMITS_LEFT_ARRAY[$i]=$JOB_ID_SUBMITS_LEFT
+            JOB_ID_SUBMITS_LEFT_ARRAY[$i]=$((JOB_ID_SUBMITS_LEFT - 1))
             echo "New job ID: $JOB_ID"
         else
             # Remove job ID from array if it's done and there are no submission events left

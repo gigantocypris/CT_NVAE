@@ -1976,7 +1976,7 @@ sbatch --time=02:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE
 Submitted batch job 14248647
 FINISHED
 
-Making covid datasets: RUNNING
+Making covid datasets: DONE
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
 
 Current NUM_SPARSE_ANGLES: 10
@@ -2040,3 +2040,235 @@ Running:
 
 
 TODO: Create the brain dataset
+
+# August 23, 2023
+
+remaking the covid dataset with 1000 examples, 10 angles and 20 angles
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to create covid_10ang_1000ex
+Submitted batch job 14301741 - DONE
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create covid_20ang_1000ex
+Submitted batch job 14301743 - DONE
+
+Renamed all the covid datasets to 650ex and removed 10,30,50,70,90,110,130,150,170 datasets
+
+Training for the covid dataset:
+on NoMachine:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train.sh >> output_aug_23_2023.txt
+RUNNING
+
+Create the brain images:
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=1000
+=============================
+
+export NUM_SPARSE_ANGLES=10
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+export DO_PART_ONE=True
+export DO_PART_TWO=False
+export DATA_TYPE=brain
+export IMAGE_ID=brain_1000ex
+export DATASET_ID=brain_10ang_1000ex
+
+sbatch --time=02:00:00 -A m3562_g $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+
+Submitted batch job 14312064 - SUCCESS
+
+Create the brain datasets:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
+RUNNING
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create brain_20ang_1000ex
+Submitted batch job 14313877
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create brain_40ang_1000ex
+Submitted batch job 14313879
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create brain_60ang_1000ex
+Submitted batch job 14313880
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create brain_80ang_1000ex
+Submitted batch job 14313881
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create brain_100ang_1000ex
+Submitted batch job 14313882
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create brain_120ang_1000ex
+Submitted batch job 14313883
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create brain_140ang_1000ex
+Submitted batch job 14313884
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create brain_160ang_1000ex
+Submitted batch job 14313885
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create brain_180ang_1000ex
+Submitted batch job 14313886
+
+
+Create ring artifacts dataset:
+For foam images:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh
+RUNNING
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create foam_20ang_1000ex_0.01ring
+Submitted batch job 14312980
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create foam_40ang_1000ex_0.01ring
+Submitted batch job 14312981
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create foam_60ang_1000ex_0.01ring
+Submitted batch job 14312982
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create foam_80ang_1000ex_0.01ring
+Submitted batch job 14312983
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create foam_100ang_1000ex_0.01ring
+Submitted batch job 14312985
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create foam_120ang_1000ex_0.01ring
+Submitted batch job 14312986
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create foam_140ang_1000ex_0.01ring
+Submitted batch job 14312988
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create foam_160ang_1000ex_0.01ring
+Submitted batch job 14312989
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create foam_180ang_1000ex_0.01ring
+Submitted batch job 14312990
+
+# analysis of the results from the long foam sweep
+Original job IDs below:
+
+Current NUM_SPARSE_ANGLES: 10
+Submitting job to train with foam_10ang_1000ex
+Job ID: 14263357
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to train with foam_20ang_1000ex
+Job ID: 14263361
+Current NUM_SPARSE_ANGLES: 30
+Submitting job to train with foam_30ang_1000ex
+Job ID: 14263362
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to train with foam_40ang_1000ex
+Job ID: 14263365
+Current NUM_SPARSE_ANGLES: 50
+Submitting job to train with foam_50ang_1000ex
+Job ID: 14263367
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to train with foam_60ang_1000ex
+Job ID: 14263370
+Current NUM_SPARSE_ANGLES: 70
+Submitting job to train with foam_70ang_1000ex
+Job ID: 14263372
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to train with foam_80ang_1000ex
+Job ID: 14263375
+Current NUM_SPARSE_ANGLES: 90
+Submitting job to train with foam_90ang_1000ex
+Job ID: 14263377
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to train with foam_100ang_1000ex
+Job ID: 14263384
+Current NUM_SPARSE_ANGLES: 110
+Submitting job to train with foam_110ang_1000ex
+Job ID: 14263388
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to train with foam_120ang_1000ex
+Job ID: 14263391
+Current NUM_SPARSE_ANGLES: 130
+Submitting job to train with foam_130ang_1000ex
+Job ID: 14263396
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to train with foam_140ang_1000ex
+Job ID: 14263400
+Current NUM_SPARSE_ANGLES: 150
+Submitting job to train with foam_150ang_1000ex
+Job ID: 14263402
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to train with foam_160ang_1000ex
+Job ID: 14263406
+Current NUM_SPARSE_ANGLES: 170
+Submitting job to train with foam_170ang_1000ex
+Job ID: 14263410
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to train with foam_180ang_1000ex
+Job ID: 14263412
+
+
+
+Workflow to analyze the results:
+
+
+export DATASET_ID=foam_180ang_1000ex
+export SAVE_NAME=14263412
+
+conda deactivate
+module purge
+module load python
+export NERSC_GPU_ALLOCATION=m3562_g
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+salloc -N 1 -n 1 --time=120 -C gpu -A m3562_g --qos=interactive --cpus-per-task=128
+
+
+export RING=False
+export BATCH_SIZE=16
+export EPOCHS=0
+export SAVE_INTERVAL=1000
+export PNM=1e3
+export NUM_NODES=1
+export NUM_GPUS=1
+export SLURM_PROCID=0
+export SLURM_JOB_ID=0
+export SLURM_STEP_ID=0
+export USE_H5=True
+export SAVE_NAME=False
+
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+
+echo $MASTER_ADDR
+
+# Parameters for the foam dataset
+export NUM_LATENT_SCALES=2
+export NUM_GROUPS_PER_SCALE=10
+export NUM_POSTPROCESS_CELLS=3
+export NUM_PREPROCESS_CELLS=3
+export NUM_CELL_PER_COND_ENC=2
+export NUM_CELL_PER_COND_DEC=2
+export NUM_LATENT_PER_GROUP=20
+export NUM_PREPROCESS_BLOCKS=2
+export NUM_POSTPROCESS_BLOCKS=2
+export WEIGHT_DECAY_NORM=1e-2
+export NUM_CHANNELS_ENC=32
+export NUM_CHANNELS_DEC=32
+export NUM_NF=0
+export MIN_GROUPS_PER_SCALE=1
+
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0  --ada_groups --num_process_per_node $NUM_GPUS --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE
+
+

@@ -118,6 +118,12 @@ def main(args):
         global_step, init_epoch = 0, 0
 
     epoch = init_epoch
+
+    
+    steepness = -np.log((1-args.pnm_fraction)/args.pnm_fraction)/args.pnm_warmup_epochs
+    # Initial pnm_implement, calculated here in case of args.epochs==0
+    args.pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(args.pnm-args.pnm_start) + args.pnm_start
+
     for epoch in range(init_epoch, args.epochs):
 
         # update lrs.
@@ -128,7 +134,6 @@ def main(args):
 
         # Logging.
         logging.info('epoch %d', epoch)
-        steepness = -np.log((1-args.pnm_fraction)/args.pnm_fraction)/args.pnm_warmup_epochs
         args.pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(args.pnm-args.pnm_start) + args.pnm_start
 
         logging.info('pnm_implement %d', args.pnm_implement)
@@ -410,12 +415,13 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
 
         with torch.no_grad():
             nelbo, log_iw = [], []
+            all_phantoms = []
             for k in range(num_samples):
                 logits, log_q, log_p, kl_all, kl_diag, \
                 logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, \
                 sino_raw_dist, phantom, recon_loss = \
                     process_decoder_output(x, args, model, model_ring, theta, sparse_sinogram_raw, x_size, object_id)
-
+                all_phantoms.append(phantom.cpu().numpy())
                 balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
                 nelbo_batch = recon_loss + balanced_kl
                 
@@ -423,7 +429,9 @@ def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_typ
                 log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
 
             if save_images:
-                all_reconstructed_objects.append(torch.squeeze(phantom, dim=-1).cpu().numpy())
+                print('Testing at: ' + str(step))
+                all_phantoms = np.concatenate(all_phantoms, axis=-1)
+                all_reconstructed_objects.append(all_phantoms)
                 all_sparse_sinograms.append(sparse_sinogram_raw.cpu().numpy())
                 all_ground_truth.append(ground_truth.cpu().numpy())
                 all_theta.append(theta.cpu().numpy())

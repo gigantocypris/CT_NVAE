@@ -14,6 +14,7 @@ import numpy as np
 import os
 import signal
 import time
+import h5py
 
 import torch.distributed as dist
 from torch.multiprocessing import Process
@@ -97,7 +98,7 @@ def main(args):
     bpd_coeff = 1. / np.log(2.) / num_output
 
     # if load
-    checkpoint_file = os.path.join(args.save, 'checkpoint.pt')
+    checkpoint_file = os.path.join(args.save, 'checkpoint.pt') # best checkpoint is saved here
 
     # check if checkpoint file exists
     if os.path.isfile(checkpoint_file) and args.cont_training:
@@ -157,7 +158,7 @@ def main(args):
         eval_freq = 1 if args.epochs <= 50 else 20
         if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
 
-            valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging)
+            valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging)
             logging.info('valid_nelbo %f', valid_nelbo)
             logging.info('valid neg log p %f', valid_neg_log_p)
             logging.info('valid bpd elbo %f', valid_nelbo * bpd_coeff)
@@ -169,9 +170,16 @@ def main(args):
             if args.log_wandb:
                 wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
-        if min_train_nelbo > train_nelbo:
+
+        if (min_train_nelbo > train_nelbo) or (epoch % eval_freq == 0) or epoch == (args.epochs - 1):
             if args.global_rank == 0:
-                logging.info('saving the model.')
+                if (min_train_nelbo > train_nelbo):
+                    print('current best epoch is ', epoch)
+                    checkpoint_file_i = checkpoint_file
+                else:
+                    checkpoint_file_i = os.path.join(args.save, 'checkpoint' + str(epoch) + '.pt')
+
+                logging.info('saving the model in ' + checkpoint_file_i)
                 min_train_nelbo = train_nelbo
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
                              'optimizer': cnn_optimizer.state_dict(), 
@@ -183,12 +191,12 @@ def main(args):
                     save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
                     save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()
 
-                torch.save(save_dict, checkpoint_file)
+                torch.save(save_dict, checkpoint_file_i)
 
         
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='valid', save_images=True, rank=args.global_rank)
+    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='valid', rank=args.global_rank)
     logging.info('final valid nelbo %f', valid_nelbo)
     logging.info('final valid neg log p %f', valid_neg_log_p)
     writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
@@ -200,7 +208,7 @@ def main(args):
 
     # Final test
     if args.final_test:
-        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, num_samples=10, args=args, logging=logging, dataset_type='test', save_images=True, rank=args.global_rank)
+        test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='test', rank=args.global_rank)
         logging.info('final test nelbo %f', test_nelbo)
         logging.info('final test neg log p %f', test_neg_log_p)
 
@@ -339,7 +347,7 @@ def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_rin
                 writer.add_scalar('kl_vals/layer_%d' % i, kl_vals[i], global_step)
             writer.add_scalar('kl/total_active', total_active, global_step)
 
-        if (global_step + 1) % args.save_interval == 0:  # reduced frequency
+        if ((global_step + 1) % args.save_interval == 0) and (args.global_rank == 0):  # save only on 1 rank
             n = int(np.floor(np.sqrt(x.size(0))))
 
             x_img = x[:n*n]
@@ -398,61 +406,57 @@ def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_rin
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, num_samples, args, logging, dataset_type='', save_images=False, rank=None):
+def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=10):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
     model.eval()
-    if save_images:
-        all_reconstructed_objects = []
-        all_sparse_sinograms = []
-        all_ground_truth = []
-        all_theta = []
-        # rank = dist.get_rank()
-    for step, x_full in enumerate(valid_queue):
-        x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
-        with torch.no_grad():
-            nelbo, log_iw = [], []
-            all_phantoms = []
-            for k in range(num_samples):
-                logits, log_q, log_p, kl_all, kl_diag, \
-                logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, \
-                sino_raw_dist, phantom, recon_loss = \
-                    process_decoder_output(x, args, model, model_ring, theta, sparse_sinogram_raw, x_size, object_id)
-                all_phantoms.append(phantom.cpu().numpy())
-                balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
-                nelbo_batch = recon_loss + balanced_kl
-                
-                nelbo.append(nelbo_batch)
-                log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
+    h5_filename = args.save + '/eval_dataset_' + dataset_type + '_epoch_' + str(epoch) + '_rank_' + str(rank) + '.h5'
+    num_examples = 0
+    with h5py.File(h5_filename, 'w') as h5_file:
+        for step, x_full in enumerate(valid_queue):
+            print('Testing at: ' + str(step))
+            x, sparse_sinogram_raw, sparse_sinogram, ground_truth, theta, x_size, object_id = parse_x_full(x_full, args)
 
-            if save_images:
-                print('Testing at: ' + str(step))
+            with torch.no_grad():
+                nelbo, log_iw = [], []
+                all_phantoms = []
+                for k in range(num_samples):
+                    logits, log_q, log_p, kl_all, kl_diag, \
+                    logits_ring, log_q_ring, log_p_ring, kl_all_ring, kl_diag_ring, \
+                    sino_raw_dist, phantom, recon_loss = \
+                        process_decoder_output(x, args, model, model_ring, theta, sparse_sinogram_raw, x_size, object_id)
+                    all_phantoms.append(phantom.cpu().numpy())
+                    balanced_kl, _, _ = utils.kl_balancer(kl_all, kl_balance=False)
+                    nelbo_batch = recon_loss + balanced_kl
+                    
+                    nelbo.append(nelbo_batch)
+                    log_iw.append(utils.log_iw(sino_raw_dist, sparse_sinogram_raw, log_q, log_p, args.dataset, crop=model.crop_output))
+
                 all_phantoms = np.concatenate(all_phantoms, axis=-1)
-                all_reconstructed_objects.append(all_phantoms)
-                all_sparse_sinograms.append(sparse_sinogram_raw.cpu().numpy())
-                all_ground_truth.append(ground_truth.cpu().numpy())
-                all_theta.append(theta.cpu().numpy())
+                example_group = h5_file.create_group(f'example_{step}')
+                example_group.create_dataset('phantom', data=all_phantoms)
+                example_group.create_dataset('sparse_sinogram', data=sparse_sinogram.cpu().numpy())
+                example_group.create_dataset('ground_truth', data=ground_truth.cpu().numpy())
+                example_group.create_dataset('theta', data=theta.cpu().numpy())
+                
 
+                nelbo = torch.mean(torch.stack(nelbo, dim=1))
+                log_p = torch.mean(torch.logsumexp(torch.stack(log_iw, dim=1), dim=1) - np.log(num_samples))
+                num_examples += 1
+  
+            nelbo_avg.update(nelbo.data, x.size(0))
+            neg_log_p_avg.update(- log_p.data, x.size(0))
+            if num_examples >= max_num_examples:
+                break
 
-            nelbo = torch.mean(torch.stack(nelbo, dim=1))
-            log_p = torch.mean(torch.logsumexp(torch.stack(log_iw, dim=1), dim=1) - np.log(num_samples))
+        utils.average_tensor(nelbo_avg.avg, args.distributed)
+        utils.average_tensor(neg_log_p_avg.avg, args.distributed)
 
-        nelbo_avg.update(nelbo.data, x.size(0))
-        neg_log_p_avg.update(- log_p.data, x.size(0))
-
-    utils.average_tensor(nelbo_avg.avg, args.distributed)
-    utils.average_tensor(neg_log_p_avg.avg, args.distributed)
-
-    if save_images:
-        np.save(args.save + '/final_phantoms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_reconstructed_objects, axis=0))
-        np.save(args.save + '/final_sparse_sinograms_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_sparse_sinograms, axis=0))
-        np.save(args.save + '/final_ground_truth_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_ground_truth, axis=0))
-        np.save(args.save + '/final_theta_' + dataset_type + '_rank_' + str(rank) + '.npy', np.concatenate(all_theta, axis=0))
-
-
+    print('test num examples is ' + str(num_examples))
+    
     if args.distributed:
         # block to sync
         dist.barrier()

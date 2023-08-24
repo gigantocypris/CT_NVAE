@@ -532,14 +532,15 @@ export WORKING_DIR=<path to the working directory>
 export CT_NVAE_PATH=<path to CT_NVAE repository>
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 export CHECKPOINT_DIR=$WORKING_DIR/checkpts
-export DATASET_ID=<dataset_id>
 export EXPR_ID=<experiment_description>
+export EPOCH=<epoch number>
+```
 ```
 
 Change to the working directory and run the script. The final results are separated by rank, so you must run the script for each rank. For example, to analyze the results for rank 0:
 ```
 cd $WORKING_DIR
-python $CT_NVAE_PATH/metrics/analyze_training_results.py --dataset_id $DATASET_ID --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank 0 --original_size 128 --dataset_type valid
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank 0 --original_size 128 --dataset_type valid --epoch $EPOCH
 ```
 The `--original_size` option is the side length of the original image (for example, 128 for the foam images, 512 for the 3D COVID images, and 512 for the brain images). The `--dataset_type` option is either `valid` or `test`. Only use the parameter `test` if you have already evaluated the test set with the `--final_test` option in `train.py`.
 

@@ -44,6 +44,7 @@ def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gri
     """
     transform sinogram with tomopy
     proj in tomopy.recon must be num_angles x num_z x num_proj_pix
+    proj is already linearized by -log(x)
     """
 
     if algorithm=='gridrec':

@@ -2230,8 +2230,6 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-salloc -N 1 -n 1 --time=120 -C gpu -A m3562_g --qos=interactive --cpus-per-task=128
-
 
 export RING=False
 export BATCH_SIZE=16
@@ -2244,7 +2242,6 @@ export SLURM_PROCID=0
 export SLURM_JOB_ID=0
 export SLURM_STEP_ID=0
 export USE_H5=True
-export SAVE_NAME=False
 
 export DATASET_DIR=$WORKING_DIR
 export CHECKPOINT_DIR=$WORKING_DIR/checkpts
@@ -2269,6 +2266,57 @@ export NUM_CHANNELS_DEC=32
 export NUM_NF=0
 export MIN_GROUPS_PER_SCALE=1
 
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf 0  --ada_groups --num_process_per_node $NUM_GPUS --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node $NUM_GPUS --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --use_nersc
 
 
+# August 24, 2023
+
+Analyze training results:
+
+module load python
+conda activate tomopy
+
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+cd $WORKING_DIR
+
+export EXPR_ID=14263357
+export EPOCH=460
+export RANK=0
+
+
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank $RANK --original_size 128 --dataset_type valid --epoch $EPOCH
+
+Path to H5 file:
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-14263357/eval_dataset_valid_epoch_460_rank_0.h5
+
+Evaluate foam training runs:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_evaluate.txt
+
+
+
+
+# Interactive node command
+salloc -N 1 -n 1 --time=120 -C gpu -A m3562_g --qos=interactive --cpus-per-task=128
+
+
+# Starting back from the beginning on training foam dataset
+
+training:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_1.txt
+
+(output file saved in home directory)
+cd
+cat output_aug_24_2023_train_1.txt
+
+FAILED
+
+REDO:
+training:
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_2.txt

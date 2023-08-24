@@ -1,20 +1,27 @@
 #!/bin/bash
 
 # Inputs
+
+# Change for final evaluation
+export SAVE_NAME=False # Set to False for a new array of jobs
+# export SAVE_NAME=(14263357 14263361 14263362 14263365 14263367 14263370 14263372 14263375 14263377 14263384 14263388 14263391 14263396 14263400 14263402 14263406 14263410 14263412)
+export EPOCHS=1000
+export MONITOR_JOBS=True
+export TIME=24:00:00
+# End of change for final evaluation
+
 export RING=False
-export BATCH_SIZE=1
-export EPOCHS=100000
+export BATCH_SIZE=16
 export SAVE_INTERVAL=1000
 export PNM=1e3
-export NUM_NODES=10
+export NUM_NODES=3
 export USE_H5=True
-export SAVE_NAME=False
-
-
-NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
+export DATA_TYPE=foam
+export NUM_EXAMPLES=1000
+export NUM_SPARSE_ANGLES_ARRAY=( {10..180..10} )
 export MAX_SUBMISSIONS=10 # Max number of submission events
 export SLEEP_TIME=300 # seconds
-# See DATASET_ID below
+# See DATASET_ID formatting below
 
 # End of Inputs
 
@@ -22,7 +29,15 @@ export SLEEP_TIME=300 # seconds
 
 echo "Script start $(date)";pwd
 
-# Run training on each dataset
+if [[ $SAVE_NAME = "False" ]]; then
+    export SAVE_NAME=()
+    # Populate the new array with placeholder values
+    for ((i=0; i<${#NUM_SPARSE_ANGLES_ARRAY[@]}; i++)); do
+        SAVE_NAME+=(False)
+    done
+fi
+
+echo "SAVE_NAME: ${SAVE_NAME[@]}"
 
 conda deactivate
 module purge
@@ -37,23 +52,33 @@ cd $WORKING_DIR
 
 
 # Array to store job IDs
-JOB_ID_ARRAY_ORIG=() # original job ID
-JOB_ID_ARRAY=() # current job ID
-JOB_ID_SUBMITS_LEFT_ARRAY=() # number of submissions for current job ID
-DATASET_ID_ARRAY=()
+export JOB_ID_ARRAY_ORIG=() # original job ID
+export JOB_ID_ARRAY=() # current job ID
+export JOB_ID_SUBMITS_LEFT_ARRAY=() # number of submissions for current job ID
+export DATASET_ID_ARRAY=()
 
 # loop over datasets
 for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     echo "Current NUM_SPARSE_ANGLES: $NUM_SPARSE_ANGLES"
-    export DATASET_ID=covid_${NUM_SPARSE_ANGLES}ang_650ex
+    export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex
     echo "Submitting job to train with $DATASET_ID"
-    JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME | awk '{print $4}')
+    JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME $DATA_TYPE | awk '{print $4}')
     JOB_ID_ARRAY+=("$JOB_ID")
     JOB_ID_ARRAY_ORIG+=("$JOB_ID")
     JOB_ID_SUBMITS_LEFT_ARRAY+=("$MAX_SUBMISSIONS")
     DATASET_ID_ARRAY+=("$DATASET_ID")
     echo "Job ID: $JOB_ID"
 done
+
+# Print JOB_ID_ARRAY_ORIG 
+echo "JOB_ID_ARRAY_ORIG"
+echo "${JOB_ID_ARRAY_ORIG[@]}"
+
+# Check a condition
+if [[ $MONITOR_JOBS == "False" ]]; then
+    echo "Not montioring jobs. Returning."
+    return
+fi
 
 
 # Monitor and resubmit loop

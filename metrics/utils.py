@@ -6,6 +6,31 @@ from skimage.metrics import mean_squared_error
 from skimage.metrics import peak_signal_noise_ratio
 
 
+def visualize_phantom_samples(phantom, save_path):
+    """
+    Shape of phantom is x_size x y_size x num_samples
+    """
+    num_samples = phantom.shape[-1]
+    side_length = int(np.ceil(np.sqrt(num_samples)))
+
+    phantom_ref = phantom[:, :, 0]
+
+    plt.figure(figsize=(side_length, side_length))
+    for i in range(phantom.shape[-1]):
+        plt.subplot(side_length, side_length, i + 1)
+        plt.imshow(phantom[:, :, i], cmap='gray')
+        plt.axis('off')
+    
+    plt.show()
+    plt.savefig(save_path + '/phantom_samples.png')
+
+    # plot average
+
+    plt.figure(figsize=(side_length, side_length))
+    plt.imshow(np.mean(phantom, axis=-1), cmap='gray')
+    plt.axis('off')
+    plt.show()
+    plt.savefig(save_path + '/phantom_samples_average.png')
 
 def compare(recon0, recon1, verbose=False):
 
@@ -51,29 +76,29 @@ def analyze_single_slice(sparse_sinogram, theta_0, ground_truth, final_phantom, 
     reconstruct_ring = np.squeeze(reconstruct_ring, axis=0)
 
     # Crop images back to their original size
-    ground_truth = crop(ground_truth, original_size, original_size)
-    final_phantom = crop(final_phantom, original_size, original_size)
+    ground_truth_crop = crop(ground_truth, original_size, original_size)
+    final_phantom_crop = crop(final_phantom, original_size, original_size)
     reconstruct = crop(reconstruct, original_size, original_size)
     reconstruct_ring = crop(reconstruct_ring, original_size, original_size)
 
     # Get MSE, PSNR, SSIM for the final validation results compared to the ground truth and tomopy reconstructions
     if verbose:
         print('Tomopy Reconstruction')
-    err_vec, err_string = compare(ground_truth, reconstruct, verbose=verbose)
+    err_vec, err_string = compare(ground_truth_crop, reconstruct, verbose=verbose)
 
     if verbose:
         print('Tomopy Reconstruction with Ring Artifact Removal')
-    err_vec_ring, err_string_ring = compare(ground_truth, reconstruct_ring, verbose=verbose)
+    err_vec_ring, err_string_ring = compare(ground_truth_crop, reconstruct_ring, verbose=verbose)
 
     if verbose:
         print('CT_NVAE Reconstruction')
-    err_vec_NVAE, err_string_NVAE = compare(ground_truth, final_phantom, verbose=verbose)
+    err_vec_NVAE, err_string_NVAE = compare(ground_truth_crop, final_phantom_crop, verbose=verbose)
 
-    return(ground_truth, reconstruct, reconstruct_ring, final_phantom, err_vec, err_vec_ring, err_vec_NVAE)
+    return(ground_truth_crop, final_phantom_crop, reconstruct, reconstruct_ring, err_vec, err_vec_ring, err_vec_NVAE)
 
 
 def visualize_single_slice(ground_truth, reconstruct_0, reconstruct_1, final_phantom, 
-                           results_path, dataset_type, rank, img_ind):
+                           results_path, dataset_type, epoch, rank, step, img_ind):
     # Create a multi-panel figure with the following: ground truth, tomopy reconstructions, CT_NVAE reconstruction
     plt.figure(figsize=(12, 12))
     
@@ -94,4 +119,5 @@ def visualize_single_slice(ground_truth, reconstruct_0, reconstruct_1, final_pha
     plt.subplot(2, 2, 4)
     plt.imshow(final_phantom, cmap='gray', vmin=vmin, vmax=vmax)
     plt.title('CT_NVAE Reconstruction')
-    plt.savefig(results_path + '/final_visualization_' + dataset_type + '_rank_' + str(rank) + '_img_' + str(img_ind) + '.png')
+    plt.savefig(results_path + '/final_visualization_' + dataset_type + '_epoch_' + str(epoch) 
+                + '_rank_' + str(rank) + '_step_' + str(step) + '_img_' + str(img_ind) + '.png')

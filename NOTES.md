@@ -2271,33 +2271,6 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset
 
 # August 24, 2023
 
-Analyze training results:
-
-module load python
-conda activate tomopy
-
-export WORKING_DIR=$SCRATCH/output_CT_NVAE
-export CT_NVAE_PATH=$SCRATCH/CT_NVAE
-export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
-export CHECKPOINT_DIR=$WORKING_DIR/checkpts
-cd $WORKING_DIR
-
-export EXPR_ID=14263357
-export EPOCH=460
-export RANK=0
-
-
-python $CT_NVAE_PATH/metrics/analyze_training_results.py --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank $RANK --original_size 128 --dataset_type valid --epoch $EPOCH
-
-Path to H5 file:
-/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-14263357/eval_dataset_valid_epoch_460_rank_0.h5
-
-Evaluate foam training runs:
-
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_evaluate.txt
-
-
-
 
 # Interactive node command
 salloc -N 1 -n 1 --time=120 -C gpu -A m3562_g --qos=interactive --cpus-per-task=128
@@ -2320,3 +2293,48 @@ training:
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_2.txt
+STOPPED
+14362251 14362253 14362255 14362257 14362258 14362260 14362264 14362267 14362269 14362270 14362271 14362274 14362279 14362283 14362285 14362287 14362288 14362290
+
+
+
+Evaluate foam training runs:
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_evaluate.txt
+
+Analyze training results:
+
+module load python
+conda activate tomopy
+
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+cd $WORKING_DIR
+
+export EXPR_ID=14263391
+export EPOCH=560
+export RANK=0
+
+
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank $RANK --original_size 128 --dataset_type valid --epoch $EPOCH
+
+Path to H5 file:
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-14263391/eval_dataset_valid_epoch_560_rank_5.h5
+
+(Something is buggy about the procedure, but sort of working)
+
+REDO of full training run:
+training:
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_3.txt
+RUNNING
+
+Going really slow, removed --use_nersc
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_4.txt
+

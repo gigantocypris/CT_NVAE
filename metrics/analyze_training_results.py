@@ -39,19 +39,18 @@ with h5py.File(h5_filename, 'r') as h5_file:
     for step in range(num_steps):
         example = h5_file[f'example_{step}']
         final_phantom = example['phantom'][:]
-        sparse_sinogram_raw = example['sparse_sinogram_raw'][:]
+        sparse_sinogram = example['sparse_sinogram'][:]
         ground_truth = example['ground_truth'][:]
         theta = example['theta'][:]
 
         for img_ind in range(final_phantom.shape[0]):
             ground_truth_i = ground_truth[img_ind]
-            sparse_sinogram_raw_i = np.expand_dims(sparse_sinogram_raw[img_ind], axis=1)
+            sparse_sinogram_i = np.expand_dims(sparse_sinogram[img_ind], axis=1)
             theta_i= theta[img_ind]
             final_phantom_i = final_phantom[img_ind]
             # visualize_phantom_samples(final_phantom_i, results_path)
 
             final_phantom_i = final_phantom_i[:,:,0] # 0th sample
-            sparse_sinogram_i = -np.log(sparse_sinogram_raw_i)
 
             ground_truth_crop, final_phantom_crop, reconstruct, reconstruct_ring, err_vec, err_vec_ring, err_vec_NVAE = \
                 analyze_single_slice(sparse_sinogram_i, theta_i, ground_truth_i, final_phantom_i, 

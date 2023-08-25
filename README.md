@@ -568,4 +568,6 @@ TODO
 
 [NERSC preempt queue](https://docs.nersc.gov/jobs/examples/#preemptible-jobs)
 
+[Job dependencies](https://hpc.nih.gov/docs/job_dependencies.html)
+
 TODO: Add more resources

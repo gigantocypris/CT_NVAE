@@ -157,18 +157,18 @@ def main(args):
         # generate samples less frequently
         eval_freq = 1 if args.epochs <= 50 else 20
         if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
-
-            valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging)
-            logging.info('valid_nelbo %f', valid_nelbo)
-            logging.info('valid neg log p %f', valid_neg_log_p)
-            logging.info('valid bpd elbo %f', valid_nelbo * bpd_coeff)
-            logging.info('valid bpd log p %f', valid_neg_log_p * bpd_coeff)
-            writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch)
-            writer.add_scalar('val/nelbo', valid_nelbo, epoch)
-            writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch)
-            writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
-            if args.log_wandb:
-                wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
+            if args.global_rank == 0:
+                valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging,dataset_type='valid',rank=args.global_rank)
+                logging.info('valid_nelbo %f', valid_nelbo)
+                logging.info('valid neg log p %f', valid_neg_log_p)
+                logging.info('valid bpd elbo %f', valid_nelbo * bpd_coeff)
+                logging.info('valid bpd log p %f', valid_neg_log_p * bpd_coeff)
+                writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch)
+                writer.add_scalar('val/nelbo', valid_nelbo, epoch)
+                writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch)
+                writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
+                if args.log_wandb:
+                    wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
 
 
         if (min_train_nelbo > train_nelbo) or (epoch % eval_freq == 0) or epoch == (args.epochs - 1):
@@ -406,7 +406,7 @@ def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_rin
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=10):
+def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=2):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
@@ -414,6 +414,7 @@ def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, data
     model.eval()
 
     h5_filename = args.save + '/eval_dataset_' + dataset_type + '_epoch_' + str(epoch) + '_rank_' + str(rank) + '.h5'
+    print(h5_filename)
     num_examples = 0
     with h5py.File(h5_filename, 'w') as h5_file:
         for step, x_full in enumerate(valid_queue):
@@ -441,6 +442,7 @@ def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, data
                 example_group.create_dataset('sparse_sinogram', data=sparse_sinogram.cpu().numpy())
                 example_group.create_dataset('ground_truth', data=ground_truth.cpu().numpy())
                 example_group.create_dataset('theta', data=theta.cpu().numpy())
+                example_group.create_dataset('init_reconstruction', data=x.cpu().numpy())
                 
 
                 nelbo = torch.mean(torch.stack(nelbo, dim=1))

@@ -1,7 +1,7 @@
 """
 Process sinograms into a dataset for CT_NVAE training.
 """
-
+import os
 import argparse
 import numpy as np
 from computed_tomography.utils import process_sinogram
@@ -14,8 +14,8 @@ import h5py
 def main(args, dataset_type):
 
     ### INPUT ###
-    sub_dir = args.dir + '/' + dataset_type
-    theta = np.load(args.dir + '/theta.npy') # projection angles
+    sub_dir = args.src + '/' + dataset_type
+    theta = np.load(args.src + '/theta.npy') # projection angles
     num_sparse_angles = args.num_sparse_angles # number of angles to image per sample (dose remains the same)
     random = args.random # If True, randomly pick angles
     #############
@@ -80,7 +80,8 @@ def main(args, dataset_type):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get command line args')
-    parser.add_argument('--dir', dest='dir', help='directory containing splits of ground truth/sinograms and theta')
+    parser.add_argument('--src', dest='src', help='directory containing splits of ground truth/sinograms and theta')
+    parser.add_argument('--dir', dest='dir', help='directory where dataset will be saved')
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
     parser.add_argument('--sparse', dest='num_sparse_angles', type=int, help='number of angles to image per sample (dose remains the same)', default=10)
     parser.add_argument('--random', dest='random', type=bool, help='If True, randomly pick angles', default=True)
@@ -89,6 +90,7 @@ if __name__ == '__main__':
                         choices=['gridrec', 'sirt', 'tv'])
     args = parser.parse_args()
 
+    os.makedirs(args.dir, exist_ok=True)
 
     start_time = time.time()
     main(args, 'train')

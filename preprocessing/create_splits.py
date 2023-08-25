@@ -60,8 +60,10 @@ def main(args):
     copy_paste_files(train_files, args.dest_dir, 'train')
     copy_paste_files(valid_files, args.dest_dir, 'valid')
     copy_paste_files(test_files, args.dest_dir, 'test')
-
-    shutil.copy(args.source_dir + '/theta.npy', args.dest_dir)
+    try:
+        shutil.copy(args.source_dir + '/theta.npy', args.dest_dir)
+    except shutil.SameFileError:
+        pass
     print(f'Successfully split and moved a copy of all the files')
 
 if __name__ == "__main__":

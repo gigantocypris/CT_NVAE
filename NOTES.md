@@ -2394,8 +2394,8 @@ Algorithm failed to do well:
 
 Redo-ing to have splits done only once: 
 conda activate tomopy
-export IMAGES_DIR=images_covid_650ex
-export NUM_IMG=650
+export IMAGES_DIR=images_foam_1000ex
+export NUM_IMG=1000
 cd $WORKING_DIR
 
 python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest $IMAGES_DIR --train 0.7 --valid 0.2 --test 0.1 -n $NUM_IMG
@@ -2403,4 +2403,137 @@ python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest $IM
 
 
 
-Change me: create_dataset.sh
+Change me: create_dataset.sh, fix the dataset creation sweep - CHANGED
+
+For foam images:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create foam_20ang_1000ex_0ring
+Submitted batch job 14409629
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create foam_40ang_1000ex_0ring
+Submitted batch job 14409635
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create foam_60ang_1000ex_0ring
+Submitted batch job 14409639
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create foam_80ang_1000ex_0ring
+Submitted batch job 14409641
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create foam_100ang_1000ex_0ring
+Submitted batch job 14409642
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create foam_120ang_1000ex_0ring
+Submitted batch job 14409645
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create foam_140ang_1000ex_0ring
+Submitted batch job 14409648
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create foam_160ang_1000ex_0ring
+Submitted batch job 14409649
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create foam_180ang_1000ex_0ring
+Submitted batch job 14409651
+
+
+For foam ring:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam_ring.sh
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create foam_20ang_1000ex_0.01ring
+Submitted batch job 14415675
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create foam_40ang_1000ex_0.01ring
+Submitted batch job 14415677
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create foam_60ang_1000ex_0.01ring
+Submitted batch job 14415678
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create foam_80ang_1000ex_0.01ring
+Submitted batch job 14415679
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create foam_100ang_1000ex_0.01ring
+Submitted batch job 14415680
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create foam_120ang_1000ex_0.01ring
+Submitted batch job 14415681
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create foam_140ang_1000ex_0.01ring
+Submitted batch job 14415682
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create foam_160ang_1000ex_0.01ring
+Submitted batch job 14415683
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create foam_180ang_1000ex_0.01ring
+Submitted batch job 14415684
+
+
+For covid:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_covid.sh
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create covid_20ang_650ex_0ring
+Submitted batch job 14415751
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create covid_40ang_650ex_0ring
+Submitted batch job 14415752
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create covid_60ang_650ex_0ring
+Submitted batch job 14415753
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create covid_80ang_650ex_0ring
+Submitted batch job 14415754
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create covid_100ang_650ex_0ring
+Submitted batch job 14415755
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create covid_120ang_650ex_0ring
+Submitted batch job 14415756
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create covid_140ang_650ex_0ring
+Submitted batch job 14415757
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create covid_160ang_650ex_0ring
+Submitted batch job 14415758
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create covid_180ang_650ex_0ring
+Submitted batch job 14415759
+
+For brain:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_brain.sh
+
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create brain_20ang_1000ex_0ring
+Submitted batch job 14415802
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create brain_40ang_1000ex_0ring
+Submitted batch job 14415803
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create brain_60ang_1000ex_0ring
+Submitted batch job 14415804
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create brain_80ang_1000ex_0ring
+Submitted batch job 14415805
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create brain_100ang_1000ex_0ring
+Submitted batch job 14415806
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create brain_120ang_1000ex_0ring
+Submitted batch job 14415807
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create brain_140ang_1000ex_0ring
+Submitted batch job 14415808
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create brain_160ang_1000ex_0ring
+Submitted batch job 14415810
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create brain_180ang_1000ex_0ring
+Submitted batch job 14415811
+
+
+sweep_num_proj_train_foam.sh --> sweep_num_proj_train_foam_0.sh

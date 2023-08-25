@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J CT_NVAE      # job name
+#SBATCH -J CT_NVAE       # job name
 #SBATCH -L SCRATCH       # job requires SCRATCH files
 #SBATCH -C gpu
 #SBATCH -q preempt
@@ -40,7 +40,7 @@ export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 echo $MASTER_ADDR
 
 if [ $DATA_TYPE = "foam" ]; then
-    echo "Using foam data"
+    echo "Using foam data parameters"
     export NUM_LATENT_SCALES=2
     export NUM_GROUPS_PER_SCALE=10
     export NUM_POSTPROCESS_CELLS=3
@@ -62,7 +62,7 @@ if [ $DATA_TYPE = "foam" ]; then
 
     echo "jobend $(date)";pwd
 else
-    echo "Using brain or covid data"
+    echo "Using brain or covid data parameters"
     export NUM_LATENT_SCALES=5
     export NUM_GROUPS_PER_SCALE=16
     export NUM_POSTPROCESS_CELLS=2

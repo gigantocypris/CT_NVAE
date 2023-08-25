@@ -280,7 +280,7 @@ export DATASET_ID=$DATA_TYPE
 Create the dataset with the following commands, where `<num_sparse_angles>` is the number of angles to use for the sparse sinograms, `<random>` is a boolean indicating whether to use random angles or not, and `<algorithm>` is the algorithm to use for preprocessing the sparse sinograms (choices implemented are `gridrec`, `sirt`, and `tv`):
 ```
 cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_dataset.py --dir dataset_$DATASET_ID --sparse <num_sparse_angles> --random <random> --ring 0 --pnm 1e3 --algorithm <algorithm>
+python $CT_NVAE_PATH/preprocessing/create_dataset.py --src $IMAGES_DIR --dir dataset_$DATASET_ID --sparse <num_sparse_angles> --random <random> --ring 0 --pnm 1e3 --algorithm <algorithm>
 ```
 The dataset is created in the `dataset_$DATASET_ID` folder in the working directory `$WORKING_DIR`.
 

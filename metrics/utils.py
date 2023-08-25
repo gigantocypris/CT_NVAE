@@ -13,7 +13,7 @@ def visualize_phantom_samples(phantom, save_path):
     num_samples = phantom.shape[-1]
     side_length = int(np.ceil(np.sqrt(num_samples)))
 
-    phantom_ref = phantom[:, :, 0]
+    
 
     plt.figure(figsize=(side_length, side_length))
     for i in range(phantom.shape[-1]):
@@ -23,6 +23,17 @@ def visualize_phantom_samples(phantom, save_path):
     
     plt.show()
     plt.savefig(save_path + '/phantom_samples.png')
+
+    # plot diffs
+    phantom_ref = phantom[:, :, 0]
+    plt.figure(figsize=(side_length, side_length))
+    for i in range(phantom.shape[-1]):
+        plt.subplot(side_length, side_length, i + 1)
+        plt.imshow(phantom[:, :, i]-phantom_ref, cmap='gray')
+        plt.axis('off')
+    
+    plt.show()
+    plt.savefig(save_path + '/phantom_samples_diff.png')
 
     # plot average
 

@@ -3,11 +3,11 @@
 # Inputs
 
 # Change for final evaluation
-export SAVE_NAME=False # Set to False for a new array of jobs
-#export SAVE_NAME=(14263357 14263361 14263362 14263365 14263367 14263370 14263372 14263375 14263377 14263384 14263388 14263391 14263396 14263400 14263402 14263406 14263410 14263412)
-export EPOCHS=10000
-export MONITOR_JOBS=True
-export TIME=24:00:00
+# export SAVE_NAME=False # Set to False for a new array of jobs
+export SAVE_NAME=(14374863 14374864 14374865 14374866 14374867 14374868 14374869 14374870 14374871 14374872 14374873 14374874 14374875 14374876 14374877 14374878 14374879 14374880)
+export EPOCHS=0
+export MONITOR_JOBS=False
+export TIME=00:05:00
 # End of change for final evaluation
 
 export RING=False
@@ -42,7 +42,7 @@ echo "SAVE_NAME: ${SAVE_NAME[@]}"
 conda deactivate
 module purge
 module load python
-export NERSC_GPU_ALLOCATION=m3562_g
+export NERSC_GPU_ALLOCATION=m2859_g
 conda activate CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
@@ -66,6 +66,7 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     export i=$((i + 1))
     echo "Save name: $SAVE_NAME_I"
     echo "Submitting job to train with $DATASET_ID"
+    echo "sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME_I $DATA_TYPE"
     JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME_I $DATA_TYPE | awk '{print $4}')
     JOB_ID_ARRAY+=("$JOB_ID")
     JOB_ID_ARRAY_ORIG+=("$JOB_ID")

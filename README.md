@@ -263,19 +263,19 @@ srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --d
 
 ### Training/Validation/Test Splits
 
-Export an environment variable `DATASET_ID` to identify the dataset, for example:
-```
-export DATASET_ID=$DATA_TYPE
-```
-
 Split the dataset into training, validation, and test sets, truncating the dataset to `<n>` examples:
 ```
 cd $WORKING_DIR
-python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest dataset_$DATASET_ID --train 0.7 --valid 0.2 --test 0.1 -n <n>
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest $IMAGES_DIR --train 0.7 --valid 0.2 --test 0.1 -n <n>
 ```
 The split datasets are created in the `dataset_foam` folder in the working directory `$WORKING_DIR`.
 
 ### Create the dataset
+
+Export an environment variable `DATASET_ID` to identify the dataset, for example:
+```
+export DATASET_ID=$DATA_TYPE
+```
 
 Create the dataset with the following commands, where `<num_sparse_angles>` is the number of angles to use for the sparse sinograms, `<random>` is a boolean indicating whether to use random angles or not, and `<algorithm>` is the algorithm to use for preprocessing the sparse sinograms (choices implemented are `gridrec`, `sirt`, and `tv`):
 ```

@@ -48,7 +48,8 @@ with h5py.File(h5_filename, 'r') as h5_file:
             sparse_sinogram_i = np.expand_dims(sparse_sinogram[img_ind], axis=1)
             theta_i= theta[img_ind]
             final_phantom_i = final_phantom[img_ind]
-            # visualize_phantom_samples(final_phantom_i, results_path)
+            if img_ind == 0:
+                visualize_phantom_samples(final_phantom_i, results_path)
 
             final_phantom_i = final_phantom_i[:,:,0] # 0th sample
 

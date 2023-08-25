@@ -2331,10 +2331,76 @@ training:
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_3.txt
-RUNNING
+STOPPED
 
 Going really slow, removed --use_nersc
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_4.txt
+Still going slow
 
+Re-try again:
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_7.txt
+
+Commented out validation step:
+
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_8.txt
+COMPLETED
+
+# August 25, 2023
+
+Switch to allocation m2859_g
+
+export NERSC_GPU_ALLOCATION=m2859_g
+
+evaluation run:
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_9.txt
+
+Ran again with train and valid set:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_24_2023_train_11.txt
+
+Analyze training results:
+
+module load python
+conda activate tomopy
+
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+cd $WORKING_DIR
+
+export EXPR_ID=14374880
+export EPOCH=351
+export RANK=0
+export DATASET_TYPE=valid
+
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --checkpoint_dir $CHECKPOINT_DIR --expr_id $EXPR_ID --rank $RANK --original_size 128 --dataset_type $DATASET_TYPE --epoch $EPOCH
+
+Path to H5 file:
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-14374866/eval_dataset_train_epoch_213_rank_0.h5
+
+Problem in visualizing: went away when switched to model.train() in the evaluation step
+
+Algorithm failed to do well:
+14374876
+
+
+Redo-ing to have splits done only once: 
+conda activate tomopy
+export IMAGES_DIR=images_covid_650ex
+export NUM_IMG=650
+cd $WORKING_DIR
+
+python $CT_NVAE_PATH/preprocessing/create_splits.py --src $IMAGES_DIR --dest $IMAGES_DIR --train 0.7 --valid 0.2 --test 0.1 -n $NUM_IMG
+
+
+
+
+Change me: create_dataset.sh

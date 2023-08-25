@@ -156,6 +156,8 @@ def main(args):
         model.eval()
         # generate samples less frequently
         eval_freq = 1 if args.epochs <= 50 else 20
+        print("skipping validation")
+        """
         if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
             if args.global_rank == 0:
                 valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging,dataset_type='valid',rank=args.global_rank)
@@ -169,7 +171,7 @@ def main(args):
                 writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
                 if args.log_wandb:
                     wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
-
+        """
 
         if (min_train_nelbo > train_nelbo) or (epoch % eval_freq == 0) or epoch == (args.epochs - 1):
             if args.global_rank == 0:
@@ -194,6 +196,15 @@ def main(args):
                 torch.save(save_dict, checkpoint_file_i)
 
         
+
+    # Final train
+    train_neg_log_p, train_nelbo = test(train_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='train', rank=args.global_rank)
+    logging.info('final train nelbo %f', train_nelbo)
+    logging.info('final train neg log p %f', train_neg_log_p)
+    writer.add_scalar('train/neg_log_p', train_neg_log_p, epoch + 1)
+    writer.add_scalar('train/nelbo', train_nelbo, epoch + 1)
+    writer.add_scalar('train/bpd_log_p', train_neg_log_p * bpd_coeff, epoch + 1)
+    writer.add_scalar('train/bpd_elbo', train_nelbo * bpd_coeff, epoch + 1)
 
     # Final validation
     valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='valid', rank=args.global_rank)
@@ -411,7 +422,7 @@ def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, data
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
     neg_log_p_avg = utils.AvgrageMeter()
-    model.eval()
+    model.train() # need to set to train to get consistent results
 
     h5_filename = args.save + '/eval_dataset_' + dataset_type + '_epoch_' + str(epoch) + '_rank_' + str(rank) + '.h5'
     print(h5_filename)

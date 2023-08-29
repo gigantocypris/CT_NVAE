@@ -198,22 +198,24 @@ def main(args):
         
 
     # Final train
-    train_neg_log_p, train_nelbo = test(train_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='train', rank=args.global_rank)
-    logging.info('final train nelbo %f', train_nelbo)
-    logging.info('final train neg log p %f', train_neg_log_p)
-    writer.add_scalar('train/neg_log_p', train_neg_log_p, epoch + 1)
-    writer.add_scalar('train/nelbo', train_nelbo, epoch + 1)
-    writer.add_scalar('train/bpd_log_p', train_neg_log_p * bpd_coeff, epoch + 1)
-    writer.add_scalar('train/bpd_elbo', train_nelbo * bpd_coeff, epoch + 1)
+    if args.final_train:
+        train_neg_log_p, train_nelbo = test(train_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='train', rank=args.global_rank)
+        logging.info('final train nelbo %f', train_nelbo)
+        logging.info('final train neg log p %f', train_neg_log_p)
+        writer.add_scalar('train/neg_log_p', train_neg_log_p, epoch + 1)
+        writer.add_scalar('train/nelbo', train_nelbo, epoch + 1)
+        writer.add_scalar('train/bpd_log_p', train_neg_log_p * bpd_coeff, epoch + 1)
+        writer.add_scalar('train/bpd_elbo', train_nelbo * bpd_coeff, epoch + 1)
 
     # Final validation
-    valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='valid', rank=args.global_rank)
-    logging.info('final valid nelbo %f', valid_nelbo)
-    logging.info('final valid neg log p %f', valid_neg_log_p)
-    writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
-    writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
-    writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
-    writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
+    if args.final_valid:
+        valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='valid', rank=args.global_rank)
+        logging.info('final valid nelbo %f', valid_nelbo)
+        logging.info('final valid neg log p %f', valid_neg_log_p)
+        writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch + 1)
+        writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
+        writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
+        writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
 
     writer.close()
 
@@ -522,6 +524,10 @@ if __name__ == '__main__':
                         help='if not None, truncate the training dataset to this many examples')
     parser.add_argument('--use_h5', dest='use_h5', type=lambda x: x.lower() == 'true',
                     help='If True, load relevant data from h5 file at every iteration',default=False)
+    parser.add_argument('--final_train', action='store_true', default=False,
+            help='This flag is for the final evaluation of the train examples.')
+    parser.add_argument('--final_valid', action='store_true', default=False,
+            help='This flag is for the final evaluation of the validation examples.')
     parser.add_argument('--final_test', action='store_true', default=False,
                 help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
     # optimization

@@ -2470,6 +2470,36 @@ Current NUM_SPARSE_ANGLES: 180
 Submitting job to create foam_180ang_1000ex_0.01ring
 Submitted batch job 14415684
 
+For foam ring 2:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam_ring_2.sh
+Current NUM_SPARSE_ANGLES: 20
+Submitting job to create foam_20ang_1000ex_0.1ring
+Submitted batch job 14421602
+Current NUM_SPARSE_ANGLES: 40
+Submitting job to create foam_40ang_1000ex_0.1ring
+Submitted batch job 14421604
+Current NUM_SPARSE_ANGLES: 60
+Submitting job to create foam_60ang_1000ex_0.1ring
+Submitted batch job 14421605
+Current NUM_SPARSE_ANGLES: 80
+Submitting job to create foam_80ang_1000ex_0.1ring
+Submitted batch job 14421606
+Current NUM_SPARSE_ANGLES: 100
+Submitting job to create foam_100ang_1000ex_0.1ring
+Submitted batch job 14421607
+Current NUM_SPARSE_ANGLES: 120
+Submitting job to create foam_120ang_1000ex_0.1ring
+Submitted batch job 14421608
+Current NUM_SPARSE_ANGLES: 140
+Submitting job to create foam_140ang_1000ex_0.1ring
+Submitted batch job 14421610
+Current NUM_SPARSE_ANGLES: 160
+Submitting job to create foam_160ang_1000ex_0.1ring
+Submitted batch job 14421611
+Current NUM_SPARSE_ANGLES: 180
+Submitting job to create foam_180ang_1000ex_0.1ring
+Submitted batch job 14421612
 
 For covid:
 cd $WORKING_DIR
@@ -2537,3 +2567,226 @@ Submitted batch job 14415811
 
 
 sweep_num_proj_train_foam.sh --> sweep_num_proj_train_foam_0.sh
+
+FOAM JOBS START ##############################################################################################################
+New set of foam jobs:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_1.txt
+14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_1_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827)
+export INPUT_FILE="analyze_sweep_input_1.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597701
+
+Foam ring jobs (with removal of ring artifact):
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring.sh >> output_aug_25_2023_train_2.txt
+14418069 14418070 14418071 14418073 14418074 14418075 14418077 14418079 14418080
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring.sh >> output_aug_25_2023_train_2_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14418069 14418070 14418071 14418073 14418074 14418075 14418077 14418079 14418080)
+export INPUT_FILE="analyze_sweep_input_2.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597703
+
+Foam ring jobs (without removal of ring artifact):
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring_2.sh >> output_aug_25_2023_train_3.txt
+14418293 14418295 14418296 14418298 14418299 14418301 14418302 14418303 14418305
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring_2.sh >> output_aug_25_2023_train_3_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14418293 14418295 14418296 14418298 14418299 14418301 14418302 14418303 14418305)
+export INPUT_FILE="analyze_sweep_input_3.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597705
+
+Foam ring jobs (with removal of ring artifact) for ring=0.1:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring_3.sh >> output_aug_25_2023_train_ring_3.txt
+14422094 14422096 14422098 14422099 14422100 14422101 14422102 14422103 14422104
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_ring_3.sh >> output_aug_25_2023_train_ring_3_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14422094 14422096 14422098 14422099 14422100 14422101 14422102 14422103 14422104)
+export INPUT_FILE="analyze_sweep_input_4.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597708
+
+New set of foam jobs:
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_foam2.txt
+14432325 14432331 14432333 14432336 14432338 14432342 14432344 14432347 14432348
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_foam2_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14432325 14432331 14432333 14432336 14432338 14432342 14432344 14432347 14432348)
+export INPUT_FILE="analyze_sweep_input_5.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597711
+
+5 more trials:
+cd $SCRATCH/output_CT_NVAE
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial0.txt
+14433032 14433035 14433039 14433040 14433041 14433042 14433043 14433044 14433045
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial0_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14433032 14433035 14433039 14433040 14433041 14433042 14433043 14433044 14433045)
+export INPUT_FILE="analyze_sweep_input_6.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597744
+
+cd $SCRATCH/output_CT_NVAE
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial1.txt
+14433055 14433058 14433060 14433061 14433062 14433063 14433064 14433065 14433066
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial1_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14433055 14433058 14433060 14433061 14433062 14433063 14433064 14433065 14433066)
+export INPUT_FILE="analyze_sweep_input_7.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597747
+
+cd $SCRATCH/output_CT_NVAE
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial2.txt
+14433108 14433111 14433112 14433113 14433114 14433115 14433117 14433118 14433119
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial2_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14433108 14433111 14433112 14433113 14433114 14433115 14433117 14433118 14433119)
+export INPUT_FILE="analyze_sweep_input_8.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597764
+
+cd $SCRATCH/output_CT_NVAE
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial3.txt
+14433149 14433152 14433153 14433155 14433157 14433160 14433161 14433163 14433164
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial3_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14433149 14433152 14433153 14433155 14433157 14433160 14433161 14433163 14433164)
+export INPUT_FILE="analyze_sweep_input_9.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597766
+
+cd $SCRATCH/output_CT_NVAE
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial4.txt
+14433184 14433186 14433187 14433189 14433190 14433192 14433193 14433194 14433196
+EVAL:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial4_eval.txt
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14433184 14433186 14433187 14433189 14433190 14433192 14433193 14433194 14433196)
+export INPUT_FILE="analyze_sweep_input_10.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14597767
+
+FOAM JOBS END ##############################################################################################################
+Analyzing results:
+
+```
+module load python
+conda activate tomopy
+salloc -N 1 --time=120 -C gpu -A m2859_g --qos=interactive --ntasks-per-gpu=1 --cpus-per-task=32
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --expr_id 14374863 --original_size 128 --algorithm gridrec --dataset_type valid
+```
+
+
+
+
+# interactive session to test out the covid dataset
+export NERSC_GPU_ALLOCATION=m2859_g
+
+export DATA_TYPE=brain
+export NUM_EXAMPLES=1000
+export SAVE_NAME=test_brain
+
+export EPOCHS=1000
+export RING_VAL=0
+export RING=False
+export BATCH_SIZE=1
+export SAVE_INTERVAL=1000
+export NUM_NODES=1
+export USE_H5=True
+export NUM_SPARSE_ANGLES=180
+
+conda deactivate
+module purge
+module load python
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+salloc -N 1 -n 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
+
+export PNM=$((10000/$NUM_SPARSE_ANGLES))
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring
+
+
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export MASTER_ADDR=$(hostname)
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+
+echo $MASTER_ADDR
+
+echo "Using brain or covid data parameters"
+export NUM_LATENT_SCALES=5
+export NUM_GROUPS_PER_SCALE=16
+export NUM_POSTPROCESS_CELLS=2
+export NUM_PREPROCESS_CELLS=2
+export NUM_CELL_PER_COND_ENC=2
+export NUM_CELL_PER_COND_DEC=2
+export NUM_LATENT_PER_GROUP=20
+export NUM_PREPROCESS_BLOCKS=1
+export NUM_POSTPROCESS_BLOCKS=1
+export WEIGHT_DECAY_NORM=1e-2
+export NUM_CHANNELS_ENC=30
+export NUM_CHANNELS_DEC=30
+export NUM_NF=2
+export MIN_GROUPS_PER_SCALE=4
+export WEIGHT_DECAY_NORM_INIT=1.
+
+    echo "Using foam data parameters"
+    export NUM_LATENT_SCALES=2
+    export NUM_GROUPS_PER_SCALE=10
+    export NUM_POSTPROCESS_CELLS=3
+    export NUM_PREPROCESS_CELLS=3
+    export NUM_CELL_PER_COND_ENC=2
+    export NUM_CELL_PER_COND_DEC=2
+    export NUM_LATENT_PER_GROUP=20
+    export NUM_PREPROCESS_BLOCKS=2
+    export NUM_POSTPROCESS_BLOCKS=2
+    export WEIGHT_DECAY_NORM=1e-2
+    export NUM_CHANNELS_ENC=32
+    export NUM_CHANNELS_DEC=32
+    export NUM_NF=0
+    export MIN_GROUPS_PER_SCALE=1
+
+    echo "Using small data parameters"
+    export NUM_LATENT_SCALES=2
+    export NUM_GROUPS_PER_SCALE=2
+    export NUM_POSTPROCESS_CELLS=3
+    export NUM_PREPROCESS_CELLS=3
+    export NUM_CELL_PER_COND_ENC=2
+    export NUM_CELL_PER_COND_DEC=2
+    export NUM_LATENT_PER_GROUP=2
+    export NUM_PREPROCESS_BLOCKS=2
+    export NUM_POSTPROCESS_BLOCKS=2
+    export WEIGHT_DECAY_NORM=1e-2
+    export NUM_CHANNELS_ENC=2
+    export NUM_CHANNELS_DEC=2
+    export NUM_NF=0
+    export MIN_GROUPS_PER_SCALE=1
+
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT

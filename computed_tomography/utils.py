@@ -40,7 +40,7 @@ def get_sparse_angles(random, num_angles, num_sparse_angles, random_start_ind=Tr
     sparse_angles = np.sort(sparse_angles).astype(np.int32)
     return(sparse_angles)
 
-def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gridrec'):
+def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gridrec', num_iter=20):
     """
     transform sinogram with tomopy
     proj in tomopy.recon must be num_angles x num_z x num_proj_pix
@@ -51,10 +51,10 @@ def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gri
         reconstruction = tomopy.recon(proj, theta, center=None, sinogram_order=False, algorithm='gridrec')
     elif algorithm=='sirt':
         reconstruction = tomopy.recon(proj, theta, algorithm='sirt',center=None, 
-                            sinogram_order=False, interpolation='LINEAR', num_iter=20)
+                            sinogram_order=False, interpolation='LINEAR', num_iter=num_iter)
     elif algorithm=='tv':
         reconstruction = tomopy.recon(proj, theta, algorithm='tv',center=None, 
-                            sinogram_order=False, num_iter=20, reg_par=1e-3)
+                            sinogram_order=False, num_iter=num_iter, reg_par=1e-3)
     
     if remove_ring_artifact:
         reconstruction = tomopy.misc.corr.remove_ring(reconstruction)

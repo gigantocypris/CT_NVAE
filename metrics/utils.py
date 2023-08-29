@@ -78,9 +78,9 @@ def crop(img_2d, final_x, final_y):
 
     return(img_2d[x//2 - final_x//2:x//2+final_x//2+remain_x, y//2-final_y//2:y//2+final_y//2+remain_y])
 
-def analyze_single_slice(sparse_sinogram, theta_0, ground_truth, final_phantom, original_size, algorithm, verbose=True):
-    reconstruct = reconstruct_sinogram(sparse_sinogram, theta_0, remove_ring_artifact=False, algorithm=algorithm)
-    reconstruct_ring = reconstruct_sinogram(sparse_sinogram, theta_0, remove_ring_artifact=True, algorithm=algorithm)
+def analyze_single_slice(sparse_sinogram, theta_0, ground_truth, final_phantom, original_size, algorithm, num_iter,verbose=True):
+    reconstruct = reconstruct_sinogram(sparse_sinogram, theta_0, remove_ring_artifact=False, algorithm=algorithm, num_iter=num_iter)
+    reconstruct_ring = reconstruct_sinogram(sparse_sinogram, theta_0, remove_ring_artifact=True, algorithm=algorithm, num_iter=num_iter)
 
     # Remove z dimension
     reconstruct = np.squeeze(reconstruct, axis=0)
@@ -109,7 +109,7 @@ def analyze_single_slice(sparse_sinogram, theta_0, ground_truth, final_phantom, 
 
 
 def visualize_single_slice(ground_truth, reconstruct_0, reconstruct_1, final_phantom, 
-                           results_path, dataset_type, epoch, rank, step, img_ind):
+                           results_path, dataset_type, epoch, rank, step, img_ind, algorithm):
     # Create a multi-panel figure with the following: ground truth, tomopy reconstructions, CT_NVAE reconstruction
     plt.figure(figsize=(12, 12))
     
@@ -130,5 +130,7 @@ def visualize_single_slice(ground_truth, reconstruct_0, reconstruct_1, final_pha
     plt.subplot(2, 2, 4)
     plt.imshow(final_phantom, cmap='gray', vmin=vmin, vmax=vmax)
     plt.title('CT_NVAE Reconstruction')
-    plt.savefig(results_path + '/final_visualization_' + dataset_type + '_epoch_' + str(epoch) 
+    plt.savefig(results_path + '/final_visualization_' + dataset_type + '_epoch_' + str(epoch) + '_algo_' + algorithm
                 + '_rank_' + str(rank) + '_step_' + str(step) + '_img_' + str(img_ind) + '.png')
+    
+    plt.close('all')

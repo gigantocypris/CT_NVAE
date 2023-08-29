@@ -3,14 +3,14 @@
 # Inputs
 
 # Change for final evaluation
-#export SAVE_NAME=False # Set to False for a new array of jobs
-export SAVE_NAME=(14433184 14433186 14433187 14433189 14433190 14433192 14433193 14433194 14433196)
+# export SAVE_NAME=False # Set to False for a new array of jobs
+export SAVE_NAME=(14418293 14418295 14418296 14418298 14418299 14418301 14418302 14418303 14418305)
 export EPOCHS=0
 export MONITOR_JOBS=False
 export TIME=00:05:00
 # End of change for final evaluation
 
-export RING_VAL=0
+export RING_VAL=0.01
 export RING=False
 export BATCH_SIZE=16
 export SAVE_INTERVAL=1000
@@ -68,8 +68,8 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     export i=$((i + 1))
     echo "Save name: $SAVE_NAME_I"
     echo "Submitting job to train with $DATASET_ID"
-    export COMMAND="sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME_I $DATA_TYPE"
-    JOB_ID=$(eval "$COMMAND" | awk '{print $4}')
+    echo "sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME_I $DATA_TYPE"
+    JOB_ID=$(sbatch -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $SAVE_NAME_I $DATA_TYPE | awk '{print $4}')
     JOB_ID_ARRAY+=("$JOB_ID")
     JOB_ID_ARRAY_ORIG+=("$JOB_ID")
     JOB_ID_SUBMITS_LEFT_ARRAY+=("$MAX_SUBMISSIONS")

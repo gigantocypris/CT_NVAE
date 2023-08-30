@@ -51,7 +51,7 @@ for rank in range(num_ranks):
     with h5py.File(h5_filename, 'r') as h5_file:
         num_steps = len(h5_file)
 
-        for step in range(num_steps):
+        for step in range(2): # range(num_steps):
             example = h5_file[f'example_{step}']
             final_phantom = example['phantom'][:]
             sparse_sinogram = example['sparse_sinogram'][:]

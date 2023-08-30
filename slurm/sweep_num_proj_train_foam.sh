@@ -4,10 +4,10 @@
 
 # Change for final evaluation
 #export SAVE_NAME=False # Set to False for a new array of jobs
-export SAVE_NAME=(14433184 14433186 14433187 14433189 14433190 14433192 14433193 14433194 14433196)
+export SAVE_NAME=(14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827)
 export EPOCHS=0
 export MONITOR_JOBS=False
-export TIME=00:05:00
+export TIME=00:15:00
 # End of change for final evaluation
 
 export RING_VAL=0

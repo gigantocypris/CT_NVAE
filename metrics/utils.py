@@ -33,7 +33,15 @@ def visualize_phantom_samples(phantom, save_path):
         plt.axis('off')
     
     plt.show()
-    plt.savefig(save_path + '/phantom_samples_diff.png')
+    plt.savefig(save_path + '/phantom_samples_diff.png', dpi=300)
+
+    # plot single sample
+
+    plt.figure(figsize=(side_length, side_length))
+    plt.imshow(phantom[:,:,0], cmap='gray')
+    plt.axis('off')
+    plt.show()
+    plt.savefig(save_path + '/phantom_samples_single_example.png')
 
     # plot average
 
@@ -42,6 +50,13 @@ def visualize_phantom_samples(phantom, save_path):
     plt.axis('off')
     plt.show()
     plt.savefig(save_path + '/phantom_samples_average.png')
+
+    # plot standard deviation
+    plt.figure(figsize=(side_length, side_length))
+    plt.imshow(np.std(phantom, axis=-1), cmap='gray')
+    plt.axis('off')
+    plt.show()
+    plt.savefig(save_path + '/phantom_samples_standdev.png')
 
 def compare(recon0, recon1, verbose=False):
 

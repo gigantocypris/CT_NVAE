@@ -2684,6 +2684,11 @@ export JOB_ID_ARRAY=(14433184 14433186 14433187 14433189 14433190 14433192 14433
 export INPUT_FILE="analyze_sweep_input_10.txt"
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
 Submitted batch job 14597767
+eval test:
+EVAL 2:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam.sh >> output_aug_25_2023_train_trial4_eval_test.txt
+
+
 
 FOAM JOBS END ##############################################################################################################
 Analyzing results:
@@ -2699,7 +2704,14 @@ cd $WORKING_DIR
 python $CT_NVAE_PATH/metrics/analyze_training_results.py --expr_id 14374863 --original_size 128 --algorithm gridrec --dataset_type valid
 ```
 
-
+Jobs analyzing the train dataset:
+14639959         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:45:04  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639987         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:46:33  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639983         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:46:18  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639980         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:46:12  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639979         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:46:04  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639976         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:45:57  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
+14639974         PD vidyagan  CT_NVAE_ANAL  1        2:00:00       0:00  2023-08-29T15:45:45  gpu_regular     N/A                  gpu&a100&hbm40 (Priority)     
 
 
 # interactive session to test out the covid dataset
@@ -2790,3 +2802,12 @@ export WEIGHT_DECAY_NORM_INIT=1.
     export MIN_GROUPS_PER_SCALE=1
 
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT
+
+# August 29, 2023
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR

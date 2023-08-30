@@ -1,8 +1,8 @@
 export JOB_ID_ARRAY=$1
 export INPUT_FILE=$2
 export ORIGINAL_SIZE=128
-export TIME=01:00:00
-export DATASET_TYPE=test
+export TIME=02:00:00
+export DATASET_TYPE=train
 
 conda deactivate
 module purge

@@ -206,7 +206,10 @@ def main(args):
         writer.add_scalar('train/nelbo', train_nelbo, epoch + 1)
         writer.add_scalar('train/bpd_log_p', train_neg_log_p * bpd_coeff, epoch + 1)
         writer.add_scalar('train/bpd_elbo', train_nelbo * bpd_coeff, epoch + 1)
-
+        if args.global_rank==0:
+            np.save('final_nelbo_train.npy', train_nelbo.detach().cpu().numpy())
+            np.save('final_neg_log_p_train.npy', train_neg_log_p.detach().cpu().numpy())
+        
     # Final validation
     if args.final_valid:
         valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='valid', rank=args.global_rank)
@@ -216,7 +219,10 @@ def main(args):
         writer.add_scalar('val/nelbo', valid_nelbo, epoch + 1)
         writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
         writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
-
+        if args.global_rank==0:
+            np.save('final_nelbo_valid.npy', valid_nelbo.detach().cpu().numpy())
+            np.save('final_neg_log_p_valid.npy', valid_neg_log_p.detach().cpu().numpy())
+            
     writer.close()
 
     # Final test
@@ -224,6 +230,9 @@ def main(args):
         test_neg_log_p, test_nelbo = test(test_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging, dataset_type='test', rank=args.global_rank)
         logging.info('final test nelbo %f', test_nelbo)
         logging.info('final test neg log p %f', test_neg_log_p)
+        if args.global_rank==0:
+            np.save('final_nelbo_test.npy', test_nelbo.detach().cpu().numpy())
+            np.save('final_neg_log_p_test.npy', test_neg_log_p.detach().cpu().numpy())
 
 def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
@@ -419,7 +428,7 @@ def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_rin
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=2):
+def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=100):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()
@@ -466,7 +475,7 @@ def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, data
             neg_log_p_avg.update(- log_p.data, x.size(0))
             if num_examples >= max_num_examples:
                 break
-
+        
         utils.average_tensor(nelbo_avg.avg, args.distributed)
         utils.average_tensor(neg_log_p_avg.avg, args.distributed)
 

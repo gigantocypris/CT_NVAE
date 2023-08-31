@@ -2690,6 +2690,12 @@ EVAL 2:
 
 
 
+Analysis of all the last ones:
+export JOB_ID_ARRAY=(14416827 14432348 14433045 14433066 14433119 14433164 14433196)
+export INPUT_FILE="analyze_sweep_input_11.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14651389
+
 FOAM JOBS END ##############################################################################################################
 Analyzing results:
 
@@ -2811,3 +2817,19 @@ export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 cd $WORKING_DIR
+
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
+
+# August 30, 2023
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_2.txt
+
+JOBID            ST USER      NAME          NODES TIME_LIMIT       TIME  SUBMIT_TIME          QOS             START_TIME           FEATURES       NODELIST(REASON
+14694614         PD vidyagan  CT_NVAE       1           6:00       0:00  2023-08-30T18:15:25  debug_preempt   2023-08-30T18:18:35  gpu&a100&hbm40 (Priority)     
+14694624         PD vidyagan  CT_NVAE       1           6:00       0:00  2023-08-30T18:15:41  debug_preempt   2023-08-30T18:18:35  gpu&a100&hbm40 (Priority)     
+14694626         PD vidyagan  CT_NVAE       1           6:00       0:00  2023-08-30T18:15:43  debug_preempt   N/A                  gpu&a100&hbm40 (Dependency)   
+14694621         PD vidyagan  CT_NVAE       1           6:00       0:00  2023-08-30T18:15:35  debug_preempt   N/A                  gpu&a100&hbm40 (Dependency) 
+
+FULL FOAM SWEEP:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam.txt

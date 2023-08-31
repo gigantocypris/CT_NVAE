@@ -6,6 +6,34 @@ from skimage.metrics import mean_squared_error
 from skimage.metrics import peak_signal_noise_ratio
 
 
+def get_err_vec(JOB_ID_array, checkpoint_dir, dataset_type, metric, description, algorithm='gridrec'):
+    """
+    dataset_type can be 'train', 'valid', or 'test'
+    description can be 'NVAE_' or 'ring_' or ''
+    metric can be 0 (for MSE), 1 (for SSIM), or 2 (for PSNR)
+    algorithm can be 'gridrec', 'tv', or 'sirt'
+    """
+    
+    all_err_vec = []
+    for JOB_ID_subarray in JOB_ID_array:
+        err_vec = []
+        JOB_ID_subarray = JOB_ID_subarray.split(" ")
+        for JOB_ID in JOB_ID_subarray:
+            err_vec_i = np.load(f"{checkpoint_dir}/eval-{JOB_ID}/err_vec_{description}{dataset_type}_algo_{algorithm}.npy")
+            err_vec.append(np.mean(err_vec_i,axis=0))
+        err_vec = np.stack(err_vec, axis=1)
+        all_err_vec.append(err_vec)
+        
+    all_err_vec = np.stack(all_err_vec, axis=1) # metrics x trials x datasets
+    all_err_vec = all_err_vec[metric]
+
+    max_err_vec = np.max(all_err_vec, axis=0)
+    median_err_vec = np.median(all_err_vec, axis=0)
+    min_err_vec = np.min(all_err_vec, axis=0)
+    mean_err_vec = np.mean(all_err_vec, axis=0)
+
+    return(all_err_vec, max_err_vec, median_err_vec, min_err_vec, mean_err_vec)
+
 def visualize_phantom_samples(phantom, save_path):
     """
     Shape of phantom is x_size x y_size x num_samples

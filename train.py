@@ -12,7 +12,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import os
-import signal
 import time
 import h5py
 
@@ -28,16 +27,6 @@ import vae.datasets as datasets
 import matplotlib.pyplot as plt
 
 import wandb
-
-
-# Define a signal handler function
-def handle_signal(signum, frame):
-    print('Signal handler called with signal', signum)
-    # Sleep for two minutes (double the checkpoint time)
-    time.sleep(120)
-
-# Associate the signal handler function with the USR1 signal
-signal.signal(signal.SIGUSR1, handle_signal)
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -207,8 +196,8 @@ def main(args):
         writer.add_scalar('train/bpd_log_p', train_neg_log_p * bpd_coeff, epoch + 1)
         writer.add_scalar('train/bpd_elbo', train_nelbo * bpd_coeff, epoch + 1)
         if args.global_rank==0:
-            np.save('final_nelbo_train.npy', train_nelbo.detach().cpu().numpy())
-            np.save('final_neg_log_p_train.npy', train_neg_log_p.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_nelbo_train.npy'), train_nelbo.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_neg_log_p_train.npy'), train_neg_log_p.detach().cpu().numpy())
         
     # Final validation
     if args.final_valid:
@@ -220,8 +209,8 @@ def main(args):
         writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch + 1)
         writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch + 1)
         if args.global_rank==0:
-            np.save('final_nelbo_valid.npy', valid_nelbo.detach().cpu().numpy())
-            np.save('final_neg_log_p_valid.npy', valid_neg_log_p.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_nelbo_valid.npy'), valid_nelbo.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_neg_log_p_valid.npy'), valid_neg_log_p.detach().cpu().numpy())
             
     writer.close()
 
@@ -231,8 +220,8 @@ def main(args):
         logging.info('final test nelbo %f', test_nelbo)
         logging.info('final test neg log p %f', test_neg_log_p)
         if args.global_rank==0:
-            np.save('final_nelbo_test.npy', test_nelbo.detach().cpu().numpy())
-            np.save('final_neg_log_p_test.npy', test_neg_log_p.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_nelbo_test.npy'), test_nelbo.detach().cpu().numpy())
+            np.save(os.path.join(args.save, 'final_neg_log_p_test.npy'), test_neg_log_p.detach().cpu().numpy())
 
 def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
@@ -428,7 +417,7 @@ def train(args, train_queue, model, model_ring, cnn_optimizer, cnn_optimizer_rin
     return nelbo.avg, global_step
 
 
-def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=100):
+def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, dataset_type='', rank=None, max_num_examples=2):
     if args.distributed:
         dist.barrier()
     nelbo_avg = utils.AvgrageMeter()

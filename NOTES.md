@@ -2833,3 +2833,6 @@ JOBID            ST USER      NAME          NODES TIME_LIMIT       TIME  SUBMIT_
 
 FULL FOAM SWEEP:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam_2.txt
+
+Try again with 3 nodes:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam_3.txt

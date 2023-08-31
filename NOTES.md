@@ -2832,4 +2832,4 @@ JOBID            ST USER      NAME          NODES TIME_LIMIT       TIME  SUBMIT_
 14694621         PD vidyagan  CT_NVAE       1           6:00       0:00  2023-08-30T18:15:35  debug_preempt   N/A                  gpu&a100&hbm40 (Dependency) 
 
 FULL FOAM SWEEP:
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam_2.txt

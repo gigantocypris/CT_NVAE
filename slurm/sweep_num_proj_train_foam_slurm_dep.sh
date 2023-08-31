@@ -18,8 +18,7 @@ export NUM_NODES=1
 export USE_H5=True
 export DATA_TYPE=foam
 export NUM_EXAMPLES=1000
-# export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
-export NUM_SPARSE_ANGLES_ARRAY=( {20..40..20} )
+export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
 export SLEEP_TIME=300 # seconds
 # See DATASET_ID formatting below
 

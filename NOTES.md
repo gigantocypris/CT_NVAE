@@ -2852,3 +2852,7 @@ export INPUT_FILE="aug_31_analyze_sweep_input_2.txt"
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
 Submitted batch job 14729532
 
+
+# August 31, 2023
+3 nodes, improved code to put eval at the end, and implemented model_candidate:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_31_2023_foam_2.txt

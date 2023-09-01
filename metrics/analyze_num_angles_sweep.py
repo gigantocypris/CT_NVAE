@@ -69,3 +69,15 @@ plt.plot(err_vec_tv, label='tv')
 plt.plot(err_vec_sirt, label='sirt')
 plt.legend()
 plt.savefig("angle_sweep_compare.png")
+
+all_neg_log_p = []
+all_nelbo = []
+for JOB_ID_subarray in JOB_ID_array:
+    neg_log_p = []
+    nelbo = []
+    for JOB_ID in JOB_ID_subarray:
+        neg_log_p_i = np.load(f"{args.checkpoint_dir}/eval-{JOB_ID}/final_neg_log_p_{args.dataset_type}.npy")
+        nelbo_i = np.load(f"{args.checkpoint_dir}/eval-{JOB_ID}/final_nelbo_{args.dataset_type}.npy")
+        neg_log_p.append(neg_log_p_i)
+        nelbo.append(nelbo_i)
+

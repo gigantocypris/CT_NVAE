@@ -19,7 +19,6 @@ export USE_H5=True
 export DATA_TYPE=foam
 export NUM_EXAMPLES=1000
 export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
-export SLEEP_TIME=300 # seconds
 # See DATASET_ID formatting below
 
 # End of Inputs
@@ -80,7 +79,12 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
 
     for ((i = 1; i <= NUM_SUBMISSIONS; i++)); do
         echo "Submitting job to train with $DATASET_ID"
+        
+        # This will be run if the previous job does not complete
         export COMMAND="sbatch --dependency=afternotok:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
+        # This will be run (final train and test) if the previous job completes
+        export COMMAND="sbatch --dependency=afterok:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID 0 $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
+
         echo "COMMAND: $COMMAND"
         JOB_ID=$(eval "$COMMAND" | awk '{print $4}')
         JOB_ID_ARRAY+=("$JOB_ID")

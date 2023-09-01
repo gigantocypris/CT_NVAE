@@ -104,6 +104,8 @@ def main(args):
             cnn_optimizer_ring.load_state_dict(checkpoint['optimizer_ring'])
             cnn_scheduler_ring.load_state_dict(checkpoint['scheduler_ring'])
         global_step = checkpoint['global_step']
+        min_train_nelbo = checkpoint['min_train_nelbo']
+        epoch_min_train_nelbo = checkpoint['epoch_min_train_nelbo']
     else:
         global_step, init_epoch = 0, 0
 
@@ -114,6 +116,7 @@ def main(args):
     # Initial pnm_implement, calculated here in case of args.epochs==0
     args.pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(args.pnm-args.pnm_start) + args.pnm_start
 
+    train_nelbo_vec = [min_train_nelbo]
     for epoch in range(init_epoch, args.epochs):
 
         # update lrs.
@@ -141,40 +144,34 @@ def main(args):
 
         logging.info('train_nelbo %f', train_nelbo)
         writer.add_scalar('train/nelbo', train_nelbo, global_step)
+        if args.log_wandb:
+            wandb.log({"train_nelbo": train_nelbo})
+        train_nelbo_vec.append(train_nelbo)
 
-        model.eval()
-        # generate samples less frequently
-        eval_freq = 1 if args.epochs <= 50 else 20
-        print("skipping validation")
-        """
-        if epoch % eval_freq == 0 or epoch == (args.epochs - 1):
-            if args.global_rank == 0:
-                valid_neg_log_p, valid_nelbo = test(valid_queue, model, model_ring, epoch, num_samples=10, args=args, logging=logging,dataset_type='valid',rank=args.global_rank)
-                logging.info('valid_nelbo %f', valid_nelbo)
-                logging.info('valid neg log p %f', valid_neg_log_p)
-                logging.info('valid bpd elbo %f', valid_nelbo * bpd_coeff)
-                logging.info('valid bpd log p %f', valid_neg_log_p * bpd_coeff)
-                writer.add_scalar('val/neg_log_p', valid_neg_log_p, epoch)
-                writer.add_scalar('val/nelbo', valid_nelbo, epoch)
-                writer.add_scalar('val/bpd_log_p', valid_neg_log_p * bpd_coeff, epoch)
-                writer.add_scalar('val/bpd_elbo', valid_nelbo * bpd_coeff, epoch)
-                if args.log_wandb:
-                    wandb.log({"train_nelbo": train_nelbo, "valid_nelbo": valid_nelbo})
-        """
-
-        if (min_train_nelbo > train_nelbo) or (epoch % eval_freq == 0) or epoch == (args.epochs - 1):
-            if args.global_rank == 0:
-                if (min_train_nelbo > train_nelbo):
-                    print('current best epoch is ', epoch)
-                    checkpoint_file_i = checkpoint_file
+        # rename checkpoint_candidate.pt to checkpoint_file
+        if (epoch > 0) and (epoch == epoch_min_train_nelbo + 1):
+            if train_nelbo < train_nelbo_vec[-3]: # if current is better than the one before the candidate
+                checkpoint_file_i = os.path.join(args.save, 'checkpoint_candidate.pt')
+                if os.path.isfile(checkpoint_file_i):
+                    os.rename(checkpoint_file_i, checkpoint_file)
+                    print('renamed checkpoint_candidate.pt to checkpoint.pt')
                 else:
-                    checkpoint_file_i = os.path.join(args.save, 'checkpoint' + str(epoch) + '.pt')
+                    print('checkpoint_candidate.pt does not exist')
+
+        if (min_train_nelbo > train_nelbo):
+            if args.global_rank == 0:
+                print('current best epoch candidate is ', epoch)
+                checkpoint_file_i = os.path.join(args.save, 'checkpoint_candidate.pt')
+                min_train_nelbo = train_nelbo
+                epoch_min_train_nelbo = epoch
 
                 logging.info('saving the model in ' + checkpoint_file_i)
-                min_train_nelbo = train_nelbo
+                
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
+                             'epoch_min_train_nelbo': epoch_min_train_nelbo,
                              'optimizer': cnn_optimizer.state_dict(), 
                              'global_step': global_step,
+                             'min_train_nelbo': min_train_nelbo,
                              'args': args, 'arch_instance': arch_instance, 
                              'scheduler': cnn_scheduler.state_dict(),
                              'grad_scalar': grad_scalar.state_dict()}
@@ -183,7 +180,6 @@ def main(args):
                     save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()
 
                 torch.save(save_dict, checkpoint_file_i)
-
         
 
     # Final train
@@ -522,11 +518,11 @@ if __name__ == '__main__':
                         help='if not None, truncate the training dataset to this many examples')
     parser.add_argument('--use_h5', dest='use_h5', type=lambda x: x.lower() == 'true',
                     help='If True, load relevant data from h5 file at every iteration',default=False)
-    parser.add_argument('--final_train', action='store_true', default=False,
+    parser.add_argument('--final_train', type=lambda x: x.lower() == 'true', default=False,
             help='This flag is for the final evaluation of the train examples.')
-    parser.add_argument('--final_valid', action='store_true', default=False,
+    parser.add_argument('--final_valid', type=lambda x: x.lower() == 'true', default=False,
             help='This flag is for the final evaluation of the validation examples.')
-    parser.add_argument('--final_test', action='store_true', default=False,
+    parser.add_argument('--final_test', type=lambda x: x.lower() == 'true', default=False,
                 help='This flag is for the final evaluation of the test examples. This should only be run once for the final results.')
     # optimization
     parser.add_argument('--batch_size', type=int, default=200,
@@ -541,7 +537,7 @@ if __name__ == '__main__':
                         help='The lambda parameter for spectral regularization.')
     parser.add_argument('--weight_decay_norm_init', type=float, default=10.,
                         help='The initial lambda parameter')
-    parser.add_argument('--weight_decay_norm_anneal', action='store_true', default=False,
+    parser.add_argument('--weight_decay_norm_anneal', type=lambda x: x.lower() == 'true', default=False,
                         help='This flag enables annealing the lambda coefficient from '
                              '--weight_decay_norm_init to --weight_decay_norm.')
     parser.add_argument('--epochs', type=int, default=200,

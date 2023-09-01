@@ -55,12 +55,8 @@ if [ $DATA_TYPE = "foam" ]; then
     export NUM_CHANNELS_DEC=32
     export NUM_NF=0
     export MIN_GROUPS_PER_SCALE=1
-
-    echo "jobstart $(date)";pwd
-
-    srun --cpus-per-task=128 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --final_train --final_test
-
-    echo "jobend $(date)";pwd
+    export WEIGHT_DECAY_NORM_INIT=10.
+    export WEIGHT_DECAY_NORM_ANNEAL=False
 else
     echo "Using brain or covid data parameters"
     export NUM_LATENT_SCALES=5
@@ -78,14 +74,20 @@ else
     export NUM_NF=2
     export MIN_GROUPS_PER_SCALE=4
     export WEIGHT_DECAY_NORM_INIT=1.
+    export WEIGHT_DECAY_NORM_ANNEAL=True
+fi
 
-    echo "jobstart $(date)";pwd
-
-    srun --cpus-per-task=128 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train --final_test
-
-    echo "jobend $(date)";pwd
+if [ $EPOCHS = 0 ]; then
+    export FINAL_TRAIN=True
+    export FINAL_TEST=True
+else
+    export FINAL_TRAIN=False
+    export FINAL_TEST=False
 fi
 
 
+echo "jobstart $(date)";pwd
 
+srun --cpus-per-task=128 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train $FINAL_TRAIN --final_test $FINAL_TEST
 
+echo "jobend $(date)";pwd

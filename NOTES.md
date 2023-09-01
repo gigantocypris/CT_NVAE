@@ -2833,6 +2833,22 @@ JOBID            ST USER      NAME          NODES TIME_LIMIT       TIME  SUBMIT_
 
 FULL FOAM SWEEP:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam_2.txt
+14694992 14695013 14695031 14695044 14695056 14695068 14695079 14695089 14695097
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14694992 14695013 14695031 14695044 14695056 14695068 14695079 14695089 14695097)
+export INPUT_FILE="aug_31_analyze_sweep_input_1.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14729519
+
+14694992
+14695056
 
 Try again with 3 nodes:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_30_2023_foam_3.txt
+14701273 14701280 14701286 14701293 14701299 14701306 14701312 14701318 14701324
+Analyzing results in a sweep:
+export JOB_ID_ARRAY=(14701273 14701280 14701286 14701293 14701299 14701306 14701312 14701318 14701324)
+export INPUT_FILE="aug_31_analyze_sweep_input_2.txt"
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/analyze_sweep.sh $JOB_ID_ARRAY $INPUT_FILE
+Submitted batch job 14729532
+

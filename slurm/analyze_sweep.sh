@@ -1,7 +1,7 @@
 export JOB_ID_ARRAY=$1
 export INPUT_FILE=$2
 export ORIGINAL_SIZE=128
-export TIME=05:00:00
+export TIME=02:00:00
 export DATASET_TYPE=train
 
 conda deactivate

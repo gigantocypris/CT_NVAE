@@ -2723,9 +2723,9 @@ Jobs analyzing the train dataset:
 # interactive session to test out the covid dataset
 export NERSC_GPU_ALLOCATION=m2859_g
 
-export DATA_TYPE=brain
-export NUM_EXAMPLES=1000
-export SAVE_NAME=test_brain
+export DATA_TYPE=covid
+export NUM_EXAMPLES=100
+export SAVE_NAME=test_covid
 
 export EPOCHS=1000
 export RING_VAL=0
@@ -2748,8 +2748,8 @@ cd $WORKING_DIR
 salloc -N 1 -n 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
 
 export PNM=$((10000/$NUM_SPARSE_ANGLES))
-export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring
-
+# export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex
 
 export DATASET_DIR=$WORKING_DIR
 export CHECKPOINT_DIR=$WORKING_DIR/checkpts
@@ -2759,55 +2759,24 @@ export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 echo $MASTER_ADDR
 
 echo "Using brain or covid data parameters"
-export NUM_LATENT_SCALES=5
-export NUM_GROUPS_PER_SCALE=16
-export NUM_POSTPROCESS_CELLS=2
-export NUM_PREPROCESS_CELLS=2
-export NUM_CELL_PER_COND_ENC=2
-export NUM_CELL_PER_COND_DEC=2
-export NUM_LATENT_PER_GROUP=20
-export NUM_PREPROCESS_BLOCKS=1
-export NUM_POSTPROCESS_BLOCKS=1
-export WEIGHT_DECAY_NORM=1e-2
-export NUM_CHANNELS_ENC=30
-export NUM_CHANNELS_DEC=30
-export NUM_NF=2
-export MIN_GROUPS_PER_SCALE=4
-export WEIGHT_DECAY_NORM_INIT=1.
+  export NUM_LATENT_SCALES=3 # 4 or more causes a bug
+  export NUM_GROUPS_PER_SCALE=10 # 16 causes out of memory error
+  export NUM_POSTPROCESS_CELLS=2
+  export NUM_PREPROCESS_CELLS=2
+  export NUM_CELL_PER_COND_ENC=2
+  export NUM_CELL_PER_COND_DEC=2
+  export NUM_LATENT_PER_GROUP=20
+  export NUM_PREPROCESS_BLOCKS=1
+  export NUM_POSTPROCESS_BLOCKS=1
+  export WEIGHT_DECAY_NORM=1e-2
+  export NUM_CHANNELS_ENC=30
+  export NUM_CHANNELS_DEC=30
+  export NUM_NF=2
+  export MIN_GROUPS_PER_SCALE=4
+  export WEIGHT_DECAY_NORM_INIT=1.
+  export WEIGHT_DECAY_NORM_ANNEAL=True
 
-    echo "Using foam data parameters"
-    export NUM_LATENT_SCALES=2
-    export NUM_GROUPS_PER_SCALE=10
-    export NUM_POSTPROCESS_CELLS=3
-    export NUM_PREPROCESS_CELLS=3
-    export NUM_CELL_PER_COND_ENC=2
-    export NUM_CELL_PER_COND_DEC=2
-    export NUM_LATENT_PER_GROUP=20
-    export NUM_PREPROCESS_BLOCKS=2
-    export NUM_POSTPROCESS_BLOCKS=2
-    export WEIGHT_DECAY_NORM=1e-2
-    export NUM_CHANNELS_ENC=32
-    export NUM_CHANNELS_DEC=32
-    export NUM_NF=0
-    export MIN_GROUPS_PER_SCALE=1
-
-    echo "Using small data parameters"
-    export NUM_LATENT_SCALES=2
-    export NUM_GROUPS_PER_SCALE=2
-    export NUM_POSTPROCESS_CELLS=3
-    export NUM_PREPROCESS_CELLS=3
-    export NUM_CELL_PER_COND_ENC=2
-    export NUM_CELL_PER_COND_DEC=2
-    export NUM_LATENT_PER_GROUP=2
-    export NUM_PREPROCESS_BLOCKS=2
-    export NUM_POSTPROCESS_BLOCKS=2
-    export WEIGHT_DECAY_NORM=1e-2
-    export NUM_CHANNELS_ENC=2
-    export NUM_CHANNELS_DEC=2
-    export NUM_NF=0
-    export MIN_GROUPS_PER_SCALE=1
-
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 1 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --use_nersc
 
 # August 29, 2023
 
@@ -2865,8 +2834,80 @@ redo:
 
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_1_2023_foam_9.txt
 jobs are hanging at the last epoch, add lots of print statements to the train loop to find where it is hanging
-reloading from best checkpoint, not latest, so possible problems in getting full number of iters
-a list of notok means that every other job will be run if submitting multiple jobs 
+reloading from best checkpoint, not latest, so possible problems in getting full number of iters, but this could be a feature, not a bug
+a list of notok means that every other job will be run if submitting multiple jobs, FIXED 9/2/2023
 investigate more
+
+# Sept 2, 2023
+
+Trying again with fix:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_0.txt
+
+Starting one with 500 epochs:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_500epoch.txt
+14844050 14844070 14844090 14844107 14844118 14844129 14844139 14844146 14844153 
+
+Debugging COVID:
+Create smaller datasets:
+
+Create the 100 example covid image dataset:
+
+SETUP
+=============================
+module load python
+export NERSC_GPU_ALLOCATION=m2859_g
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NUM_EXAMPLES=100
+=============================
+
+export NUM_SPARSE_ANGLES=180
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+export DO_PART_ONE=True
+export DO_PART_TWO=True
+export DATA_TYPE=covid
+export IMAGE_ID=covid_100ex
+export DATASET_ID=covid_180ang_100ex
+
+sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+
+Submitted batch job 14846819 (10 examples, tv)
+Submitted batch job 14847734 (100 examples, gridrec)
+
+
+
+# --use nersc vs not:
+
+not:
+09/02 11:25:33 AM (Elapsed: 00:00:02) param size = 34.312862M 
+09/02 11:25:33 AM (Elapsed: 00:00:02) groups per scale: [10, 5], total_groups: 15
+09/02 11:25:33 AM (Elapsed: 00:00:02) epoch 0
+09/02 11:25:33 AM (Elapsed: 00:00:02) pnm_implement 10
+09/02 11:27:31 AM (Elapsed: 00:02:00) train 249 1847.724731
+09/02 11:29:18 AM (Elapsed: 00:03:46) train 499 292.386902
+09/02 11:31:03 AM (Elapsed: 00:05:31) train 749 -243.166107
+09/02 11:32:50 AM (Elapsed: 00:07:18) train 999 -514.509094
+saving image: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-test_foam/input_image_rank_0_999.png
+saving image: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-test_foam/ground_truth_rank_0_999.png
+saving image: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-test_foam/sinogram_reconstruction_rank_0_999.png
+saving image: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-test_foam/phantom_reconstruction_rank_0_999.png
+09/02 11:34:36 AM (Elapsed: 00:09:04) train 1249 -678.989502
+
+--use_nersc
+09/02 11:37:01 AM (Elapsed: 00:00:01) param size = 34.312862M 
+09/02 11:37:01 AM (Elapsed: 00:00:01) groups per scale: [10, 5], total_groups: 15
+09/02 11:37:01 AM (Elapsed: 00:00:01) epoch 0
+09/02 11:37:01 AM (Elapsed: 00:00:01) pnm_implement 10
+09/02 11:38:59 AM (Elapsed: 00:01:59) train 249 1847.721802
+09/02 11:40:43 AM (Elapsed: 00:03:43) train 499 292.386566
+09/02 11:42:27 AM (Elapsed: 00:05:27) train 749 -243.166733
+09/02 11:44:12 AM (Elapsed: 00:07:12) train 999 -514.511353
+
+Conclusion: switched to --use_nersc
 
 

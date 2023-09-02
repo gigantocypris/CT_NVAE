@@ -2,15 +2,10 @@
 
 # Inputs
 
-
-
-# Change for final evaluation
-export SAVE_NAME=False # Set to False for a new array of jobs
-# export SAVE_NAME=(14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827)
-export EPOCHS=10
+export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
+export EPOCHS=500
 export NUM_SUBMISSIONS=5 # Max number of submission events
 export TIME=24:00:00
-# End of change for final evaluation
 
 export RING_VAL=0
 export RING=False
@@ -83,8 +78,9 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     for ((i = 1; i <= NUM_SUBMISSIONS; i++)); do
         echo "Submitting job to train with $DATASET_ID"
 
-        # This will be run if the previous job does not complete
-        export COMMAND_NOTOK="sbatch --dependency=afternotok:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
+        # This will be run if all the previous jobs do not complete
+        export PREVIOUS_JOBS=$(IFS=:; echo "${JOB_ID_ARRAY[*]}")
+        export COMMAND_NOTOK="sbatch --dependency=afternotok:$PREVIOUS_JOBS -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
 
         echo "COMMAND: $COMMAND_NOTOK"
         

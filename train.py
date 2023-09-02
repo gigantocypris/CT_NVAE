@@ -89,6 +89,7 @@ def main(args):
 
     # if load
     checkpoint_file = os.path.join(args.save, 'checkpoint.pt') # best checkpoint is saved here
+    train_nelbo_vec = [min_train_nelbo]
 
     # check if checkpoint file exists
     if os.path.isfile(checkpoint_file) and args.cont_training:
@@ -96,6 +97,7 @@ def main(args):
 
         checkpoint = torch.load(checkpoint_file, map_location='cpu')
         init_epoch = checkpoint['epoch']
+        train_nelbo_vec = checkpoint['train_nelbo_vec']
         model.load_state_dict(checkpoint['state_dict'])
         model = model.cuda()
         cnn_optimizer.load_state_dict(checkpoint['optimizer'])
@@ -117,7 +119,7 @@ def main(args):
     # Initial pnm_implement, calculated here in case of args.epochs==0
     args.pnm_implement = (2 / (1 + np.exp(-steepness*epoch)) - 1.0)*(args.pnm-args.pnm_start) + args.pnm_start
 
-    train_nelbo_vec = [min_train_nelbo]
+    
     for epoch in range(init_epoch, args.epochs):
 
         # update lrs.
@@ -170,14 +172,16 @@ def main(args):
 
                 logging.info('saving the model in ' + checkpoint_file_i)
                 
-                save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
-                                'epoch_min_train_nelbo': epoch_min_train_nelbo,
-                                'optimizer': cnn_optimizer.state_dict(), 
-                                'global_step': global_step,
-                                'min_train_nelbo': min_train_nelbo,
-                                'args': args, 'arch_instance': arch_instance, 
-                                'scheduler': cnn_scheduler.state_dict(),
-                                'grad_scalar': grad_scalar.state_dict()}
+                save_dict = {'epoch': epoch + 1, 
+                             'train_nelbo_vec': train_nelbo_vec,
+                             'state_dict': model.state_dict(),
+                             'epoch_min_train_nelbo': epoch_min_train_nelbo,
+                             'optimizer': cnn_optimizer.state_dict(), 
+                             'global_step': global_step,
+                             'min_train_nelbo': min_train_nelbo,
+                             'args': args, 'arch_instance': arch_instance, 
+                             'scheduler': cnn_scheduler.state_dict(),
+                             'grad_scalar': grad_scalar.state_dict()}
                 if args.model_ring_artifact:
                     save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
                     save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()

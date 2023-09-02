@@ -56,6 +56,7 @@ def main(args):
         model_ring = None
 
     min_train_nelbo = 1e9
+    epoch_min_train_nelbo = 0
 
     logging.info('args = %s', args)
     logging.info('param size = %fM ', utils.count_parameters_in_M(model))
@@ -148,18 +149,20 @@ def main(args):
             wandb.log({"train_nelbo": train_nelbo})
         train_nelbo_vec.append(train_nelbo)
 
-        # rename checkpoint_candidate.pt to checkpoint_file
-        if (epoch > 0) and (epoch == epoch_min_train_nelbo + 1):
-            if train_nelbo < train_nelbo_vec[-3]: # if current is better than the one before the candidate
-                checkpoint_file_i = os.path.join(args.save, 'checkpoint_candidate.pt')
-                if os.path.isfile(checkpoint_file_i):
-                    os.rename(checkpoint_file_i, checkpoint_file)
-                    print('renamed checkpoint_candidate.pt to checkpoint.pt')
-                else:
-                    print('checkpoint_candidate.pt does not exist')
+        if args.global_rank == 0:
+            # rename checkpoint_candidate.pt to checkpoint_file
+            if (epoch > 0) and (epoch == epoch_min_train_nelbo + 1):
+                print("Checking if checkpoint_candidate should be checkpoint")
+                if train_nelbo < train_nelbo_vec[-3]: # if current is better than the one before the candidate
+                    print("Changing checkpoint_candidate to checkpoint")
+                    checkpoint_file_i = os.path.join(args.save, 'checkpoint_candidate.pt')
+                    if os.path.isfile(checkpoint_file_i):
+                        os.rename(checkpoint_file_i, checkpoint_file)
+                        print('renamed checkpoint_candidate.pt to checkpoint.pt')
+                    else:
+                        print('checkpoint_candidate.pt does not exist')
 
-        if (min_train_nelbo > train_nelbo):
-            if args.global_rank == 0:
+            if (min_train_nelbo > train_nelbo):
                 print('current best epoch candidate is ', epoch)
                 checkpoint_file_i = os.path.join(args.save, 'checkpoint_candidate.pt')
                 min_train_nelbo = train_nelbo
@@ -168,13 +171,13 @@ def main(args):
                 logging.info('saving the model in ' + checkpoint_file_i)
                 
                 save_dict = {'epoch': epoch + 1, 'state_dict': model.state_dict(),
-                             'epoch_min_train_nelbo': epoch_min_train_nelbo,
-                             'optimizer': cnn_optimizer.state_dict(), 
-                             'global_step': global_step,
-                             'min_train_nelbo': min_train_nelbo,
-                             'args': args, 'arch_instance': arch_instance, 
-                             'scheduler': cnn_scheduler.state_dict(),
-                             'grad_scalar': grad_scalar.state_dict()}
+                                'epoch_min_train_nelbo': epoch_min_train_nelbo,
+                                'optimizer': cnn_optimizer.state_dict(), 
+                                'global_step': global_step,
+                                'min_train_nelbo': min_train_nelbo,
+                                'args': args, 'arch_instance': arch_instance, 
+                                'scheduler': cnn_scheduler.state_dict(),
+                                'grad_scalar': grad_scalar.state_dict()}
                 if args.model_ring_artifact:
                     save_dict['optimizer_ring'] = cnn_optimizer_ring.state_dict()
                     save_dict['scheduler_ring'] = cnn_scheduler_ring.state_dict()

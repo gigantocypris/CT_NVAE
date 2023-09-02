@@ -2,10 +2,12 @@
 
 # Inputs
 
+
+
 # Change for final evaluation
 export SAVE_NAME=False # Set to False for a new array of jobs
 # export SAVE_NAME=(14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827)
-export EPOCHS=100
+export EPOCHS=10
 export NUM_SUBMISSIONS=5 # Max number of submission events
 export TIME=24:00:00
 # End of change for final evaluation
@@ -53,6 +55,7 @@ cd $WORKING_DIR
 # Array to store job IDs
 export JOB_ID_ARRAY_ORIG=() # original job ID
 export DATASET_ID_ARRAY=()
+export JOB_FINAL_ARRAY=()
 
 # loop over datasets
 export ind=0
@@ -83,15 +86,19 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
         # This will be run if the previous job does not complete
         export COMMAND_NOTOK="sbatch --dependency=afternotok:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
 
-        # This will be run (final train and test) if the previous job completes
-        export COMMAND_OK="sbatch --dependency=afterok:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID 0 $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
-
         echo "COMMAND: $COMMAND_NOTOK"
-        JOB_ID_OK=$(eval "$COMMAND_OK" | awk '{print $4}')
+        
         JOB_ID=$(eval "$COMMAND_NOTOK" | awk '{print $4}')
         JOB_ID_ARRAY+=("$JOB_ID")
         echo "Job ID repeat: $JOB_ID"
     done
+
+    # This will be run (final train and test) after the previous jobs complete
+    export COMMAND_ANY="sbatch --dependency=afterany:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID 0 $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
+    JOB_ID_ANY=$(eval "$COMMAND_ANY" | awk '{print $4}')
+    echo "Job ID analysis: $JOB_ID_ANY"
+    JOB_FINAL_ARRAY+=("$JOB_ID_ANY")
+
     echo "JOB_ID_ARRAY"
     echo "${JOB_ID_ARRAY[@]}"
     echo
@@ -104,5 +111,9 @@ echo "${DATASET_ID_ARRAY[@]}"
 
 echo "JOB_ID_ARRAY_ORIG"
 echo "${JOB_ID_ARRAY_ORIG[@]}"
+
+export INPUT_FILE_ANALYSIS="${JOB_ID_ARRAY_ORIG[0]}.txt"
+echo "INPUT_FILE_ANALYSIS: $INPUT_FILE_ANALYSIS"
+. $CT_NVAE_PATH/slurm/analyze_sweep.sh $JOB_ID_ARRAY_ORIG $INPUT_FILE_ANALYSIS $JOB_FINAL_ARRAY
 
 echo "Script end $(date)";pwd

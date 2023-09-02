@@ -2855,4 +2855,10 @@ Submitted batch job 14729532
 
 # August 31, 2023
 3 nodes, improved code to put eval at the end, and implemented model_candidate:
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_31_2023_foam_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_aug_31_2023_foam_4.txt
+
+The "OK" job is running too many times, changed script and trying for 10 epochs + final analysis:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_1_2023_foam_7.txt
+
+redo:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_1_2023_foam_8.txt

@@ -2862,3 +2862,11 @@ The "OK" job is running too many times, changed script and trying for 10 epochs 
 
 redo:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_1_2023_foam_8.txt
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_1_2023_foam_9.txt
+jobs are hanging at the last epoch, add lots of print statements to the train loop to find where it is hanging
+reloading from best checkpoint, not latest, so possible problems in getting full number of iters
+a list of notok means that every other job will be run if submitting multiple jobs 
+investigate more
+
+

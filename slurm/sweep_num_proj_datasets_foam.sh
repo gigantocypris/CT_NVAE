@@ -2,6 +2,8 @@
 
 # Create the datasets
 
+export NUM_EXAMPLES=$1
+
 conda deactivate
 module purge
 module load python
@@ -12,14 +14,12 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-
 export RANDOM_ANGLES=True
 export RING=0
 export ALGORITHM=gridrec
 export DO_PART_ONE=False
 export DO_PART_TWO=True
 export DATA_TYPE=foam
-export NUM_EXAMPLES=1000
 export IMAGE_ID=${DATA_TYPE}_${NUM_EXAMPLES}ex
 export DO_PART_ONE=False
 export DO_PART_TWO=True

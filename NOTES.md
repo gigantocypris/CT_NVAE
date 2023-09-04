@@ -2850,7 +2850,7 @@ Starting one with 500 epochs:
 Debugging COVID:
 Create smaller datasets:
 
-Create the 100 example covid image dataset:
+Create the 10 example covid image dataset:
 
 SETUP
 =============================
@@ -2861,24 +2861,24 @@ export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export WORKING_DIR=$SCRATCH/output_CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
-export NUM_EXAMPLES=100
+export NUM_EXAMPLES=10
 =============================
 
 export NUM_SPARSE_ANGLES=180
 export RANDOM_ANGLES=True
 export RING=0
 export ALGORITHM=gridrec
-export DO_PART_ONE=True
+export DO_PART_ONE=False
 export DO_PART_TWO=True
 export DATA_TYPE=covid
-export IMAGE_ID=covid_100ex
-export DATASET_ID=covid_180ang_100ex
+export IMAGE_ID=covid_10ex
+export DATASET_ID=covid_180ang_10ex_gridrec
 
 sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
 
 Submitted batch job 14846819 (10 examples, tv)
 Submitted batch job 14847734 (100 examples, gridrec)
-
+Submitted batch job 14857580 (10 examples, gridrec)
 
 
 # --use nersc vs not:
@@ -2910,4 +2910,71 @@ saving image: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-test_foam/pha
 
 Conclusion: switched to --use_nersc
 
+
+# Sept 3, 2023
+
+Start 4 more trials of the foam sweep:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_500epoch_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_500epoch_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_500epoch_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh >> output_sept_2_2023_foam_500epoch_4.txt
+
+
+
+Start covid jobs, tv and gridrec:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/train_covid_tv_gridrec.sh gridrec >> output_sept_3_2023_covid_500epoch_gridrec.txt
+14891137 14891140 14891142 14891144 14891146 14891147
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/train_covid_tv_gridrec.sh tv >> output_sept_3_2023_covid_500epoch_tv.txt
+14891186 14891188 14891190 14891192 14891193 14891194
+
+Upload breadcrumb:
+/Users/VGanapati/Library/CloudStorage/Dropbox/Github/CT_VAE/bread_clean.h5
+/pscratch/sd/v/vidyagan/output_CT_NVAE
+
+scp /Users/VGanapati/Library/CloudStorage/Dropbox/Github/CT_VAE/bread_clean.h5 vidyagan@saul-p1.nersc.gov:/pscratch/sd/v/vidyagan/output_CT_NVAE
+
+
+Experiments for breadcrumb:
+Different angles for each slice
+Same angles for all slices - uniform and non-uniform
+
+Making 10 example foam datasets
+Making 100 example foam datasets
+
+
+SETUP
+=============================
+module load python
+conda activate tomopy
+
+export NERSC_GPU_ALLOCATION=m2859_g
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+=============================
+
+export NUM_EXAMPLES=100
+export NUM_SPARSE_ANGLES=180
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=gridrec
+export DO_PART_ONE=True
+export DO_PART_TWO=False
+export DATA_TYPE=foam
+export IMAGE_ID=foam_${NUM_EXAMPLES}ex
+export DATASET_ID=foam_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex
+
+sbatch --time=00:30:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO
+
+Submitted batch job 14893278 (10 examples) DONE
+Submitted batch job 14893295 (100 examples) DONE
+
+
+Create dataset sweeps:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 >> output_sept_3_2023_foam_10dataset.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 >> output_sept_3_2023_foam_100dataset.txt
 

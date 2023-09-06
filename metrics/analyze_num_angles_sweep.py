@@ -2,7 +2,7 @@ import os
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-from metrics.utils import get_err_vec
+from metrics.utils import get_err_vec, get_nelbo_vec, get_min_err_vec
 
 parser = argparse.ArgumentParser(description='Get command line args')
 parser.add_argument('--checkpoint_dir', type=str, default='/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts',
@@ -20,6 +20,7 @@ elif args.metric == 'SSIM':
 elif args.metric == 'PSNR':
     metric = 2
 
+"""
 JOB_ID_array = ["14416819 14416820 14416821 14416822 14416823 14416824 14416825 14416826 14416827", # Regular foam
                 # "14418069 14418070 14418071 14418073 14418074 14418075 14418077 14418079 14418080", # Foam ring 0.01 jobs (with removal of ring artifact)
                 # "14418293 14418295 14418296 14418298 14418299 14418301 14418302 14418303 14418305", # Foam ring 0.01 jobs (without removal of ring artifact)
@@ -30,6 +31,15 @@ JOB_ID_array = ["14416819 14416820 14416821 14416822 14416823 14416824 14416825 
                 "14433108 14433111 14433112 14433113 14433114 14433115 14433117 14433118 14433119", # Regular foam
                 "14433149 14433152 14433153 14433155 14433157 14433160 14433161 14433163 14433164", # Regular foam
                 "14433184 14433186 14433187 14433189 14433190 14433192 14433193 14433194 14433196", # Regular foam
+                ]
+"""
+
+# September 3, 2023
+JOB_ID_array = ["14844050 14844070 14844090 14844107 14844118 14844129 14844139 14844146 14844153",
+                "14889731 14889738 14889749 14889757 14889764 14889774 14889781 14889788 14889799",
+                "14889912 14889921 14889931 14889942 14889951 14889958 14889968 14889977 14889984",
+                "14890012 14890021 14890031 14890038 14890049 14890057 14890064 14890080 14890093",
+                "14890136 14890155 14890167 14890182 14890196 14890208 14890215 14890229 14890246",
                 ]
 
 description = 'NVAE_' # description can be 'NVAE_' or 'ring_' or ''
@@ -48,36 +58,39 @@ description = '' # description can be 'NVAE_' or 'ring_' or ''
 algorithm = 'sirt'
 all_err_vec_sirt, max_err_vec_sirt, median_err_vec_sirt, min_err_vec_sirt, mean_err_vec_sirt = get_err_vec(JOB_ID_array, args.checkpoint_dir, args.dataset_type, metric, description, algorithm=algorithm)
 
+all_neg_log_p, all_nelbo, min_ind_neg_log_p, min_ind_nelbo = get_nelbo_vec(JOB_ID_array, args.checkpoint_dir, args.dataset_type)
 
+err_vec_NVAE = get_min_err_vec(all_err_vec_NVAE, min_ind_nelbo)
+err_vec_gridrec = get_min_err_vec(all_err_vec_gridrec, min_ind_nelbo)
+err_vec_tv = get_min_err_vec(all_err_vec_tv, min_ind_nelbo)
+err_vec_sirt = get_min_err_vec(all_err_vec_sirt, min_ind_nelbo)
+
+# Compare to actual min/max and values that we get from min nelbo
 if args.metric == 'MSE':
-    err_vec_NVAE = min_err_vec_NVAE
-    err_vec_gridrec = min_err_vec_gridrec
-    err_vec_tv = min_err_vec_tv
-    err_vec_sirt = min_err_vec_sirt
+    best_err_vec_NVAE = min_err_vec_NVAE
+    best_err_vec_gridrec = min_err_vec_gridrec
+    best_err_vec_tv = min_err_vec_tv
+    best_err_vec_sirt = min_err_vec_sirt
 else:
-    err_vec_NVAE = max_err_vec_NVAE
-    err_vec_gridrec = max_err_vec_gridrec
-    err_vec_tv = max_err_vec_tv
-    err_vec_sirt = max_err_vec_sirt
-
+    best_err_vec_NVAE = max_err_vec_NVAE
+    best_err_vec_gridrec = max_err_vec_gridrec
+    best_err_vec_tv = max_err_vec_tv
+    best_err_vec_sirt = max_err_vec_sirt
 
 
 plt.figure()
-plt.plot(err_vec_NVAE, label='NVAE')
-plt.plot(err_vec_gridrec, label='gridrec')
-plt.plot(err_vec_tv, label='tv')
-plt.plot(err_vec_sirt, label='sirt')
+plt.plot(err_vec_NVAE, 'b', label='NVAE')
+plt.plot(err_vec_gridrec, 'g', label='gridrec')
+plt.plot(err_vec_tv, 'r', label='tv')
+plt.plot(err_vec_sirt, 'y', label='sirt')
 plt.legend()
+
+plt.plot(best_err_vec_NVAE, 'b.')
+plt.plot(best_err_vec_gridrec, 'g.')
+plt.plot(best_err_vec_tv, 'r.')
+plt.plot(best_err_vec_sirt, 'y.')
 plt.savefig("angle_sweep_compare.png")
 
-all_neg_log_p = []
-all_nelbo = []
-for JOB_ID_subarray in JOB_ID_array:
-    neg_log_p = []
-    nelbo = []
-    for JOB_ID in JOB_ID_subarray:
-        neg_log_p_i = np.load(f"{args.checkpoint_dir}/eval-{JOB_ID}/final_neg_log_p_{args.dataset_type}.npy")
-        nelbo_i = np.load(f"{args.checkpoint_dir}/eval-{JOB_ID}/final_nelbo_{args.dataset_type}.npy")
-        neg_log_p.append(neg_log_p_i)
-        nelbo.append(nelbo_i)
+breakpoint()
+
 

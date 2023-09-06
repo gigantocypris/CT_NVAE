@@ -14,7 +14,7 @@ export SAVE_INTERVAL=1000
 export NUM_NODES=3
 export USE_H5=True
 export DATA_TYPE=foam
-export NUM_EXAMPLES=1000
+export NUM_EXAMPLES=$1
 export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
 # See DATASET_ID formatting below
 

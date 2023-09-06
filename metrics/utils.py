@@ -5,6 +5,33 @@ from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import mean_squared_error
 from skimage.metrics import peak_signal_noise_ratio
 
+def get_min_err_vec(all_err_vec, min_ind_nelbo):
+    """Get the error that corresponds to the minimum ELBO"""
+    err_vec = []
+    for col, min_ind in enumerate(min_ind_nelbo):
+        err_vec.append(all_err_vec[min_ind, col])
+    return(err_vec)
+
+def get_nelbo_vec(JOB_ID_array, checkpoint_dir, dataset_type):
+    all_neg_log_p = []
+    all_nelbo = []
+    for JOB_ID_subarray in JOB_ID_array:
+        JOB_ID_subarray = JOB_ID_subarray.split(" ")
+        neg_log_p = []
+        nelbo = []
+        for JOB_ID in JOB_ID_subarray:
+            neg_log_p_i = np.load(f"{checkpoint_dir}/eval-{JOB_ID}/final_neg_log_p_{dataset_type}.npy")
+            nelbo_i = np.load(f"{checkpoint_dir}/eval-{JOB_ID}/final_nelbo_{dataset_type}.npy")
+            neg_log_p.append(neg_log_p_i)
+            nelbo.append(nelbo_i)
+        all_neg_log_p.append(neg_log_p)
+        all_nelbo.append(nelbo)
+    all_neg_log_p = np.stack(all_neg_log_p, axis=0) # trials x dataset_id
+    all_nelbo = np.stack(all_nelbo, axis=0) # trials x dataset_id
+
+    min_ind_neg_log_p = np.argmin(all_neg_log_p, axis=0)
+    min_ind_nelbo = np.argmin(all_nelbo, axis=0)
+    return(all_neg_log_p, all_nelbo, min_ind_neg_log_p, min_ind_nelbo)
 
 def get_err_vec(JOB_ID_array, checkpoint_dir, dataset_type, metric, description, algorithm='gridrec'):
     """

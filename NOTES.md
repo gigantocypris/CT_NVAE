@@ -2978,3 +2978,34 @@ Create dataset sweeps:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 >> output_sept_3_2023_foam_10dataset.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 >> output_sept_3_2023_foam_100dataset.txt
 
+# Sept 5, 2023
+
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
+
+COVID results:
+looks like the tv initial conditions were better
+
+Sweep the 10 example foam datasets:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_4.txt
+
+Sweep the 100 example foam datasets:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam3_100ex_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam3_100ex_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_4.txt

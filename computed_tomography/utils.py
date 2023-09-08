@@ -22,10 +22,15 @@ def add_ring_artifact(proj, ring_artifact_strength=0.15):
     proj = proj*ring_artifact
     return proj
 
-def get_sparse_angles(random, num_angles, num_sparse_angles, random_start_ind=True):
+def get_sparse_angles(random, num_angles, num_sparse_angles, force_angle_array=None, random_start_ind=True):
+
+    
     if random:
-        angle_array = np.arange(num_angles)
-        np.random.shuffle(angle_array)
+        if force_angle_array is not None:
+            angle_array = force_angle_array
+        else:
+            angle_array = np.arange(num_angles)
+            np.random.shuffle(angle_array)
         sparse_angles = angle_array[:num_sparse_angles]
     else: 
         # uniformly distribute
@@ -60,7 +65,7 @@ def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gri
         reconstruction = tomopy.misc.corr.remove_ring(reconstruction)
     return reconstruction
 
-def process_sinogram(input_sinogram, random, num_sparse_angles, theta, 
+def process_sinogram(input_sinogram, random, force_angle_array, num_sparse_angles, theta, 
                      poisson_noise_multiplier=1e3, remove_ring_artifact=False,
                      ring_artifact_strength=0.3, random_start_ind=True,
                      algorithm='gridrec'):
@@ -80,7 +85,7 @@ def process_sinogram(input_sinogram, random, num_sparse_angles, theta,
 
     # remove angles
     num_angles = len(theta)
-    sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles, random_start_ind=random_start_ind)
+    sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles, force_angle_array, random_start_ind=random_start_ind)
     sparse_sinogram_raw = exp_sinogram[sparse_angles,:,:]
 
     

@@ -3,10 +3,9 @@
 # Inputs
 
 export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
-export EPOCHS=500
+
 export NUM_SUBMISSIONS=5 # Max number of submission events
 export TIME=24:00:00
-
 export RING_VAL=0
 export RING=False
 export BATCH_SIZE=16
@@ -16,6 +15,8 @@ export USE_H5=True
 export DATA_TYPE=foam
 export NUM_EXAMPLES=$1
 export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
+export EPOCHS=$(awk 'BEGIN { printf "%.0f", (500/'$NUM_EXAMPLES')*1000; }')
+
 # See DATASET_ID formatting below
 
 # End of Inputs

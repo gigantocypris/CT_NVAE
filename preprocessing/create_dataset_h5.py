@@ -18,6 +18,7 @@ def main(args, dataset_type):
     theta = np.load(args.src + '/theta.npy') # projection angles
     num_sparse_angles = args.num_sparse_angles # number of angles to image per sample (dose remains the same)
     random = args.random # If True, randomly pick angles
+    constant_angles = args.constant_angles # If True, use the same angles for each sample
     #############
 
     print(f'sub_dir is {sub_dir}')
@@ -26,6 +27,12 @@ def main(args, dataset_type):
     print(f'Total number of sinograms found: {len(sinogram_files)}')
 
     h5_filename = args.dir + '/' + dataset_type + '.h5'
+
+    if constant_angles:
+        force_angle_array = np.arange(len(theta))
+        np.random.shuffle(force_angle_array)
+    else:
+        force_angle_array = None
 
     with h5py.File(h5_filename, 'w') as h5_file:
         total_slices = 0
@@ -43,7 +50,7 @@ def main(args, dataset_type):
 
             # make sparse sinogram and reconstruct
             sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram = \
-                process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, num_sparse_angles, theta, 
+                process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, force_angle_array, num_sparse_angles, theta, 
                                 poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, 
                                 ring_artifact_strength = args.ring_artifact_strength, algorithm=args.algorithm)
 
@@ -84,7 +91,8 @@ if __name__ == '__main__':
     parser.add_argument('--dir', dest='dir', help='directory where dataset will be saved')
     parser.add_argument('--pnm', dest='pnm', type=float, help='poisson noise multiplier, higher value means higher SNR', default=1e3)
     parser.add_argument('--sparse', dest='num_sparse_angles', type=int, help='number of angles to image per sample (dose remains the same)', default=10)
-    parser.add_argument('--random', dest='random', type=bool, help='If True, randomly pick angles', default=True)
+    parser.add_argument('--random',  type=lambda x: x.lower() == 'true', default=False, help='If True, randomly pick angles.')
+    parser.add_argument('--constant_angles', type=lambda x: x.lower() == 'true', default=False, help='If True, use the same angles for each sample.')
     parser.add_argument('--ring', dest='ring_artifact_strength', type=float, help='if >0, add ring artifact to sinograms', default=0.0)
     parser.add_argument('--algorithm', dest='algorithm', type=str, help='algorithm to use for reconstruction', default='gridrec', 
                         choices=['gridrec', 'sirt', 'tv'])

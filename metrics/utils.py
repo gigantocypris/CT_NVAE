@@ -16,7 +16,6 @@ def get_nelbo_vec(JOB_ID_array, checkpoint_dir, dataset_type):
     all_neg_log_p = []
     all_nelbo = []
     for JOB_ID_subarray in JOB_ID_array:
-        JOB_ID_subarray = JOB_ID_subarray.split(" ")
         neg_log_p = []
         nelbo = []
         for JOB_ID in JOB_ID_subarray:
@@ -44,7 +43,6 @@ def get_err_vec(JOB_ID_array, checkpoint_dir, dataset_type, metric, description,
     all_err_vec = []
     for JOB_ID_subarray in JOB_ID_array:
         err_vec = []
-        JOB_ID_subarray = JOB_ID_subarray.split(" ")
         for JOB_ID in JOB_ID_subarray:
             err_vec_i = np.load(f"{checkpoint_dir}/eval-{JOB_ID}/err_vec_{description}{dataset_type}_algo_{algorithm}.npy")
             err_vec.append(np.mean(err_vec_i,axis=0))

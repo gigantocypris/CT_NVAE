@@ -3001,6 +3001,7 @@ Sweep the 10 example foam datasets:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_3.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_5_2023_foam2_10ex_4.txt
+15025584 15025624 15025637 15025647 15025658 15025673 15025688 15025703 15025718 
 
 Sweep the 100 example foam datasets:
 
@@ -3009,3 +3010,73 @@ Sweep the 100 example foam datasets:
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_3.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_5_2023_foam2_100ex_4.txt
+15025651 15025666 15025680 15025692 15025707 15025721 15025745 15025759 15025800 
+
+# Sept 7, 2023
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
+
+
+Do the sweeps again, except multiply the number of epochs by 10 and 100:
+
+Sweep the 10 example foam datasets:
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_7_2023_foam_10ex_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_7_2023_foam_10ex_1.txt (output file in overall folder)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_7_2023_foam_10ex_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_7_2023_foam_10ex_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 >> output_sept_7_2023_foam_10ex_4.txt
+
+Sweep the 100 example foam datasets:
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_7_2023_foam_100ex_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_7_2023_foam_100ex_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_7_2023_foam_100ex_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_7_2023_foam_100ex_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 >> output_sept_7_2023_foam_100ex_4.txt
+
+
+Creation of foam datasets, uniform, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 False False 0 >> output_sept_8_2023_foam_uniform.txt
+
+Creation of foam datasets, random, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True False 0 >> output_sept_8_2023_foam_random.txt
+
+Creation of foam datasets, random constant, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 0 >> output_sept_8_2023_foam_random_constant0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 1 >> output_sept_8_2023_foam_random_constant1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 2 >> output_sept_8_2023_foam_random_constant2.txt
+
+
+Analyzing the breadcrumb dataset
+
+Analyzing the covid dataset
+
+STOPPED HERE
+
+SETUP:
+================================
+module load python
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+================================
+
+python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.py

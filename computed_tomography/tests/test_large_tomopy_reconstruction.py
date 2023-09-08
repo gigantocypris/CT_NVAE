@@ -15,7 +15,7 @@ from metrics.utils import compare
 if __name__ == '__main__':
 
     # inputs
-    img_folder_path = 'images_brain_100ex'
+    img_folder_path = 'images_covid_100ex'
     img_ind = 0
     slice_ind = 0
     

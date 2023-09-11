@@ -2,8 +2,12 @@
 
 # Inputs
 
-export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
+export NUM_EXAMPLES=$1
+export RANDOM_ANGLES=$2
+export CONSTANT_ANGLES=$3
+export TAG=$4
 
+export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
 export NUM_SUBMISSIONS=5 # Max number of submission events
 export TIME=24:00:00
 export RING_VAL=0
@@ -13,10 +17,10 @@ export SAVE_INTERVAL=1000
 export NUM_NODES=3
 export USE_H5=True
 export DATA_TYPE=foam
-export NUM_EXAMPLES=$1
+
 export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
 export EPOCHS=$(awk 'BEGIN { printf "%.0f", (500/'$NUM_EXAMPLES')*1000; }')
-
+export ALGORITHM=tv
 # See DATASET_ID formatting below
 
 # End of Inputs
@@ -61,7 +65,7 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     echo "Current NUM_SPARSE_ANGLES: $NUM_SPARSE_ANGLES"
     export PNM=$((10000/$NUM_SPARSE_ANGLES))
     echo "PNM: $PNM"
-    export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring
+    export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
     export SAVE_NAME_I=${SAVE_NAME[$ind]}
     export ind=$((ind + 1))
     echo "Save name: $SAVE_NAME_I"

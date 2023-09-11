@@ -6,9 +6,8 @@ import tomopy
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from computed_tomography.utils import create_sinogram, get_sparse_angles
+from computed_tomography.utils import create_sinogram, process_sinogram
 from computed_tomography.forward_physics import pad_phantom
-from preprocessing.create_images import create_foam_example
 import glob
 from metrics.utils import compare
 
@@ -18,8 +17,13 @@ if __name__ == '__main__':
     img_folder_path = 'images_covid_100ex'
     img_ind = 0
     slice_ind = 0
-    
-    num_angles = 180 # total angles
+    random = True
+    force_angle_array = None
+    num_sparse_angles = 180 # angles in the sparse sinogram
+    num_angles = 180 # angles in the full sinogram
+    pnm = np.floor(100000000/num_sparse_angles)
+    ring_artifact_strength = 0
+    algorithm = 'gridrec'
 
     # start processing
 
@@ -27,9 +31,19 @@ if __name__ == '__main__':
     filepath_sino = sinogram_files[img_ind] # sinogram filepath
     filepath_gt = ''.join(filepath_sino.split('_sinogram')) # ground truth filepath
 
-    img = np.load(filepath_gt)[slice_ind]
-    img = np.expand_dims(img, axis=0)
+    x_train = np.load(filepath_gt)
+    theta = np.load(img_folder_path + '/theta.npy')
+    # reconstruction with noise
+    x_train_sinogram = np.load(filepath_sino)
+    sparse_angles, sparse_reconstruction, sparse_sinogram_raw, sparse_sinogram = \
+        process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, force_angle_array, num_sparse_angles, theta, 
+                        poisson_noise_multiplier = pnm, remove_ring_artifact = False, 
+                        ring_artifact_strength = ring_artifact_strength, algorithm=algorithm)
+    sparse_reconstruction = sparse_reconstruction[slice_ind]
 
+    # reconstruction without noise
+    img = x_train[slice_ind]
+    img = np.expand_dims(img, axis=0)
     theta = np.linspace(0, np.pi, num_angles, endpoint=False) # projection angles
 
     # get the sinogram with tomopy
@@ -38,16 +52,17 @@ if __name__ == '__main__':
     # recontruct with tomopy
     proj_full = np.transpose(proj_full, axes=[1,0,2])
 
-    rec_full = tomopy.recon(proj_full, theta, algorithm='gridrec',center=None, 
-                         sinogram_order=False)
+    if algorithm == 'gridrec':
+        rec_full = tomopy.recon(proj_full, theta, algorithm='gridrec',center=None, 
+                            sinogram_order=False)
+    elif algorithm == 'tv':    
+        rec_full = tomopy.recon(proj_full, theta, algorithm='tv',center=None, 
+                            sinogram_order=False,reg_par=1e-5,num_iter=100)
+    elif algorithm == 'sirt':
+        rec_full = tomopy.recon(proj_full, theta, algorithm='sirt',center=None, 
+                            sinogram_order=False, interpolation='LINEAR', num_iter=10)
 
-    # rec_full = tomopy.recon(proj_full, theta, algorithm='tv',center=None, 
-    #                     sinogram_order=False,reg_par=1e-5,num_iter=100)
-
-    # rec_full = tomopy.recon(proj_full, theta, algorithm='sirt',center=None, 
-    #                     sinogram_order=False, interpolation='LINEAR', num_iter=10)
-
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
 
     # change fig relative size
     fig.set_size_inches(4, 2)
@@ -73,5 +88,10 @@ if __name__ == '__main__':
     ax3.title.set_text('Diff')
     ax3.imshow(np.abs(rec_full-img_0))
     ax3.axis('off')
+
+    ax4.title.set_text('Noisy')
+    ax4.imshow(sparse_reconstruction,vmin=0,vmax=vmax)
+    ax4.axis('off')
+
 
     plt.savefig('large_reconstruction.png', dpi=300, bbox_inches='tight')

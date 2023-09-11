@@ -87,7 +87,6 @@ def process_sinogram(input_sinogram, random, force_angle_array, num_sparse_angle
     num_angles = len(theta)
     sparse_angles = get_sparse_angles(random, num_angles, num_sparse_angles, force_angle_array, random_start_ind=random_start_ind)
     sparse_sinogram_raw = exp_sinogram[sparse_angles,:,:]
-
     
     sparse_sinogram = -np.log(sparse_sinogram_raw) # linearize the sinogram
     reconstruction = reconstruct_sinogram(sparse_sinogram, theta[sparse_angles], 

@@ -3061,33 +3061,39 @@ cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 1 >> output_sept_8_2023_foam_random_constant1.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 2 >> output_sept_8_2023_foam_random_constant2.txt
 
+# Sept 8, 2023
 
-Sweep all 5 datasets 5 times: RUNNING
+Sweep all 5 datasets 5 times: DONE
 cd $WORKING_DIR
+Uniform
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_0.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_1.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_3.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_4.txt
 
+Random, Changing
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_5.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_6.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_7.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_8.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_9.txt
 
+Random, Same, Try 1
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_10.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_11.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_12.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_13.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_14.txt
 
+Random, Same, Try 2
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_8_2023_foam_100ex_train_15.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_8_2023_foam_100ex_train_16.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_8_2023_foam_100ex_train_17.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_8_2023_foam_100ex_train_18.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_8_2023_foam_100ex_train_19.txt
 
+Random, Same, Try 3
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_8_2023_foam_100ex_train_20.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_8_2023_foam_100ex_train_21.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_8_2023_foam_100ex_train_22.txt
@@ -3114,3 +3120,13 @@ export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 ================================
 
 python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.py
+
+# September 11, 2023
+
+Sweep with 1 normalizing flow: Hardcoded in train_multi_node_preempt, REMEMBER TO CHANGE BACK
+Random, Changing
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_4.txt

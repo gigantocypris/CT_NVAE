@@ -3101,13 +3101,6 @@ Random, Same, Try 3
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_8_2023_foam_100ex_train_24.txt
 
 
-
-Analyzing the breadcrumb dataset
-
-Analyzing the covid dataset
-
-STOPPED HERE
-
 SETUP:
 ================================
 module load python
@@ -3119,14 +3112,21 @@ cd $WORKING_DIR
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 ================================
 
+Analyzing the breadcrumb dataset
+python $CT_NVAE_PATH/computed_tomography/tests/test_bread_crumb.py
+
+Analyzing the covid dataset
+
 python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.py
 
 # September 11, 2023
 
 Sweep with 1 normalizing flow: Hardcoded in train_multi_node_preempt, REMEMBER TO CHANGE BACK
 Random, Changing
+cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_0.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_1.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_3.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_4.txt
+

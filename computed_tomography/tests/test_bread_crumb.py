@@ -33,7 +33,7 @@ with h5py.File(filename, 'r') as file:
 proj_full = np.transpose(data, axes=[1,0,2])  # num_angles x z_slices x num_proj_pix
 
 # Trim the data to a single slice
-z_ind = 1000
+z_ind = 500
 
 plt.figure()
 plt.imshow(proj_full[:,z_ind, :])
@@ -58,20 +58,24 @@ plt.savefig('bread_crumb_gridrec.png', dpi=300, bbox_inches='tight')
 
 print('calculating tv')
 rec_tv = tomopy.recon(proj_full, theta, algorithm='tv',center=rot_center, 
-                      sinogram_order=False,reg_par=1e-5,num_iter=10) # num_iter=100
+                      sinogram_order=False,reg_par=1e-5,num_iter=10)
 rec_tv = np.squeeze(rec_tv)
 
 plt.figure()
 plt.imshow(rec_tv)
 plt.colorbar()
 plt.savefig('bread_crumb_tv.png', dpi=300, bbox_inches='tight')
-breakpoint()
 
 
 print('calculating sirt')
 rec_sirt = tomopy.recon(proj_full, theta, algorithm='sirt',center=rot_center, 
-                        sinogram_order=False, interpolation='LINEAR', num_iter=1) # num_iter=10
+                        sinogram_order=False, interpolation='LINEAR', num_iter=10)
 rec_sirt = np.squeeze(rec_sirt)
+plt.figure()
+plt.imshow(rec_sirt)
+plt.colorbar()
+plt.savefig('bread_crumb_sirt.png', dpi=300, bbox_inches='tight')
+breakpoint()
 
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 

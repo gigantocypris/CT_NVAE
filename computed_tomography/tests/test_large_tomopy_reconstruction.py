@@ -47,10 +47,10 @@ if __name__ == '__main__':
     theta = np.linspace(0, np.pi, num_angles, endpoint=False) # projection angles
 
     # get the sinogram with tomopy
-    proj_full = create_sinogram(img, theta, pad=True)
+    proj_full = create_sinogram(img, theta, pad=True) # z_slices x num_angles x num_proj_pix
 
     # recontruct with tomopy
-    proj_full = np.transpose(proj_full, axes=[1,0,2])
+    proj_full = np.transpose(proj_full, axes=[1,0,2]) # num_angles x z_slices x num_proj_pix
 
     if algorithm == 'gridrec':
         rec_full = tomopy.recon(proj_full, theta, algorithm='gridrec',center=None, 

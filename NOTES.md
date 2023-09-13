@@ -3110,7 +3110,9 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export NERSC_GPU_ALLOCATION=m2859_g
 ================================
+salloc -N 1 -n 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
 
 Analyzing the breadcrumb dataset
 python $CT_NVAE_PATH/computed_tomography/tests/test_bread_crumb.py

@@ -24,7 +24,6 @@ def add_ring_artifact(proj, ring_artifact_strength=0.15):
 
 def get_sparse_angles(random, num_angles, num_sparse_angles, force_angle_array=None, random_start_ind=True):
 
-    
     if random:
         if force_angle_array is not None:
             angle_array = force_angle_array

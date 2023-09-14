@@ -21,9 +21,9 @@ if __name__ == '__main__':
     force_angle_array = None
     num_sparse_angles = 180 # angles in the sparse sinogram
     num_angles = 180 # angles in the full sinogram
-    pnm = np.floor(100000000/num_sparse_angles)
+    pnm = np.floor(10000/num_sparse_angles)
     ring_artifact_strength = 0
-    algorithm = 'gridrec'
+    algorithm = 'tv'
 
     # start processing
 
@@ -57,10 +57,10 @@ if __name__ == '__main__':
                             sinogram_order=False)
     elif algorithm == 'tv':    
         rec_full = tomopy.recon(proj_full, theta, algorithm='tv',center=None, 
-                            sinogram_order=False,reg_par=1e-5,num_iter=100)
+                            sinogram_order=False,reg_par=1e-5,num_iter=1)
     elif algorithm == 'sirt':
         rec_full = tomopy.recon(proj_full, theta, algorithm='sirt',center=None, 
-                            sinogram_order=False, interpolation='LINEAR', num_iter=10)
+                            sinogram_order=False, interpolation='LINEAR', num_iter=1)
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     img_0 = img_0[0,:,:]
     rec_full = rec_full[0,:,:]
 
-    err_vec_NVAE, err_string_NVAE = compare(img_0, rec_full, verbose=True)
+    err_vec_NVAE, err_string_NVAE = compare(img_0, sparse_reconstruction, verbose=True)
 
 
     vmax = np.max(img_0)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     # remove all axes
     ax1.axis('off')
 
-    ax2.title.set_text('Full')
+    ax2.title.set_text('No Noise, Full')
     ax2.imshow(rec_full,vmin=0,vmax=vmax)
     ax2.axis('off')
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     ax3.imshow(np.abs(rec_full-img_0))
     ax3.axis('off')
 
-    ax4.title.set_text('Noisy')
+    ax4.title.set_text('Noisy, Sparse')
     ax4.imshow(sparse_reconstruction,vmin=0,vmax=vmax)
     ax4.axis('off')
 

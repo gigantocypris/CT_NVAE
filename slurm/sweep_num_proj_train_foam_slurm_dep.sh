@@ -43,7 +43,7 @@ echo
 conda deactivate
 module purge
 module load python
-export NERSC_GPU_ALLOCATION=m2859_g
+export NERSC_GPU_ALLOCATION=m3562_g
 conda activate CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export WORKING_DIR=$SCRATCH/output_CT_NVAE

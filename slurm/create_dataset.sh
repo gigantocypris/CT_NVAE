@@ -23,6 +23,7 @@ export RING=$9
 export ALGORITHM=${10}
 export DO_PART_ONE=${11}
 export DO_PART_TWO=${12}
+export PNM_NUM=${13}
 
 export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
 
@@ -57,7 +58,7 @@ fi
 if [ $DO_PART_TWO = True ]; then
     echo "Creating dataset"
 
-    python $CT_NVAE_PATH/preprocessing/create_dataset_h5.py --src images_$IMAGE_ID --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --constant_angles $CONSTANT_ANGLES --ring $RING --pnm $((10000/$NUM_SPARSE_ANGLES)) --algorithm $ALGORITHM
+    python $CT_NVAE_PATH/preprocessing/create_dataset_h5.py --src images_$IMAGE_ID --dir dataset_$DATASET_ID --sparse $NUM_SPARSE_ANGLES --random $RANDOM_ANGLES --constant_angles $CONSTANT_ANGLES --ring $RING --pnm $(($PNM_NUM/$NUM_SPARSE_ANGLES)) --algorithm $ALGORITHM
 else
     echo "Skipping part 2"
 fi

@@ -3226,14 +3226,172 @@ Creation of Covid datasets, uniform, tv:
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 False False 0 >> output_sept_13_2023_covid_uniform.txt
 
-Creation of foam datasets, random, tv:
+Creation of covid datasets, random, tv:
 
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True False 0 >> output_sept_13_2023_covid_random.txt
 
-Creation of foam datasets, random constant, tv:
+Creation of covid datasets, random constant, tv:
 
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 0 >> output_sept_13_2023_covid_random_constant0.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 1 >> output_sept_13_2023_covid_random_constant1.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 100 True True 2 >> output_sept_13_2023_covid_random_constant2.txt
+
+REDO for 10 examples each:
+Added PNM_NUM to arguments
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 False False 0 10000 >> output_sept_14_2023_covid_uniform2.txt
+
+Creation of covid datasets, random, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True False 0 10000 >> output_sept_14_2023_covid_random2.txt
+
+Creation of covid datasets, random constant, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 0 10000 >> output_sept_14_2023_covid_random_constant02.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 1 10000 >> output_sept_14_2023_covid_random_constant12.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 2 10000 >> output_sept_14_2023_covid_random_constant22.txt
+
+
+# September 14, 2023
+Increased SNR, pnm numerator to 1000000
+
+
+Creation of covid datasets, random, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 False False 0_pnm_6 1000000 >> output_sept_14_2023_covid_uniform2.txt
+
+Creation of covid datasets, random, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True False 0_pnm_6 1000000 >> output_sept_14_2023_covid_random2.txt
+
+Creation of covid datasets, random constant, tv:
+
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 0_pnm_6 1000000 >> output_sept_14_2023_covid_random_constant02.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 1_pnm_6 1000000 >> output_sept_14_2023_covid_random_constant12.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh 10 True True 2_pnm_6 1000000 >> output_sept_14_2023_covid_random_constant22.txt
+
+
+
+Start the covid sweeps, 100 examples: RUNNING
+
+cd $WORKING_DIR
+Uniform
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_14_2023_covid_100ex_train_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_14_2023_covid_100ex_train_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_14_2023_covid_100ex_train_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_14_2023_covid_100ex_train_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_14_2023_covid_100ex_train_4.txt
+
+Random, Changing
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_14_2023_covid_100ex_train_5.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_14_2023_covid_100ex_train_6.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_14_2023_covid_100ex_train_7.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_14_2023_covid_100ex_train_8.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_14_2023_covid_100ex_train_9.txt
+
+Random, Same, Try 1
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_14_2023_covid_100ex_train_10.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_14_2023_covid_100ex_train_11.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_14_2023_covid_100ex_train_12.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_14_2023_covid_100ex_train_13.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_14_2023_covid_100ex_train_14.txt
+
+Random, Same, Try 2
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_13_2023_2_covid_100ex_train_15.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_13_2023_2_covid_100ex_train_16.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_13_2023_2_covid_100ex_train_17.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_13_2023_2_covid_100ex_train_18.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 1 >> output_sept_13_2023_2_covid_100ex_train_19.txt
+
+Random, Same, Try 3
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_13_2023_2_covid_100ex_train_20.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_13_2023_2_covid_100ex_train_21.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_13_2023_2_covid_100ex_train_22.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_13_2023_2_covid_100ex_train_23.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 2 >> output_sept_13_2023_2_covid_100ex_train_24.txt
+
+# September 15, 2023
+
+10 examples, regular noise:
+
+cd $WORKING_DIR
+Uniform
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0 10000 >> output_sept_15_2023_covid_10ex_train_0.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0 10000 >> output_sept_15_2023_covid_10ex_train_1.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0 10000 >> output_sept_15_2023_covid_10ex_train_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0 10000 >> output_sept_15_2023_covid_10ex_train_3.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0 10000 >> output_sept_15_2023_covid_10ex_train_4.txt (RUN ME)
+
+Random, Changing
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0 10000 >> output_sept_15_2023_covid_10ex_train_5.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0 10000 >> output_sept_15_2023_covid_10ex_train_6.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0 10000 >> output_sept_15_2023_covid_10ex_train_7.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0 10000 >> output_sept_15_2023_covid_10ex_train_8.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0 10000 >> output_sept_15_2023_covid_10ex_train_9.txt (RUN ME)
+
+Random, Same, Try 1
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0 10000 >> output_sept_15_2023_covid_10ex_train_10.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0 10000 >> output_sept_15_2023_covid_10ex_train_11.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0 10000 >> output_sept_15_2023_covid_10ex_train_12.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0 10000 >> output_sept_15_2023_covid_10ex_train_13.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0 10000 >> output_sept_15_2023_covid_10ex_train_14.txt (RUN ME)
+
+Random, Same, Try 2
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1 10000 >> output_sept_15_2023_2_covid_10ex_train_15.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1 10000 >> output_sept_15_2023_2_covid_10ex_train_16.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1 10000 >> output_sept_15_2023_2_covid_10ex_train_17.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1 10000 >> output_sept_15_2023_2_covid_10ex_train_18.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1 10000 >> output_sept_15_2023_2_covid_10ex_train_19.txt (RUN ME)
+
+Random, Same, Try 3
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2 10000 >> output_sept_15_2023_2_covid_10ex_train_20.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2 10000 >> output_sept_15_2023_2_covid_10ex_train_21.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2 10000 >> output_sept_15_2023_2_covid_10ex_train_22.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2 10000 >> output_sept_15_2023_2_covid_10ex_train_23.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2 10000 >> output_sept_15_2023_2_covid_10ex_train_24.txt (RUN ME)
+
+10 examples, improved SNR:
+
+cd $WORKING_DIR
+Uniform
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_0_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_1_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_2_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_3_2.txt (RUN ME)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 False False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_4_2.txt (RUN ME)
+
+Random, Changing
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_5_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_6_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_7_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_8_2.txt (RUN ME)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True False 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_9_2.txt (RUN ME)
+
+Random, Same, Try 1
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_10_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_11_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_12_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_13_2.txt (RUN ME)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 0_pnm_6 1000000 >> output_sept_15_2023_covid_10ex_train_14_2.txt (RUN ME)
+
+Random, Same, Try 2
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_15_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_16_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_17_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_18_2.txt (RUN ME)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 1_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_19_2.txt (RUN ME)
+
+Random, Same, Try 3
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_20_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_21_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_22_2.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_23_2.txt (RUN ME)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_24_2.txt (RUN ME)

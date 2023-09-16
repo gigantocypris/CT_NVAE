@@ -21,7 +21,7 @@ if __name__ == '__main__':
     force_angle_array = None
     num_sparse_angles = 180 # angles in the sparse sinogram
     num_angles = 180 # angles in the full sinogram
-    pnm = np.floor(10000/num_sparse_angles)
+    pnm = np.floor(1000000/num_sparse_angles)
     ring_artifact_strength = 0
     algorithm = 'tv'
 

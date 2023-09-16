@@ -6,20 +6,30 @@ export NUM_EXAMPLES=$1
 export RANDOM_ANGLES=$2
 export CONSTANT_ANGLES=$3
 export TAG=$4
+export PNM_NUM=$5
+export DATA_TYPE=covid
+export BATCH_SIZE=1
+export NUM_NODES=16
+export ORIGINAL_SIZE=512
+export EPOCH_MULT=500
+
+# export DATA_TYPE=foam
+# export BATCH_SIZE=16
+# export NUM_NODES=3
+# export PNM_NUM=10000
+# export ORIGINAL_SIZE=128
+# export EPOCH_MULT=1000
 
 export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
 export NUM_SUBMISSIONS=5 # Max number of submission events
 export TIME=24:00:00
 export RING_VAL=0
 export RING=False
-export BATCH_SIZE=16
 export SAVE_INTERVAL=1000
-export NUM_NODES=3
 export USE_H5=True
-export DATA_TYPE=foam
 
 export NUM_SPARSE_ANGLES_ARRAY=( {20..180..20} )
-export EPOCHS=$(awk 'BEGIN { printf "%.0f", (500/'$NUM_EXAMPLES')*1000; }')
+export EPOCHS=$(awk 'BEGIN { printf "%.0f", (500/'$NUM_EXAMPLES')*'$EPOCH_MULT'; }')
 export ALGORITHM=tv
 # See DATASET_ID formatting below
 
@@ -63,7 +73,7 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     export JOB_ID_ARRAY=() # store all JOB_IDs for this dataset
 
     echo "Current NUM_SPARSE_ANGLES: $NUM_SPARSE_ANGLES"
-    export PNM=$((10000/$NUM_SPARSE_ANGLES))
+    export PNM=$(($PNM_NUM/$NUM_SPARSE_ANGLES))
     echo "PNM: $PNM"
     export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
     export SAVE_NAME_I=${SAVE_NAME[$ind]}
@@ -115,6 +125,6 @@ echo "${JOB_ID_ARRAY_ORIG[@]}"
 
 export INPUT_FILE_ANALYSIS="${JOB_ID_ARRAY_ORIG[0]}.txt"
 echo "INPUT_FILE_ANALYSIS: $INPUT_FILE_ANALYSIS"
-. $CT_NVAE_PATH/slurm/analyze_sweep.sh $JOB_ID_ARRAY_ORIG $INPUT_FILE_ANALYSIS $JOB_FINAL_ARRAY
+. $CT_NVAE_PATH/slurm/analyze_sweep.sh $JOB_ID_ARRAY_ORIG $INPUT_FILE_ANALYSIS $JOB_FINAL_ARRAY $ORIGINAL_SIZE
 
 echo "Script end $(date)";pwd

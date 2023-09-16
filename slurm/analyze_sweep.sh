@@ -1,7 +1,7 @@
 export JOB_ID_ARRAY_ORIG=$1
 export INPUT_FILE=$2
 export JOB_FINAL_ARRAY=$3
-export ORIGINAL_SIZE=128
+export ORIGINAL_SIZE=$4
 export TIME=02:00:00
 export DATASET_TYPE=train
 

@@ -7,12 +7,12 @@ export RANDOM_ANGLES=$2
 export CONSTANT_ANGLES=$3
 export TAG=$4
 export PNM_NUM=$5
-export DATA_TYPE=covid
+export DATA_TYPE=$6
 
 conda deactivate
 module purge
 module load python
-export NERSC_GPU_ALLOCATION=m3562_g
+export NERSC_GPU_ALLOCATION=m2859_g
 conda activate tomopy
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 export WORKING_DIR=$SCRATCH/output_CT_NVAE

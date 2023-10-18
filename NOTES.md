@@ -3123,7 +3123,7 @@ python $CT_NVAE_PATH/computed_tomography/tests/test_large_tomopy_reconstruction.
 
 # September 11, 2023
 
-Sweep with 1 normalizing flow: Hardcoded in train_multi_node_preempt, REMEMBER TO CHANGE BACK
+Sweep with 1 normalizing flow: Hardcoded in train_multi_node_preempt, REMEMBER TO CHANGE BACK (changed back on Oct 18, 2023)
 Random, Changing
 cd $WORKING_DIR
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_11_2023_foam_100ex_train_0.txt
@@ -3395,3 +3395,142 @@ Random, Same, Try 3
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_22_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_23_2.txt
 . /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 10 True True 2_pnm_6 1000000 >> output_sept_15_2023_2_covid_10ex_train_24_2.txt (RUN ME)
+
+# October 13, 2023
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+cd $WORKING_DIR
+export NERSC_GPU_ALLOCATION=m2859_g
+
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
+
+Covid reconstructions that are reasonable:
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824058
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824079
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824101
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824115
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824163
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824177
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824184
+/pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824191
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824261
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824302
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824309
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824331
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824338
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824346
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824354
+Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824398
+
+# October 18, 2023
+
+## Full pipeline:
+
+Create dataset:
+
+module load python
+conda activate tomopy
+
+export NERSC_GPU_ALLOCATION=m2859_g
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+export NUM_EXAMPLES=100
+export NUM_SPARSE_ANGLES=180
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=tv
+export DO_PART_ONE=True
+export DO_PART_TWO=False
+export DATA_TYPE=foam
+export IMAGE_ID=foam_${NUM_EXAMPLES}ex
+export DATASET_ID=foam_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${ALGORITHM}
+export CONSTANT_ANGLES=False
+export PNM_NUM=10000
+### Creation of the base images
+
+sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
+
+### Sweep of dataset creation, varying number of angles, tv algorithm hardcoded in
+
+#### Uniform angles
+cd $WORKING_DIR
+
+export NUM_EXAMPLES=100
+export RANDOM_ANGLES=False
+export CONSTANT_ANGLES=False
+export TAG=0
+export PNM_NUM=10000
+export DATA_TYPE=foam
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_uniform.txt
+
+
+
+#### Random angles
+cd $WORKING_DIR
+
+export NUM_EXAMPLES=100
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=False
+export TAG=0
+export PNM_NUM=10000
+export DATA_TYPE=foam
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random.txt
+
+#### Random constant (can do multiple trials of dataset creation,change the $TAG and the output file name)
+
+cd $WORKING_DIR
+
+export NUM_EXAMPLES=100
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=True
+export TAG=0 # Change for each trial
+export PNM_NUM=10000
+export DATA_TYPE=foam
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random_constant0.txt
+
+# XXXXXXX STOPPED HERE (Go back to start of September 14, 2023 entry)
+
+### Run the training (can be run in parallel for multiple trials, just change output file name)
+
+#### Uniform
+cd $WORKING_DIR
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_0.txt
+
+#### Random
+cd $WORKING_DIR
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_5.txt
+
+#### Random constant (change the $TAG as needed)
+cd $WORKING_DIR
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_10.txt
+
+### Analyze the results
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+export NERSC_GPU_ALLOCATION=m2859_g
+
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
+python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
+
+
+
+## Add angles option (as in first CT_VAE paper):

@@ -3430,7 +3430,8 @@ Really good: /pscratch/sd/v/vidyagan/output_CT_NVAE/checkpts/eval-15824398
 
 ## Full pipeline:
 
-Create dataset:
+
+### Creation of the base images
 
 module load python
 conda activate tomopy
@@ -3441,19 +3442,18 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-export NUM_EXAMPLES=100
+export NUM_EXAMPLES=100 # 100, 10
 export NUM_SPARSE_ANGLES=180
 export RANDOM_ANGLES=True
 export RING=0
 export ALGORITHM=tv
 export DO_PART_ONE=True
 export DO_PART_TWO=False
-export DATA_TYPE=foam
-export IMAGE_ID=foam_${NUM_EXAMPLES}ex
-export DATASET_ID=foam_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${ALGORITHM}
+export DATA_TYPE=foam # foam, covid
+export IMAGE_ID=${DATA_TYPE}_${NUM_EXAMPLES}ex
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${ALGORITHM}
 export CONSTANT_ANGLES=False
 export PNM_NUM=10000
-### Creation of the base images
 
 sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
 
@@ -3462,59 +3462,91 @@ sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_datas
 #### Uniform angles
 cd $WORKING_DIR
 
-export NUM_EXAMPLES=100
+export NUM_EXAMPLES=100 # 100, 10
 export RANDOM_ANGLES=False
 export CONSTANT_ANGLES=False
-export TAG=0
-export PNM_NUM=10000
-export DATA_TYPE=foam
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_uniform.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_uniform.txt
 
 
 
 #### Random angles
 cd $WORKING_DIR
 
-export NUM_EXAMPLES=100
+export NUM_EXAMPLES=100 # 100, 10
 export RANDOM_ANGLES=True
 export CONSTANT_ANGLES=False
-export TAG=0
-export PNM_NUM=10000
-export DATA_TYPE=foam
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random.txt
 
 #### Random constant (can do multiple trials of dataset creation,change the $TAG and the output file name)
 
 cd $WORKING_DIR
 
-export NUM_EXAMPLES=100
+export NUM_EXAMPLES=100 # 100, 10
 export RANDOM_ANGLES=True
 export CONSTANT_ANGLES=True
-export TAG=0 # Change for each trial
-export PNM_NUM=10000
-export DATA_TYPE=foam
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets_foam.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random_constant0.txt
-
-# XXXXXXX STOPPED HERE (Go back to start of September 14, 2023 entry)
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_datasets.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE >> output_sept_8_2023_foam_random_constant0.txt
 
 ### Run the training (can be run in parallel for multiple trials, just change output file name)
 
 #### Uniform
 cd $WORKING_DIR
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 False False 0 >> output_sept_8_2023_foam_100ex_train_0.txt
+export NUM_EXAMPLES=100 # 100, 10
+export RANDOM_ANGLES=False
+export CONSTANT_ANGLES=False
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
+export BATCH_SIZE=16 # 16, 1
+export NUM_NODES=3 # 3, 16
+export ORIGINAL_SIZE=128 # 128, 512
+export EPOCH_MULT=1000 # 1000, 500
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_slurm_dep.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE $BATCH_SIZE $NUM_NODES $ORIGINAL_SIZE $EPOCH_MULT >> output_sept_8_2023_foam_100ex_train_0.txt
 
 #### Random
 cd $WORKING_DIR
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True False 0 >> output_sept_8_2023_foam_100ex_train_5.txt
+export NUM_EXAMPLES=100 # 100, 10
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=False
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
+export BATCH_SIZE=16 # 16, 1
+export NUM_NODES=3 # 3, 16
+export ORIGINAL_SIZE=128 # 128, 512
+export EPOCH_MULT=1000 # 1000, 500
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_slurm_dep.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE $BATCH_SIZE $NUM_NODES $ORIGINAL_SIZE $EPOCH_MULT >> output_sept_8_2023_foam_100ex_train_5.txt
 
 #### Random constant (change the $TAG as needed)
+
+export NUM_EXAMPLES=100 # 100, 10
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=True
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
+export BATCH_SIZE=16 # 16, 1
+export NUM_NODES=3 # 3, 16
+export ORIGINAL_SIZE=128 # 128, 512
+export EPOCH_MULT=1000 # 1000, 500
+
 cd $WORKING_DIR
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_foam_slurm_dep.sh 100 True True 0 >> output_sept_8_2023_foam_100ex_train_10.txt
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_slurm_dep.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE $BATCH_SIZE $NUM_NODES $ORIGINAL_SIZE $EPOCH_MULT >> output_sept_8_2023_foam_100ex_train_10.txt
 
 ### Analyze the results
 
@@ -3525,12 +3557,12 @@ export WORKING_DIR=$SCRATCH/output_CT_NVAE
 export CT_NVAE_PATH=$SCRATCH/CT_NVAE
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
-export NERSC_GPU_ALLOCATION=m2859_g
 
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
 
 
+# October 19, 2023
 
 ## Add angles option (as in first CT_VAE paper):

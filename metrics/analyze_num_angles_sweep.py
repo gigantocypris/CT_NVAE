@@ -311,7 +311,7 @@ JOB_ID_array_10ex_rand_same3_covid_snr = ["15688580 15688667 15688736 15688807 1
                                           # FAILED SUBMIT
                                          ]
 
-JOB_ID_array = JOB_ID_array_100ex_uniform_covid
+JOB_ID_array = JOB_ID_array_100ex_rand_same3_normflow_2
 JOB_ID_array_mat=[]
 for JOB_ID_subarray in JOB_ID_array:
     JOB_ID_subarray = JOB_ID_subarray.split(" ")

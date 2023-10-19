@@ -7,18 +7,11 @@ export RANDOM_ANGLES=$2
 export CONSTANT_ANGLES=$3
 export TAG=$4
 export PNM_NUM=$5
-export DATA_TYPE=covid
-export BATCH_SIZE=1
-export NUM_NODES=16
-export ORIGINAL_SIZE=512
-export EPOCH_MULT=500
-
-# export DATA_TYPE=foam
-# export BATCH_SIZE=16
-# export NUM_NODES=3
-# export PNM_NUM=10000
-# export ORIGINAL_SIZE=128
-# export EPOCH_MULT=1000
+export DATA_TYPE=$6 # foam, covid
+export BATCH_SIZE=$7 # 16, 1
+export NUM_NODES=$8 # 3, 16
+export ORIGINAL_SIZE=$9 # 128, 512
+export EPOCH_MULT=${10} # 1000, 500
 
 export SAVE_NAME=False # Set to False for a new array of jobs, can give array of job IDs to resume
 export NUM_SUBMISSIONS=5 # Max number of submission events
@@ -93,7 +86,7 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
     for ((i = 1; i <= NUM_SUBMISSIONS; i++)); do
         echo "Submitting job to train with $DATASET_ID"
 
-        # This will be run if all the previous jobs do not complete
+        # This will be run if all the previous jobs do not complete successfully
         export PREVIOUS_JOBS=$(IFS=:; echo "${JOB_ID_ARRAY[*]}")
         export COMMAND_NOTOK="sbatch --dependency=afternotok:$PREVIOUS_JOBS -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID $EPOCHS $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
 
@@ -104,7 +97,7 @@ for NUM_SPARSE_ANGLES in "${NUM_SPARSE_ANGLES_ARRAY[@]}"; do
         echo "Job ID repeat: $JOB_ID"
     done
 
-    # This will be run (final train and test) after the previous jobs complete
+    # This will be run (final train and test) after the previous jobs complete successfully/unsuccessfully
     export COMMAND_ANY="sbatch --dependency=afterany:$JOB_ID -A $NERSC_GPU_ALLOCATION -N $NUM_NODES -n $NUM_NODES --time=$TIME $CT_NVAE_PATH/slurm/train_multi_node_preempt.sh $BATCH_SIZE $CT_NVAE_PATH $DATASET_ID 0 $SAVE_INTERVAL $PNM $RING $NUM_NODES $USE_H5 $JOB_ID_ORIG $DATA_TYPE"
     JOB_ID_ANY=$(eval "$COMMAND_ANY" | awk '{print $4}')
     echo "Job ID analysis: $JOB_ID_ANY"

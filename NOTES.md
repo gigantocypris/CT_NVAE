@@ -3563,6 +3563,21 @@ python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
 
 
-# October 19, 2023
+# October 20, 2023
 
 ## Add angles option (as in first CT_VAE paper):
+
+test in `/pscratch/sd/v/vidyagan/CT_NVAE/computed_tomography/tests/test_sparse_reconstruction_mask.py`
+
+How to run test:
+
+module load python
+conda activate tomopy
+export PYTHONPATH=$SCRATCH/CT_NVAE:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+python $CT_NVAE_PATH/computed_tomography/tests/test_sparse_reconstruction_mask.py
+
+Saves reconstruction_mask.png in the current directory.

@@ -92,5 +92,13 @@ def process_sinogram(input_sinogram, random, force_angle_array, num_sparse_angle
                                           remove_ring_artifact=remove_ring_artifact,
                                           algorithm=algorithm)
 
+    breakpoint()
+    sparse_sinogram_mask = np.zeros_like(sparse_sinogram_raw)
+    sparse_sinogram_mask[sparse_angles,:,:] = 1
+    sparse_reconstruction_mask = reconstruct_sinogram(sparse_sinogram_mask, theta[sparse_angles], 
+                                                      remove_ring_artifact=False,
+                                                      algorithm=algorithm)
+
+    # STOPPED HERE
     
     return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram

@@ -3581,3 +3581,54 @@ cd $WORKING_DIR
 python $CT_NVAE_PATH/computed_tomography/tests/test_sparse_reconstruction_mask.py
 
 Saves reconstruction_mask.png in the current directory.
+
+# October 23, 2023
+
+Test dataset creation directly (use base images from $WORKING_DIR/images_foam_10ex):
+
+export NUM_EXAMPLES=10 # 100, 10
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=False
+export TAG=test_mask # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
+
+conda deactivate
+module purge
+module load python
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+export RING=0
+export ALGORITHM=tv
+export DO_PART_ONE=False # False assumes we already have the base images
+export DO_PART_TWO=True
+export IMAGE_ID=${DATA_TYPE}_${NUM_EXAMPLES}ex
+export DO_PART_ONE=False
+export DO_PART_TWO=True
+export NUM_SPARSE_ANGLES=20
+
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
+
+. $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
+
+Test training directly, new session but following from above code:
+
+### STOPPED HERE
+cd $WORKING_DIR
+
+export NUM_EXAMPLES=100 # 100, 10
+export RANDOM_ANGLES=True
+export CONSTANT_ANGLES=False
+export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export PNM_NUM=10000 # 10000, 1000000
+export DATA_TYPE=foam # foam, covid
+export BATCH_SIZE=16 # 16, 1
+export NUM_NODES=3 # 3, 16
+export ORIGINAL_SIZE=128 # 128, 512
+export EPOCH_MULT=1000 # 1000, 500
+
+. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_slurm_dep.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE $BATCH_SIZE $NUM_NODES $ORIGINAL_SIZE $EPOCH_MULT >> output_sept_8_2023_foam_100ex_train_5.txt

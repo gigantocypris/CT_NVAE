@@ -49,7 +49,7 @@ def main(args, dataset_type):
             print(f'x_train_sinogram has shape {x_train_sinogram.shape}')
 
             # make sparse sinogram and reconstruct
-            sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram = \
+            sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram, sparse_reconstruction_mask = \
                 process_sinogram(np.transpose(x_train_sinogram,axes=[1,0,2]), random, force_angle_array, num_sparse_angles, theta, 
                                 poisson_noise_multiplier = args.pnm, remove_ring_artifact = False, 
                                 ring_artifact_strength = args.ring_artifact_strength, algorithm=args.algorithm)
@@ -71,6 +71,7 @@ def main(args, dataset_type):
                 slice_group.create_dataset('reconstructed_object', data=reconstruction[slice_ind])
                 slice_group.create_dataset('sparse_sinogram', data=sparse_sinogram[slice_ind])
                 slice_group.create_dataset('sparse_sinogram_raw', data=sparse_sinogram_raw[slice_ind])
+                slice_group.create_dataset('sparse_reconstruction_mask', data=sparse_reconstruction_mask[slice_ind])
                 slice_group.create_dataset('object_id_3d', data=object_id_3d[slice_ind])
                 total_slices += 1
 

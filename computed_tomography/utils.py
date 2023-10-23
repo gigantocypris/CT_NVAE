@@ -44,7 +44,7 @@ def get_sparse_angles(random, num_angles, num_sparse_angles, force_angle_array=N
     sparse_angles = np.sort(sparse_angles).astype(np.int32)
     return(sparse_angles)
 
-def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gridrec', num_iter=10):
+def reconstruct_sinogram(proj, theta, remove_ring_artifact=False, algorithm='gridrec', num_iter=20):
     """
     transform sinogram with tomopy
     proj in tomopy.recon must be num_angles x num_z x num_proj_pix
@@ -92,13 +92,15 @@ def process_sinogram(input_sinogram, random, force_angle_array, num_sparse_angle
                                           remove_ring_artifact=remove_ring_artifact,
                                           algorithm=algorithm)
 
-    breakpoint()
-    sparse_sinogram_mask = np.zeros_like(sparse_sinogram_raw)
-    sparse_sinogram_mask[sparse_angles,:,:] = 1
+    
+    sparse_sinogram_mask = np.ones_like(sparse_sinogram_raw)
     sparse_reconstruction_mask = reconstruct_sinogram(sparse_sinogram_mask, theta[sparse_angles], 
                                                       remove_ring_artifact=False,
                                                       algorithm=algorithm)
-
-    # STOPPED HERE
-    
-    return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram
+    '''
+    import matplotlib.pyplot as plt
+    show_ind = 1
+    plt.figure(); plt.imshow(reconstruction[show_ind]); plt.savefig('reconstruction' + str(show_ind) + '.png')
+    plt.figure(); plt.imshow(sparse_reconstruction_mask[show_ind]); plt.savefig('mask' + str(show_ind) + '.png')
+    '''
+    return sparse_angles, reconstruction, sparse_sinogram_raw, sparse_sinogram, sparse_reconstruction_mask

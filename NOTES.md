@@ -3453,7 +3453,7 @@ export DATA_TYPE=foam # foam, covid
 export IMAGE_ID=${DATA_TYPE}_${NUM_EXAMPLES}ex
 export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${ALGORITHM}
 export CONSTANT_ANGLES=False
-export PNM_NUM=10000
+export PNM_NUM=10000 # 10000, 1000000
 
 sbatch --time=02:00:00 -A $NERSC_GPU_ALLOCATION $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
 
@@ -3586,6 +3586,7 @@ Saves reconstruction_mask.png in the current directory.
 
 Test dataset creation directly (use base images from $WORKING_DIR/images_foam_10ex):
 
+### Dataset Creation
 export NUM_EXAMPLES=10 # 100, 10
 export RANDOM_ANGLES=True
 export CONSTANT_ANGLES=False
@@ -3617,18 +3618,78 @@ export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING}
 
 Test training directly, new session but following from above code:
 
-### STOPPED HERE
+### Training
+
+conda deactivate
+module purge
+module load python
+export NERSC_GPU_ALLOCATION=m2859_g
+conda activate CT_NVAE
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-export NUM_EXAMPLES=100 # 100, 10
+export NUM_EXAMPLES=10 # 100, 10
 export RANDOM_ANGLES=True
 export CONSTANT_ANGLES=False
-export TAG=0 # 0, 0_pnm_6 # increment 0 for each trial
+export TAG=test_mask # 0, 0_pnm_6 # increment 0 for each trial
 export PNM_NUM=10000 # 10000, 1000000
 export DATA_TYPE=foam # foam, covid
 export BATCH_SIZE=16 # 16, 1
-export NUM_NODES=3 # 3, 16
+export NUM_NODES=1 # 3, 16
 export ORIGINAL_SIZE=128 # 128, 512
-export EPOCH_MULT=1000 # 1000, 500
 
-. /pscratch/sd/v/vidyagan/CT_NVAE/slurm/sweep_num_proj_train_slurm_dep.sh $NUM_EXAMPLES $RANDOM_ANGLES $CONSTANT_ANGLES $TAG $PNM_NUM $DATA_TYPE $BATCH_SIZE $NUM_NODES $ORIGINAL_SIZE $EPOCH_MULT >> output_sept_8_2023_foam_100ex_train_5.txt
+export RING_VAL=0
+export RING=False
+export SAVE_INTERVAL=5
+export USE_H5=True
+export NUM_SPARSE_ANGLES=20
+export EPOCHS=1000
+export ALGORITHM=tv
+export PNM=$(($PNM_NUM/$NUM_SPARSE_ANGLES))
+
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING_VAL}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
+export SAVE_NAME=test_mask2
+
+export DATASET_DIR=$WORKING_DIR
+export CHECKPOINT_DIR=$WORKING_DIR/checkpts
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+
+export NUM_LATENT_SCALES=2
+export NUM_GROUPS_PER_SCALE=10
+export NUM_POSTPROCESS_CELLS=3
+export NUM_PREPROCESS_CELLS=3
+export NUM_CELL_PER_COND_ENC=2
+export NUM_CELL_PER_COND_DEC=2
+export NUM_LATENT_PER_GROUP=20
+export NUM_PREPROCESS_BLOCKS=2
+export NUM_POSTPROCESS_BLOCKS=2
+export WEIGHT_DECAY_NORM=1e-2
+export NUM_CHANNELS_ENC=32
+export NUM_CHANNELS_DEC=32
+export NUM_NF=0
+export MIN_GROUPS_PER_SCALE=1
+export WEIGHT_DECAY_NORM_INIT=10.
+export WEIGHT_DECAY_NORM_ANNEAL=False
+
+export FINAL_TRAIN=True
+export FINAL_TEST=True
+
+export NERSC_GPU_ALLOCATION=m2859_g
+salloc -N $NUM_NODES -n $NUM_NODES --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
+
+export MASTER_ADDR=$(hostname)
+
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train $FINAL_TRAIN --final_test $FINAL_TEST --use_nersc
+
+### STOPPED HERE - ADD IN MASKS AND TEST
+
+### Analysis
+
+. $CT_NVAE_PATH/slurm/analyze_sweep.sh $JOB_ID_ARRAY_ORIG $INPUT_FILE_ANALYSIS $JOB_FINAL_ARRAY $ORIGINAL_SIZE
+
+
+
+
+

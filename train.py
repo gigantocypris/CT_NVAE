@@ -230,12 +230,15 @@ def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
     # angles, x_size, y_size, num_proj_pix, ground_truth)
     x = x_full[0].cuda()
+    print('XXXX')
+    print(x.shape)
     sparse_sinogram_raw = x_full[2].cuda()
     object_id = x_full[3].cuda()
     sparse_sinogram = x_full[1].cuda()
     ground_truth = x_full[8].cuda()
     theta = x_full[4].cuda()
     x_size = x_full[5].cuda()
+    
     # change bit length
     x = utils.pre_process(x, args.num_x_bits)
     object_id = utils.pre_process(object_id, args.num_x_bits)
@@ -525,6 +528,8 @@ if __name__ == '__main__':
                         help='if not None, truncate the training dataset to this many examples')
     parser.add_argument('--use_h5', dest='use_h5', type=lambda x: x.lower() == 'true',
                     help='If True, load relevant data from h5 file at every iteration',default=False)
+    parser.add_argument('--use_masks', dest='use_masks', type=lambda x: x.lower() == 'true',
+                help='If True, use image of the masks stacked with the image reconstruction as input to the encoder',default=False)
     parser.add_argument('--final_train', type=lambda x: x.lower() == 'true', default=False,
             help='This flag is for the final evaluation of the train examples.')
     parser.add_argument('--final_valid', type=lambda x: x.lower() == 'true', default=False,

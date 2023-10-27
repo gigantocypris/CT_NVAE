@@ -20,9 +20,10 @@ def get_loaders(args):
     return get_loaders_eval(args.dataset, args)
 
 class H5_Dataset(Dataset):
-    def __init__(self, h5_filename, truncate=None):
+    def __init__(self, h5_filename, truncate=None, use_masks=False):
         self.h5_filename = h5_filename
         self.truncate = truncate
+        self.use_masks = use_masks
         with h5py.File(self.h5_filename, 'r') as h5_file:
             self.total_slices = h5_file['total_slices'][()]
             self.theta = h5_file['theta'][:]
@@ -30,6 +31,8 @@ class H5_Dataset(Dataset):
         with h5py.File(self.h5_filename, 'r') as h5_file:
             obj = h5_file[f'slice_{index}']
             sparse_reconstruction = torch.from_numpy(obj['reconstructed_object'][:][None,:,:]).float()
+            print(f'sparse_reconstruction has shape {sparse_reconstruction.shape}')
+            #([1, 184, 184])
             sparse_sinogram = torch.from_numpy(obj['sparse_sinogram'][:]).float()
             mask_inds = obj['mask_inds'][:]
             angles = torch.from_numpy(self.theta[mask_inds]).float()
@@ -39,6 +42,12 @@ class H5_Dataset(Dataset):
             ground_truth = torch.from_numpy(obj['x_train_img'][:]).float()
             sparse_sinogram_raw = torch.from_numpy(obj['sparse_sinogram_raw'][:]).float()
             object_id = torch.from_numpy(obj['object_id_3d'][:]).float()
+
+            if self.use_masks:
+                sparse_reconstruction_mask = torch.from_numpy(obj['sparse_reconstruction_mask'][:]).float()
+                print(f'sparse_reconstruction_mask has shape {sparse_reconstruction_mask.shape}')
+                # sparse_reconstruction = torch.stack([sparse_reconstruction, sparse_reconstruction_mask], dim=0)
+                # print(f'sparse_reconstruction has shape {sparse_reconstruction.shape}')
 
         return (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
                 angles, x_size, y_size, num_proj_pix, ground_truth)
@@ -104,9 +113,9 @@ def get_loaders_eval(dataset, args):
     dataset_dir = os.environ['DATASET_DIR']
     if args.use_h5:
         h5_filepath = dataset_dir + '/dataset_' + dataset + '/'
-        train_data = H5_Dataset(h5_filepath + 'train.h5', truncate=args.truncate)
-        valid_data = H5_Dataset(h5_filepath + 'valid.h5')
-        test_data = H5_Dataset(h5_filepath + 'test.h5')
+        train_data = H5_Dataset(h5_filepath + 'train.h5', truncate=args.truncate, use_masks=args.use_masks)
+        valid_data = H5_Dataset(h5_filepath + 'valid.h5', use_masks=args.use_masks)
+        test_data = H5_Dataset(h5_filepath + 'test.h5', use_masks=args.use_masks)
     else:
         train_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='train', truncate=args.truncate))
         valid_data = CT_Dataset(*load_data(dataset, dataset_dir, dataset_type='valid'))

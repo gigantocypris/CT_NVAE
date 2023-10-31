@@ -3673,15 +3673,16 @@ export MIN_GROUPS_PER_SCALE=1
 export WEIGHT_DECAY_NORM_INIT=10.
 export WEIGHT_DECAY_NORM_ANNEAL=False
 
-export FINAL_TRAIN=True
-export FINAL_TEST=True
+export FINAL_TRAIN=True # False
+export FINAL_TEST=True # False
 
 export NERSC_GPU_ALLOCATION=m2859_g
 salloc -N $NUM_NODES -n $NUM_NODES --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
 
 export MASTER_ADDR=$(hostname)
+export NUM_PROCESS_PER_NODE=4 # 1
 
-python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node 4 --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --cont_training --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train $FINAL_TRAIN --final_test $FINAL_TEST --use_nersc --use_masks True
+python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node $NUM_PROCESS_PER_NODE --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train $FINAL_TRAIN --final_test $FINAL_TEST --use_nersc --use_masks True # --cont_training
 
 ### STOPPED HERE - ADD IN MASKS AND TEST
 
@@ -3691,5 +3692,7 @@ python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset
 
 
 
-
+### Fix for use_masks (make 2 channels an argument instead of hard-coded)
+XXX in utils.py and neural_operations.py
+remove all the print statements
 

@@ -202,7 +202,7 @@ class AutoEncoder(nn.Module):
     def init_stem(self):
         """Initial conversion of number of channels"""
         Cout = self.num_channels_enc
-        Cin = 1
+        Cin = 2 # 2 if using masks # XXX
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 

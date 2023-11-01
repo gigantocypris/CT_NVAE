@@ -82,7 +82,7 @@ def main(eval_args):
             valid_queue = train_queue
 
         # get number of bits
-        num_output = utils.num_output(args.dataset)
+        num_output = utils.num_output(args)
         bpd_coeff = 1. / np.log(2.) / num_output
 
         valid_neg_log_p, valid_nelbo = test(valid_queue, model, num_samples=eval_args.num_iw_samples, args=args, logging=logging)

@@ -67,7 +67,7 @@ class CellAR(nn.Module):
         assert num_c % num_z == 0
 
         self.cell_type = 'ar_nn'
-
+        
         # s0 will the random samples
         ex = 6
         self.conv = ARInvertedResidual(num_z, num_ftr, ex=ex, mirror=mirror)
@@ -118,6 +118,7 @@ class AutoEncoder(nn.Module):
         self.use_se = args.use_se
         self.res_dist = args.res_dist
         self.num_bits = args.num_x_bits
+        self.use_masks = args.use_masks
 
         self.num_latent_scales = args.num_latent_scales         # number of spatial scales that latent layers will reside
         self.num_groups_per_scale = args.num_groups_per_scale   # number of groups of latent vars. per scale
@@ -202,7 +203,7 @@ class AutoEncoder(nn.Module):
     def init_stem(self):
         """Initial conversion of number of channels"""
         Cout = self.num_channels_enc
-        Cin = 2 # 2 if using masks # XXX
+        Cin = 2 if self.use_masks else 1
         stem = Conv2D(Cin, Cout, 3, padding=1, bias=True)
         return stem
 

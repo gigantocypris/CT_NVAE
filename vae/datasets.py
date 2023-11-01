@@ -31,8 +31,6 @@ class H5_Dataset(Dataset):
         with h5py.File(self.h5_filename, 'r') as h5_file:
             obj = h5_file[f'slice_{index}']
             sparse_reconstruction = torch.from_numpy(obj['reconstructed_object'][:][None,:,:]).float()
-            print(f'sparse_reconstruction has shape {sparse_reconstruction.shape}')
-            #([1, 184, 184])
             sparse_sinogram = torch.from_numpy(obj['sparse_sinogram'][:]).float()
             mask_inds = obj['mask_inds'][:]
             angles = torch.from_numpy(self.theta[mask_inds]).float()
@@ -46,10 +44,7 @@ class H5_Dataset(Dataset):
             if self.use_masks:
                 sparse_reconstruction_mask = torch.from_numpy(obj['sparse_reconstruction_mask'][:]).float()
                 sparse_reconstruction_mask = torch.unsqueeze(sparse_reconstruction_mask, dim=0)
-                print(f'sparse_reconstruction_mask has shape {sparse_reconstruction_mask.shape}')
-                print(f'sparse_reconstruction has shape {sparse_reconstruction.shape}')
                 sparse_reconstruction = torch.concat((sparse_reconstruction, sparse_reconstruction_mask), dim=0)
-                print(f'sparse_reconstruction final has shape {sparse_reconstruction.shape}')
 
         return (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
                 angles, x_size, y_size, num_proj_pix, ground_truth)

@@ -299,10 +299,11 @@ def one_hot(indices, depth, dim):
     return y_onehot
 
 
-def num_output(dataset):
+def num_output(args):
     dataset_dir = os.environ['DATASET_DIR']
-    size = int(np.load(dataset_dir + '/dataset_' + dataset + '/train_num_proj_pix.npy'))
-    return 2 * size * size # 2 if using masks, 1 otherwise # XXX
+    size = int(np.load(dataset_dir + '/dataset_' + args.dataset + '/train_num_proj_pix.npy'))
+    output_size_multiplier = 2 if args.use_masks else 1
+    return output_size_multiplier * size * size
 
 
 def get_input_size(dataset):

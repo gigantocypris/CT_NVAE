@@ -3584,8 +3584,8 @@ Saves reconstruction_mask.png in the current directory.
 
 # October 23, 2023
 
+### PIPELINE START
 Test dataset creation directly (use base images from $WORKING_DIR/images_foam_10ex):
-
 ### Dataset Creation
 export NUM_EXAMPLES=10 # 100, 10
 export RANDOM_ANGLES=True
@@ -3645,7 +3645,7 @@ export RING=False
 export SAVE_INTERVAL=5
 export USE_H5=True
 export NUM_SPARSE_ANGLES=20
-export EPOCHS=5
+export EPOCHS=2
 export ALGORITHM=tv
 export PNM=$(($PNM_NUM/$NUM_SPARSE_ANGLES))
 
@@ -3684,15 +3684,39 @@ export NUM_PROCESS_PER_NODE=4 # 1
 
 python $CT_NVAE_PATH/train.py --root $CHECKPOINT_DIR --save $SAVE_NAME --dataset $DATASET_ID --batch_size $BATCH_SIZE --epochs $EPOCHS --num_latent_scales $NUM_LATENT_SCALES --num_groups_per_scale $NUM_GROUPS_PER_SCALE --num_postprocess_cells $NUM_POSTPROCESS_CELLS --num_preprocess_cells $NUM_PREPROCESS_CELLS --num_cell_per_cond_enc $NUM_CELL_PER_COND_ENC --num_cell_per_cond_dec $NUM_CELL_PER_COND_DEC --num_latent_per_group $NUM_LATENT_PER_GROUP --num_preprocess_blocks $NUM_PREPROCESS_BLOCKS --num_postprocess_blocks $NUM_POSTPROCESS_BLOCKS --weight_decay_norm $WEIGHT_DECAY_NORM --num_channels_enc $NUM_CHANNELS_ENC --num_channels_dec $NUM_CHANNELS_DEC --num_nf $NUM_NF  --ada_groups --num_process_per_node $NUM_PROCESS_PER_NODE --use_se --res_dist --fast_adamax --pnm $PNM --save_interval $SAVE_INTERVAL --model_ring_artifact $RING --num_proc_node $NUM_NODES --use_h5 $USE_H5 --min_groups_per_scale $MIN_GROUPS_PER_SCALE --weight_decay_norm_anneal $WEIGHT_DECAY_NORM_ANNEAL --weight_decay_norm_init $WEIGHT_DECAY_NORM_INIT --final_train $FINAL_TRAIN --final_test $FINAL_TEST --use_nersc --use_masks True # --cont_training
 
-### STOPPED HERE - ADD IN MASKS AND TEST
+### STOPPED HERE
 
 ### Analysis
 
-. $CT_NVAE_PATH/slurm/analyze_sweep.sh $JOB_ID_ARRAY_ORIG $INPUT_FILE_ANALYSIS $JOB_FINAL_ARRAY $ORIGINAL_SIZE
+Open a new terminal (doesn't have to be interactive node)
 
+conda deactivate
+module purge
+module load python
+conda activate tomopy
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export PYTHONPATH=$CT_NVAE_PATH:$PYTHONPATH
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
 
+export DATASET_TYPE=train # test
+export SAVE_NAME=test_mask2
+export ORIGINAL_SIZE=128
+export ALGORITHM=tv
+
+python $CT_NVAE_PATH/metrics/analyze_training_results.py --expr_id $SAVE_NAME --original_size $ORIGINAL_SIZE --algorithm $ALGORITHM --dataset_type $DATASET_TYPE
+
+### PIPELINE END
 
 ### Fix for use_masks (make 2 channels an argument instead of hard-coded)
-XXX in utils.py and neural_operations.py
+XXX in utils.py and model.py
 remove all the print statements
+FIXED
 
+
+# November 1, 2023
+
+TODO: redo full batch pipeline with masks
+TODO: add --use_masks True and --use_masks False to the pipeline
+Compare with and without masks

@@ -84,7 +84,7 @@ def main(args):
 
     grad_scalar = GradScaler(2**10)
 
-    num_output = utils.num_output(args.dataset) # total number of output pixels
+    num_output = utils.num_output(args) # total number of output pixels
     bpd_coeff = 1. / np.log(2.) / num_output
 
     # if load
@@ -230,8 +230,6 @@ def parse_x_full(x_full, args):
     # x_full is (sparse_reconstruction, sparse_sinogram, sparse_sinogram_raw, object_id,
     # angles, x_size, y_size, num_proj_pix, ground_truth)
     x = x_full[0].cuda()
-    print('XXXX')
-    print(x.shape)
     sparse_sinogram_raw = x_full[2].cuda()
     object_id = x_full[3].cuda()
     sparse_sinogram = x_full[1].cuda()
@@ -459,7 +457,7 @@ def test(valid_queue, model, model_ring, epoch, num_samples, args, logging, data
                 example_group.create_dataset('sparse_sinogram', data=sparse_sinogram.cpu().numpy())
                 example_group.create_dataset('ground_truth', data=ground_truth.cpu().numpy())
                 example_group.create_dataset('theta', data=theta.cpu().numpy())
-                example_group.create_dataset('init_reconstruction', data=x.cpu().numpy())
+                example_group.create_dataset('init_reconstruction', data=x.cpu().numpy()[:,0,:,:][:,np.newaxis,:,:])
                 
 
                 nelbo = torch.mean(torch.stack(nelbo, dim=1))

@@ -311,7 +311,23 @@ JOB_ID_array_10ex_rand_same3_covid_snr = ["15688580 15688667 15688736 15688807 1
                                           # FAILED SUBMIT
                                          ]
 
-JOB_ID_array = JOB_ID_array_100ex_rand_same3_normflow_2
+# Trying out masks vs. no masks, nov 2023
+JOB_ID_array_uniform_use_masks = ["17836537 17836558 17836584 17836597 17836609 17836638 17836650 17836907 17836917"]
+JOB_ID_array_uniform_no_masks = ["17838334 17838342 17838352 17838360 17838370 17838384 17838403 17838419 17838433"]
+
+JOB_ID_array_random_use_masks = ["17838491 17838516 17838532 17838553 17838566 17838573 17838580 17838590 17838600"]
+JOB_ID_array_random_no_masks = ["17838666 17838675 17838683 17838691 17838701 17838710 17838720 17838727 17838735"]
+
+JOB_ID_array_random_constant_0_use_masks = ["17838953 17838967 17838984 17838997 17839013 17839027 17839041 17839057 17839072"]
+JOB_ID_array_random_constant_0_no_masks = ["17839632 17839639 17839647 17839655 17839662 17839669 17839676 17839683 17839690"]
+
+JOB_ID_array_random_constant_1_use_masks = ["17839823 17839948 17839955 17839964 17839974 17839982 17839991 17840001 17840009"]
+JOB_ID_array_random_constant_1_no_masks = ["17840025 17840035 17840046 17840063 17840084 17840096 17840111 17840123 17840134"]
+
+JOB_ID_array_random_constant_2_use_masks = ["17840152 17840166 17840176 17840186 17840198 17840211 17840227 17840239 17840255"]
+JOB_ID_array_random_constant_2_no_masks = ["17840282 17840289 17840297 17840307 17840318 17840340 17840350 17840359 17840369"]
+
+JOB_ID_array = JOB_ID_array_random_constant_2_no_masks
 JOB_ID_array_mat=[]
 for JOB_ID_subarray in JOB_ID_array:
     JOB_ID_subarray = JOB_ID_subarray.split(" ")
@@ -367,6 +383,7 @@ plt.plot(all_err_vec_NVAE.T, 'b.')
 plt.plot(all_err_vec_gridrec.T, 'g.')
 plt.plot(all_err_vec_tv.T, 'r.')
 plt.plot(all_err_vec_sirt.T, 'y.')
+plt.ylim([-2.5, 15])
 plt.savefig("angle_sweep_compare" + JOB_ID_array_mat[0,0] + ".png")
 
 print("best_JOB_ID", best_JOB_ID)

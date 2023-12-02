@@ -23,8 +23,14 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Get command line args')
     parser.add_argument('--dir', dest = 'dir', type=str, help='where the numpy object files are saved')
+    parser.add_argument('--type', dest = 'type', type=str, help='type of data that was created', default='foam', 
+                    choices=['foam', 'covid', 'toy'])
+    
     args = parser.parse_args()
-    theta = np.linspace(0, np.pi, 180, endpoint=False)
+    if args.type=='toy':
+        theta = np.linspace(0, np.pi, 2, endpoint=False)
+    else:
+        theta = np.linspace(0, np.pi, 180, endpoint=False)
 
     comm = MPI.COMM_WORLD
     world_size = os.environ['SLURM_NTASKS']

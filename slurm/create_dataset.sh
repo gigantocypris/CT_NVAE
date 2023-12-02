@@ -45,7 +45,7 @@ if [ $DO_PART_ONE = True ]; then
         srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_images.py -n $NUM_EXAMPLES --dest images_$IMAGE_ID --type $DATA_TYPE
     fi
 
-    srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_$IMAGE_ID
+    srun -n $SLURM_NTASKS python $CT_NVAE_PATH/preprocessing/create_sinograms.py --dir images_$IMAGE_ID --type $DATA_TYPE
 
     python $CT_NVAE_PATH/preprocessing/create_splits.py --src images_$IMAGE_ID --dest images_$IMAGE_ID --train 0.7 --valid 0.2 --test 0.1 -n $NUM_EXAMPLES
 

@@ -12,6 +12,21 @@ import glob
 import gzip
 import shutil
 
+def create_toy_example(Z_SLICES = 32):
+    """
+    Creates a single 3D example of a toy phantom
+    1/2 of the slices are [[0.1, 0.2],[0.3, 0.4]]
+    1/2 of the slices are [[0.3, 0.4],[0.1, 0.2]]
+    """
+    example_0 = np.array([[0.1, 0.2],[0.3, 0.4]])
+    example_0 = np.repeat(example_0[np.newaxis, :, :], Z_SLICES//2, axis=0)
+
+    example_1 = np.array([[0.3, 0.4],[0.1, 0.2]])
+    example_1 = np.repeat(example_1[np.newaxis, :, :], Z_SLICES//2, axis=0)
+
+    example = np.concatenate((example_0, example_1), axis=0)  # shape is Z_SLICES x N_PIXEL x N_PIXEL
+    return example, None
+
 def create_foam_example(N_PIXEL=128, SIZE_LOWER = 0.01, SIZE_UPPER = 0.1, GAP = 0, POROSITY=0.5, Z_SLICES = 32):
     """Creates a single 3D example of a foam phantom"""
     example = []
@@ -68,6 +83,8 @@ def main(num_examples, rank, world_size, dest_dir, type):
                 example, filename = create_foam_example()
             elif type=='covid':
                 example, filename = create_covid_example(covid_list[example_index])
+            elif type=='toy':
+                example, filename = create_toy_example()
             else:
                 raise NotImplementedError('image type not implemented')
             if filename is None:
@@ -82,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', dest = 'num_examples', type=int, help='number of total examples', default=64)
     parser.add_argument('--dest', dest = 'dest_dir', type=str, help='where the numpy files are saved')
     parser.add_argument('--type', dest = 'type', type=str, help='type of data to create', default='foam', 
-                        choices=['foam', 'covid'])
+                        choices=['foam', 'covid', 'toy'])
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD

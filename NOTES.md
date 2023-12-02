@@ -3897,4 +3897,59 @@ python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric PSNR
 python $CT_NVAE_PATH/metrics/analyze_num_angles_sweep.py --dataset_type train --metric SSIM
 
-### STOPPED HERE
+
+# December 1, 2023
+
+Toy example test
+
+Example 1:
+0.1 0.2
+0.3 0.4
+
+
+Example 2:
+0.3 0.4
+0.1 0.2
+
+Angles: 0 and pi/2
+
+Full pipeline with the toy example:
+
+### Creation of the dataset
+
+module load python
+conda activate tomopy
+
+export NERSC_GPU_ALLOCATION=m2859_g
+export CT_NVAE_PATH=$SCRATCH/CT_NVAE
+export WORKING_DIR=$SCRATCH/output_CT_NVAE
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
+
+salloc -N 1 -n 1 --time=120 -C gpu -A $NERSC_GPU_ALLOCATION --qos=interactive --cpus-per-task=128
+
+export NUM_EXAMPLES=100 # 100, 10
+export NUM_SPARSE_ANGLES=1
+export RANDOM_ANGLES=True
+export RING=0
+export ALGORITHM=tv
+export DO_PART_ONE=True
+export DO_PART_TWO=True
+export DATA_TYPE=toy # foam, covid, toy
+export IMAGE_ID=${DATA_TYPE}_${NUM_EXAMPLES}ex
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
+export CONSTANT_ANGLES=False
+export PNM_NUM=10000 # 10000, 1000000
+
+. $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
+
+export RANDOM_ANGLES=False
+export DATASET_ID=${DATA_TYPE}_${NUM_SPARSE_ANGLES}ang_${NUM_EXAMPLES}ex_${RING}ring_${ALGORITHM}_${RANDOM_ANGLES}random_${CONSTANT_ANGLES}constant${TAG}
+
+. $CT_NVAE_PATH/slurm/create_dataset.sh $CT_NVAE_PATH $NUM_EXAMPLES $DATA_TYPE $IMAGE_ID $DATASET_ID $NUM_SPARSE_ANGLES $RANDOM_ANGLES $CONSTANT_ANGLES $RING $ALGORITHM $DO_PART_ONE $DO_PART_TWO $PNM_NUM
+
+XXX STOPPED HERE
+
+### Training
+
+### Analysis
